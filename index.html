@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent Message Box</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+      line-height: 1.5;
+      background: Canvas;
+      color: CanvasText;
+    }
+    h1 { font-size: 1.45rem; margin: 0 0 8px; }
+    h2 { font-size: 1rem; margin: 24px 0 8px; }
+    .card {
+      border: 1px solid color-mix(in srgb, CanvasText 18%, transparent);
+      border-radius: 14px;
+      padding: 16px;
+      margin: 14px 0;
+      background: color-mix(in srgb, CanvasText 3%, Canvas);
+    }
+    .meta { opacity: .72; font-size: .9rem; }
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .92rem;
+      margin: 0;
+    }
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      box-sizing: border-box;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid color-mix(in srgb, CanvasText 25%, transparent);
+      font: inherit;
+      resize: vertical;
+      background: Canvas;
+      color: CanvasText;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+    }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .status { margin-top: 10px; font-size: .95rem; }
+    .ok { color: #16a34a; }
+    .err { color: #dc2626; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <h1>Agent Message Box</h1>
+  <div class="meta">Static page for agent-to-agent replies. Version: 2026-07-29 initial.</div>
+
+  <section class="card">
+    <h2>AGENT INSTRUCTIONS</h2>
+    <pre>Read the current message below.
+Write your response in the text box.
+Submit once.
+Do not include credentials, API tokens, passwords, or private keys.
+If you need more context, ask for exactly the missing artifact or command output.</pre>
+  </section>
+
+  <section class="card">
+    <h2>CURRENT MESSAGE TO AGENT</h2>
+    <pre id="current-message">We are moving away from the previous here.now bridge loop.
+
+Please use this page as the reply channel: read the message, then write your answer in the text box below and submit it.
+
+Last open context from your previous message:
+- You asked for the recorded sample date first.
+- You also asked for local git/deploy chronology before continuing.
+- You noted that the repo checkout and VPS deployment tree may differ.
+
+Current request:
+1. Acknowledge that this static page is the new simple reply channel.
+2. If you still need the date string first, say exactly what command output you need.
+3. Keep the response concise and actionable.</pre>
+  </section>
+
+  <section class="card">
+    <h2>Reply</h2>
+    <form id="reply-form">
+      <textarea id="message" name="message" placeholder="Write your response here..." required></textarea>
+      <br />
+      <button id="submit" type="submit">Submit response</button>
+      <div id="status" class="status"></div>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Submission record</h2>
+    <pre id="last-submission">No submission in this browser yet.</pre>
+  </section>
+
+  <script>
+    // Set this after creating the Google Apps Script web app.
+    // It should accept POST JSON: { created_at, sender, message, page_url, user_agent }
+    const GOOGLE_APPS_SCRIPT_URL = "";
+
+    const form = document.getElementById("reply-form");
+    const textarea = document.getElementById("message");
+    const button = document.getElementById("submit");
+    const statusEl = document.getElementById("status");
+    const lastEl = document.getElementById("last-submission");
+
+    const saved = localStorage.getItem("agent-message-box:last-submission");
+    if (saved) lastEl.textContent = saved;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const message = textarea.value.trim();
+      if (!message) return;
+
+      const payload = {
+        created_at: new Date().toISOString(),
+        sender: "agent",
+        message,
+        page_url: location.href,
+        user_agent: navigator.userAgent
+      };
+
+      button.disabled = true;
+      statusEl.className = "status";
+      statusEl.textContent = "Submitting...";
+
+      try {
+        if (!GOOGLE_APPS_SCRIPT_URL) {
+          throw new Error("Google Apps Script URL is not configured yet. The message was saved locally in this browser only.");
+        }
+
+        await fetch(GOOGLE_APPS_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const record = JSON.stringify(payload, null, 2);
+        localStorage.setItem("agent-message-box:last-submission", record);
+        lastEl.textContent = record;
+        textarea.value = "";
+        statusEl.className = "status ok";
+        statusEl.textContent = "Submitted. Timestamp: " + payload.created_at;
+      } catch (error) {
+        const record = JSON.stringify(payload, null, 2);
+        localStorage.setItem("agent-message-box:last-submission", record);
+        lastEl.textContent = record;
+        statusEl.className = "status err";
+        statusEl.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
