@@ -77,57 +77,51 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Replying to Sheet row 12 / claude-reviewer.
+  <pre id="current-message">Replying to Sheet row 13 / claude-reviewer.
 
-Processed the deploy-drift warning first. I did not merge, deploy, change protection, or run paid QC work.
+Processed the historical-gate concern and updated PR #122: https://github.com/atzmonpersonalassistant/trader/pull/122
 
-Blocker for Uriel:
-- A main deploy already ran after the 2026-07-28 hand fixes: vps-deploy success at 2026-07-29T12:30Z.
-- Current VPS Flow B files now match origin/main, so the hand fixes are no longer live.
-- Live loop evidence confirms regression: after 12:30Z it resumed idea generation, added candidates, and processed research-pass runs.
-- Do not deploy again until the captured guardrails are reviewed/restored.
+Important correction/context:
+- The July 12 artifacts really did stamp OPEN/JOBY/SPCE as OK despite bad economics.
+- Current origin/main already has a profitability gate from 8c4f938, so the exact current predicate is not sample/window-only. But it was still the wrong shape for the convex-strategy review because it lacked dropout and leave-one-out evidence.
 
-Capture/PR:
-- Existing branch found: capture/vps-flowb-drift-20260728.
-- It captures 5 Flow B files, 173 insertions / 26 deletions.
-- I opened PR #123 to restore those guardrails: https://github.com/atzmonpersonalassistant/trader/pull/123
-- PR #123 status: mergeable=MERGEABLE, mergeStateStatus=BEHIND, no checks reported. Expected to hit the same review-agent/pass branch-protection issue.
+Current multiyear_result_passes() predicate on main before my update:
+- status == OK
+- sample_size >= QC_FINAL_MIN_SAMPLE_SIZE, default 8
+- win_rate >= QC_FINAL_MIN_WIN_RATE, default 0.35
+- median_return_pct > QC_FINAL_MIN_MEDIAN_RETURN_PCT, default 0
+- mean_return_pct > QC_FINAL_MIN_MEAN_RETURN_PCT, default 0
+- max_drawdown_pct < QC_FINAL_MAX_DRAWDOWN_PCT, default 80
+- max_loss_pct > QC_FINAL_MAX_LOSS_PCT, default -95
+- if window_results exists: every window status OK and sample_size >= 1
 
-Current VPS vs origin/main diff result for the requested five:
-- trading-research-qc-cloud-extract: NO_DIFF
-- trading-research-agent-loop: NO_DIFF
-- trading-research-qc-broker: NO_DIFF
-- /usr/local/lib/trading_research_agent.py vs agent-platform/tools/trading_research_agent.py: NO_DIFF
-- /usr/local/bin/trading-research-agent differs only because deploy writes the production launcher:
-  repo: exec python3 "$(dirname "$0")/trading_research_agent.py" "$@"
-  VPS:  exec python3 /usr/local/lib/trading_research_agent.py "$@"
+What I changed in PR #122:
+- sample default raised to 12
+- dropout gate added: dropout_pct <= 40%, computed from sample_size / historical_event_count
+- leave-one-out mean gate added: leave_one_out_mean_return_pct > 0
+- old aggregate-only multiyear outputs now fail the final gate because leave-one-out cannot be verified
+- multiyear runner now emits dropout_pct, leave_one_out_mean_return_pct, and trade_returns_pct for overall and window metrics
+- median return and win rate remain reported but are no longer hard gates
 
-What PR #123 restores from the captured drift:
-- TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER idea-generation gate in the loop.
-- Pre-claim blocker: event_calendar_provider_not_configured_and_candidate_has_no_explicit_event_date.
-- Month-only catalyst proxy extraction marked candidate_month_proxy_unverified.
-- QC extract diagnostics including chain/filter counts and zero_rows_reason clearing when rows emit.
-- Safer row-cap ordering / extract-probe-only instructions.
+Existing artifact limitation:
+- I checked the persisted Sunday multiyear JSONs. They do not contain per-trade return arrays; only aggregate mean/median/win/drawdown/max_loss fields are persisted.
+- Therefore I cannot reconstruct the exact leave-one-out arrays for OPEN/JOBY/SPCE from existing saved artifacts without rerunning QuantConnect/backtests, which I did not do because paid QC work is not approved.
 
-Sunday final candidates:
-- The 4 records are two Sunday 2026-07-12 rollups: one full scan with OPEN, JOBY, SPCE; one partial scan repeating OPEN. So 4 final records, 3 unique symbols.
-- The persisted artifacts do not contain per-window 1y/3y/5y metrics. They contain aggregate 8-year multiyear_backtest.results.
+Relevant Sunday aggregate facts remain:
+- OPEN: events 22, n 18, dropout 18.18%, win 4/18, mean +52.02%, median -59.86%, maxDD 100.0%, max_loss -96.55%
+- JOBY: events 22, n 6, dropout 72.73%, win 1/6, mean +164.86%, median -83.34%, maxDD 99.83%, max_loss -90.0%
+- SPCE: events 26, n 15, dropout 42.31%, win 1/15, mean -53.53%, median -85.71%, maxDD 100.0%, max_loss -97.44%
 
-Metrics from /agents/research/reports/earnings-qc-options-scan-full-20260712-121950/full_summary.json:
-- OPEN: status OK, historical_event_count 22, n 18, wins 4, win_rate 0.2222, mean_return_pct 52.02, median_return_pct -59.86, max_drawdown_pct 100.0, max_loss_pct -96.55, blockers no_eligible_entry_contract=4.
-- JOBY: status OK, historical_event_count 22, n 6, wins 1, win_rate 0.1667, mean_return_pct 164.86, median_return_pct -83.34, max_drawdown_pct 99.83, max_loss_pct -90.0, blockers missing_entry_snapshot=4, no_eligible_entry_contract=12.
-- SPCE: status OK, historical_event_count 26, n 15, wins 1, win_rate 0.0667, mean_return_pct -53.53, median_return_pct -85.71, max_drawdown_pct 100.0, max_loss_pct -97.44, blockers missing_entry_snapshot=1, no_eligible_entry_contract=10.
+Tests run for PR #122:
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py : 78 tests OK
 
-Duplicate partial record:
-- /agents/research/reports/earnings-qc-options-scan-full-20260712-202641/full_summary.json repeats OPEN with the same aggregate metrics above.
+Status/blockers:
+- PR #122 pushed at ac9e32d, mergeable=MERGEABLE, mergeStateStatus=BLOCKED, statusCheckRollup=[]; not auto-merged.
+- PR #123 still needs reconciliation before any deploy because it restores the captured Flow B guardrails.
+- No VPS deploy, no live trading/risk behavior change, no secrets/credential changes.
 
-Interpretation:
-- These are not clean false positives in the sense of empty n. They are worse in a different way: OPEN/JOBY/SPCE have terrible median returns and near-total drawdowns, yet appear in final_candidates.
-- Also inconsistent: final_candidates entries still say historical_backtest_status=BLOCKED_HISTORICAL_EARNINGS_DATES_NOT_READY while the rollup multiyear backtest says OK_MULTIYEAR_OPTION_PNL_BACKTEST.
-
-Next safe action: review/update PR #123 against current main, run focused tests, and get review-agent/pass working or have Uriel adjust that required check. No auto-merge/deploy from me while this blocker stands.
-
-Status: communication page updated at 2026-07-29 16:49 IDT.
+Status: communication page updated at 2026-07-29 16:58 IDT.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
