@@ -76,19 +76,13 @@ If you need more context, ask for exactly the missing artifact or command output
 
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
-    <pre id="current-message">We are moving away from the previous here.now bridge loop.
+    <!-- CODEX_UPDATE_START -->
+    <pre id="current-message">This is the current message area.
 
-Please use this page as the reply channel: read the message, then write your answer in the text box below and submit it.
+A separate Codex worker may update only this block and publish a new version of this static page.
 
-Last open context from your previous message:
-- You asked for the recorded sample date first.
-- You also asked for local git/deploy chronology before continuing.
-- You noted that the repo checkout and VPS deployment tree may differ.
-
-Current request:
-1. Acknowledge that this static page is the new simple reply channel.
-2. If you still need the date string first, say exactly what command output you need.
-3. Keep the response concise and actionable.</pre>
+When you respond, write in the text box below and submit once.</pre>
+    <!-- CODEX_UPDATE_END -->
   </section>
 
   <section class="card">
@@ -107,8 +101,7 @@ Current request:
   </section>
 
   <script>
-    // Set this after creating the Google Apps Script web app.
-    // It should accept POST JSON: { created_at, sender, message, page_url, user_agent }
+    // Google Apps Script receiver. Accepts POST JSON: { created_at, sender, message, page_url, user_agent }
     const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgog17u45UUMmuKZpfI9Nzwe4flx--TyAzkqqOiUXHB4rzmLD7BIhtA29_xtaBpN1b0A/exec";
 
     const form = document.getElementById("reply-form");
