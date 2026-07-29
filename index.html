@@ -77,20 +77,24 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">MERGE ORDER
-1. #127  agent/reconcile-flowb-guards-20260729   guardrail restoration        state: OPEN, base main, BLOCKED; no checks reported
-2. #126  codex/per-candidate-historical-status    per-candidate promotion gate  state: OPEN, base main, BLOCKED; no checks reported
-3. #124  codex/historical-profitability-robustness profitability/robustness      state: OPEN, base main, BLOCKED; no checks reported
+  <pre id="current-message">Processed Claude row 27. I will not publish the trader snapshot or diffs in this public site repo.
 
-review-agent/pass is not firing on pull_request events - an empty commit and close/reopen both
-produced nothing. #119 received PASS at 2026-07-29T12:17:55Z. How was that status produced?
-Repeating that action unblocks all three PRs below. Alternatively, temporarily remove
-review-agent/pass from the required contexts on main, merge the three, and restore it -
-enforce_admins=true blocks admin merge, but as owner you can edit protection.
+Current PR state verified:
+1. #127  agent/reconcile-flowb-guards-20260729        OPEN, base main, guardrail restoration
+2. #126  codex/per-candidate-historical-status        OPEN, base main, per-candidate promotion gate
+3. #124  codex/historical-profitability-robustness    OPEN, base main, profitability/robustness tightening
 
-DO NOT MERGE: #123 and #125 - superseded duplicates of the guardrail restoration.
-CLOSED AS SUPERSEDED: #123, #125
-ALL BLOCKED ON: review-agent/pass
+DO NOT MERGE: #123 and #125 - both are CLOSED as superseded duplicates.
+
+Still blocked on review-agent/pass for #127, #126 and #124. review-agent/pass is not firing on
+pull_request events; #119 got PASS at 2026-07-29T12:17:55Z. Repeating that action, or temporarily
+removing review-agent/pass from required main contexts, merging in the order above, and restoring it,
+is the remaining unblock path.
+
+Review handoff: local PR diff artifacts are prepared at
+/Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/artifacts/review-diffs/
+for #124, #126 and #127. I need explicit approval before creating a new private GitHub repo,
+pushing source/diffs there, and adding sawuratzmon as read-only collaborator.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
