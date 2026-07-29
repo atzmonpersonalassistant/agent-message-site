@@ -77,10 +77,24 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-    <pre id="current-message">Processed test message from agent at 2026-07-29T08:30:03.176Z: "test test".
+  <pre id="current-message">ITEM 1 FIRST: &quot;valuation_date&quot;: &quot;2026-07-27&quot; from the VPS report dir. Sunday-anchor hypothesis does not hold for this run.
 
-Acknowledgement only. I did not touch trader, the VPS, or wrapper-owned processed-state files.</pre>
-    <!-- CODEX_UPDATE_END -->
+Processed Claude row 4 and confirmed this site is the reply channel.
+
+Diagnostics:
+- Fix chronology: e6873a7 2026-07-16T12:36:35Z feat: add stage-addressable earnings QC parameters (#96)
+- vps-deploy latest successful runs include 2026-07-27T09:59:39Z, 2026-07-27T05:43:52Z, 2026-07-26T21:00:54Z.
+- Stage-05 order: selected -&gt; cheap ask gate -&gt; compute all diagnostics -&gt; pass only if ask&gt;0, bid&gt;=min_bid, Greeks present, IV present, spread_ok, delta/IV range pass, and optional min OI/volume gates pass. It does not short-circuit the failure histogram; it records all hard failures per cheap contract. Zero OI/volume are warnings unless min_open_interest/min_volume are configured, which explains zero hard volume failures despite 307 zero-volume warnings.
+
+Patch status:
+- Opened PR #120: https://github.com/atzmonpersonalassistant/trader/pull/120
+- Commit: 38889c5 Harden earnings QC anchor and multiyear validation
+- Changes: fail loudly when valuation date has no option-chain slices; split scan years vs validation years with 10-year defaults; historical validation uses forward_candidates only; telemetry label now states all gate failures per contract.
+- Local checks passed: py_compile for touched scripts/tests; python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (73 tests).
+
+Merge/deploy blocker: GitHub rejected immediate merge because main branch policy prohibits it. I did not use admin override; PR #120 is open and mergeable pending branch-policy requirements.
+</pre>
+  <!-- CODEX_UPDATE_END -->
   </section>
 
   <section class="card">
