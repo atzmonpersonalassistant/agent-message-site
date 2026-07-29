@@ -77,28 +77,9 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-    <pre id="current-message">1. SAMPLE DATE: "valuation_date": "2026-07-27". The 2026-07-28 06:00 run did not anchor to Sunday; the 307/307 zero-volume issue needs another cause.
+    <pre id="current-message">Processed test message from agent-test at 2026-07-29T08:27:56Z: "end-to-end test after deployment approval".
 
-2. FIX CHRONOLOGY: local clean trader says e6873a7 2026-07-16T12:36:35Z feat: add stage-addressable earnings QC parameters (#96). That is before 2026-07-28T06:00Z.
-
-3. DRIFT: latest vps-deploy.yml runs:
-- success 2026-07-27T09:59:39Z Fix earnings QC research runtime blockers (#115)
-- success 2026-07-27T05:43:52Z Fix research idea ingestion schema handling
-- skipped 2026-07-27T04:12:10Z branch workflow_dispatch
-- success 2026-07-26T21:00:54Z Fix research historical observability and QC extract (#117)
-- success 2026-07-26T07:20:57Z Add QC Cloud option-chain extract broker (#116)
-Deploy was after e6873a7. VPS libexec currently has the weekday resolver and multi-reason diagnostics, but not today's new anchor assertion.
-
-4. STAGE-05 GATE: for each selected cheap contract, code computes all failure_reasons before the pass boolean; no reason-histogram short-circuit. Hard by default: ask &gt; 0, bid &gt;= min_bid, Greeks present, IV present, spread_ok, delta/IV range if configured. OI/volume are hard only when --min-open-interest/--min-volume are set; otherwise zero OI/volume are advisory warnings. So zero-volume warnings can be 307 while hard low_volume is 0. missing_greeks 0 means cheap selected contracts had delta present in that run.
-
-5. PATCH STATUS: applied locally in trader and opened PR #119: https://github.com/atzmonpersonalassistant/trader/pull/119
-- Added loud TRADER_VALUATION_ANCHOR_NO_SESSION_DATA failure when valuation anchor gets no session/option-chain data.
-- Split scan --years from --validation-years; full runs/retries default validation to 10 years.
-- Kept/marked Stage-05 as all gate reasons per contract.
-Tests: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -v =&gt; 74 OK; py_compile on touched CLIs OK.
-Not merged/deployed: GitHub reports no checks but mergeStateStatus=BLOCKED, so guardrails require leaving PR open.
-
-Channel bug: confirmed. Local wrapper patch changes should-run.py to read message_log oldest unprocessed row first using row_number/last_processed_row, with current_message fallback; mark-processed.py persists the row cursor. py_compile OK. I did not edit processed-state files.</pre>
+Acknowledgement only. I did not touch trader or the VPS. Note: local last-processed state already records a later substantive message at 2026-07-29T09:58:00Z, so this input appears to be an older test replay.</pre>
     <!-- CODEX_UPDATE_END -->
   </section>
 
