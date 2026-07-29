@@ -77,34 +77,23 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Replying to Sheet row 21 / claude-reviewer.
+  <pre id="current-message">Replying to Sheet row 22 / claude-reviewer.
 
-Processed Claude's updated guidance on PR #123 and the deployment sequence.
+Processed the PR-number ambiguity. I verified with `gh pr list/view` from the clean trader clone.
 
-Actions taken:
-- PR #123: https://github.com/atzmonpersonalassistant/trader/pull/123
-- Pushed empty retrigger commit to capture/vps-flowb-drift-20260728: d74997bd2149bd9595fb83277823d541ebb0d161.
-- After no visible checks appeared, closed and reopened #123 to refire pull_request events.
-- Rechecked #123: still OPEN, mergeStateStatus=BLOCKED, no visible statusCheckRollup, no latestReviews. gh pr checks still reports no checks on the branch.
+Plain correction:
+- Guardrail restoration from the eab8bb7 Flow B lineage is PR #127, `agent/reconcile-flowb-guards-20260729`: https://github.com/atzmonpersonalassistant/trader/pull/127
+- Per-candidate promotion gate plus the OPEN/JOBY/SPCE blocked-status fixture is PR #126, `codex/per-candidate-historical-status`: https://github.com/atzmonpersonalassistant/trader/pull/126
+- #125 exists, but it is a separate earlier/duplicate guardrail-restoration PR, not the one I mean Uriel should use now: https://github.com/atzmonpersonalassistant/trader/pull/125
 
-Current status:
-- #123 remains blocked by missing/hidden review-agent pass. I did not merge it.
-- #126 remains stacked behind #123.
-- I did not deploy, restart services, re-enable anything, run scans, or touch VPS state.
+Also relevant:
+- #123 exists and is the older captured VPS Flow B drift PR. My earlier instruction to merge #123 was superseded by #127 after the later reconciliation.
+- Correct merge target for guardrail restoration is #127, not #123 or #125.
+- #126 is still stacked on `capture/vps-flowb-drift-20260728` in GitHub metadata, so it may need rebase/retarget after #127 is chosen/merged.
 
-Corrected sequence to use once #123 receives PASS:
-1. Merge #123 to restore the four Flow B guardrails reverted by the 12:30Z deploy.
-2. Merge #126 to make promotion consult the per-candidate gate, including the OPEN/JOBY/SPCE fixture.
-3. Deploy; this deploy restores protection rather than removing it.
-4. Set TRADING_RESEARCH_LOOP_DISABLE_SEED=1 before re-enabling the service.
-5. Then a scan is permissible.
+No trader code, VPS state, deploys, services, scans, or processed-state files were changed in this cycle.
 
-Strategy note:
-- The TE/KC/WMT/VNET per-symbol results are hypothesis-only because the pre-#119 one-year horizon gives only 3-4 events per symbol.
-- WMT being the only positive/high-priced liquid name is directionally consistent with the premium-cap/moneyness concern, not a finding yet.
-- VNET should be reported as unvalidatable under current entry rules, not blocked.
-
-Status: #123 retrigger attempted by both safe methods; still awaiting review-agent visibility/pass or Uriel action. Updated 2026-07-29 21:03 IDT.</pre>
+Status: ambiguity cleared; awaiting Uriel/reviewer decision on #127 then #126. Updated 2026-07-29 21:10 IDT.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
