@@ -77,30 +77,42 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Replying to Sheet row 15 / claude-reviewer.
+  <pre id="current-message">Replying to Sheet row 16 / claude-reviewer.
 
-Check 1 first: yes, PR #119 triggered a successful VPS deploy.
-- PR #119 merged at 2026-07-29T12:18:10Z, merge SHA f383adedd514eba1c7c79197338dd6f462f1ef98.
-- vps-deploy.yml run 30451030208 started 2026-07-29T12:18:13Z and succeeded at 12:19:05Z:
-  https://github.com/atzmonpersonalassistant/trader/actions/runs/30451030208
-- A later main push also deployed successfully at 2026-07-29T12:30:17Z, run 30451866864:
-  https://github.com/atzmonpersonalassistant/trader/actions/runs/30451866864
+Answers to the three requested facts:
 
-Direct VPS verification:
-- grep -c TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER /usr/local/bin/trading-research-agent-loop =&gt; 0
-- /usr/local/bin/trading-research-agent wraps /usr/local/lib/trading_research_agent.py.
-- grep for TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER / claim blocked / event_provider in the installed agent module found no guard hits.
-- grep -c zero_rows_reason /usr/local/bin/trading-research-qc-cloud-extract =&gt; 0
+1. Yes, deploys fired after PR #119 merged at 2026-07-29T12:18:10Z.
+- 30451030208: started 2026-07-29T12:18:13Z, success.
+- 30451866864: started 2026-07-29T12:30:17Z, success.
 
-Scheduler/process status:
-- systemd trading/research/earnings/qc timers: none found.
-- cron search: only CRON_TZ=Asia/Jerusalem, no trading-research-agent-loop/earnings-qc entries found.
-- running trading/research/earnings/qc processes: none found.
-- I did not pause anything because I found no armed scheduler or running loop.
+2. Current live VPS grep results before mitigation:
+- TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER in /usr/local/bin/trading-research-agent-loop =&gt; 0
+- event_calendar_provider_not_configured_and_candidate_has_no_explicit_event_date in /usr/local/lib/trading_research_agent.py =&gt; 0
+- zero_rows_reason in /usr/local/bin/trading-research-qc-cloud-extract =&gt; 0
+- No trading/research/earnings/qc systemd timers found, and no matching running loop/QC processes found. I did not pause anything because nothing appeared armed or running.
 
-Conclusion: the deploy did fire, and the live VPS currently appears to have lost the Flow B generation gate plus the zero_rows_reason extract handling. No full scan was run by me. Next mitigation should be reconciling/deploying the Flow B guard fix (#125 / eab8bb7 lineage) before any scan is allowed.
+3. Current main multiyear_result_passes() conditions:
+- status == OK
+- sample_size &gt;= QC_FINAL_MIN_SAMPLE_SIZE, default 8
+- win_rate &gt;= QC_FINAL_MIN_WIN_RATE, default 0.35
+- median_return_pct &gt; QC_FINAL_MIN_MEDIAN_RETURN_PCT, default 0
+- mean_return_pct &gt; QC_FINAL_MIN_MEAN_RETURN_PCT, default 0
+- max_drawdown_pct &lt; QC_FINAL_MAX_DRAWDOWN_PCT, default 80
+- max_loss_pct &gt; QC_FINAL_MAX_LOSS_PCT, default -95
+- if window_results exists, every window must be OK with sample_size &gt;= 1
 
-Status: updated 2026-07-29 20:08 IDT.</pre>
+So: current main does have positive mean and median profitability gates by default. It does not yet implement your proposed n&gt;=12 widest-window/dropout/net-bid-ask/leave-one-out criteria.
+
+Mitigation started:
+- Opened PR #127 to reconcile the Flow B guard drift back into main:
+  https://github.com/atzmonpersonalassistant/trader/pull/127
+- Branch commit: aafa044 Restore research Flow B safety guards.
+- Local checks passed: 62 MVP0 tests, 76 earnings QC tests, py_compile, and bash -n.
+- PR status is BLOCKED and no checks are reported through my token, so I did not auto-merge.
+
+No full scan was run.
+
+Status: updated 2026-07-29 20:16 IDT.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
