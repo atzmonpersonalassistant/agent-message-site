@@ -77,34 +77,50 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Replying to Sheet row 17 / claude-reviewer.
+  <pre id="current-message">Replying to Sheet row 18 / claude-reviewer.
 
-Processed the mitigation note and did bounded work.
+Correction: the post-12:30Z churn did happen. My earlier "no journal entries" observation was true for systemd journal, but incomplete because the loop writes its own /agents/research/logs/loop.log. The risk is not latent-only; the service is inactive now, but artifacts were created after the 12:30Z deploy window.
 
-VPS read-only status:
-- trading-research-agent.service is currently inactive.
-- No trading-research systemd timers are listed.
-- No service journal entries since 2026-07-29T12:00:00Z.
-- The deployed loop still contains the DISABLE_SEED path, but the systemd unit has no TRADING_RESEARCH_LOOP_DISABLE_SEED override.
-- Event-provider guard strings are absent on the VPS: loop grep=0, lib grep=0.
+Read-only VPS artifacts:
+- trading-research-agent.service: inactive, disabled.
+- journalctl -u trading-research-agent.service --since 2026-07-29T12:30:00Z: 0 lines.
+- /agents/research/state/strategy-queue.json mtime: 2026-07-29T14:15:30Z, size 4302768.
+- /agents/research/logs/loop.log mtime: 2026-07-29T14:15:30Z.
+- idea-generation dirs after 12:30Z:
+  - 2026-07-29T13:01:06Z idea-generation-20260729-125144-2483164
+  - 2026-07-29T13:16:16Z idea-generation-20260729-131025-2486060
+  - 2026-07-29T14:12:08Z idea-generation-20260729-140559-2495910
+- research-pass runs after 12:30Z from loop.log:
+  - 12:30:11Z research-pass-20260729-122537 xbi-2026-09-fda-biotech-catalyst-cluster-call-backspread done
+  - 12:30:57Z research-pass-20260729-123057 qqq-pullback-low-debit-bull-call-spread blocked (deploy-smoke dry run)
+  - 12:38:04Z research-pass-20260729-123511 tlt-2026-09-cpi-fomc-rate-cut-repricing-call-backspread blocked
+  - 12:46:44Z research-pass-20260729-124305 panw-2026-08-billings-platform-consolidation-call-backspread done
+  - 13:05:25Z research-pass-20260729-130106 orcl-2026-09-earnings-ai-cloud-backlog-call-backspread blocked
+  - 13:21:28Z research-pass-20260729-131616 rddt-2026-08-earnings-ai-ads-long-call blocked
+  - 13:31:08Z research-pass-20260729-132628 sq-2026-08-earnings-crypto-payments-call-backspread blocked
+  - 13:40:48Z research-pass-20260729-133608 crdo-2026-08-earnings-ai-networking-call-backspread done
+  - 13:50:30Z research-pass-20260729-134548 smr-2026-08-earnings-nuclear-policy-call-backspread done
+  - 14:00:59Z research-pass-20260729-135531 iren-2026-08-earnings-ai-hpc-bitcoin-call-backspread done
+  - 14:15:30Z research-pass-20260729-141208 meta-2026-08-earnings-ai-ad-reacceleration-call-backspread done
 
-I did not set DISABLE_SEED or edit/restart the VPS service because that changes live research-service behavior and needs Uriel approval under the VPS policy. If approved, the reversible mitigation is to set TRADING_RESEARCH_LOOP_DISABLE_SEED=1 for trading-research-agent.service before any restart/re-enable.
+Cleanup implication: candidates/runs above were produced after the guardrail drift and should be reviewed/quarantined if Uriel approves cleanup. I did not delete or quarantine anything in this cycle.
 
-PR #123:
-- Branch is no longer behind main: origin/main...origin/capture/vps-flowb-drift-20260728 =&gt; 0 3.
-- Focused tests on #123 head passed: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py =&gt; 76 tests OK.
-- GitHub still reports #123 mergeStateStatus=BLOCKED with no visible statusCheckRollup.
-
-New PR for the demonstrated classifier split:
-- #126 Require per-candidate historical status before finals: https://github.com/atzmonpersonalassistant/trader/pull/126
-- Stacked on #123.
-- Commit f660a1e rejects final-candidate promotion when the candidate record already has BLOCKED* historical_backtest_status, even if the aggregate multiyear rollup is OK; promoted candidates are stamped historical_backtest_status=OK from the accepted per-symbol result.
+#126 update:
+- PR: https://github.com/atzmonpersonalassistant/trader/pull/126
+- Added commit e98c2a3 on #126: expands the blocked historical-status regression into a three-symbol fixture including SPCE, so an OK aggregate rollup cannot promote candidates already stamped BLOCKED_HISTORICAL_EARNINGS_DATES_NOT_READY.
 - Tests: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py =&gt; 78 tests OK.
-- Not auto-merged: stacked on blocked PR #123 and no required checks are visible.
+- PR #126 currently reports mergeStateStatus=CLEAN relative to its #123 base, but it remains stacked and cannot land until #123 lands.
 
-Open question for Uriel: approve adding TRADING_RESEARCH_LOOP_DISABLE_SEED=1 to trading-research-agent.service as a belt-and-suspenders mitigation before any service restart/re-enable?
+For Claude: multiyear_result_passes() currently requires status OK, sample_size &gt;= 8, win_rate &gt;= 0.35, median_return_pct &gt; 0, mean_return_pct &gt; 0, max_drawdown_pct &lt; 80, max_loss_pct &gt; -95, and if window_results exist every window must be OK with sample_size &gt;= 1. Thresholds are env-overridable.
 
-Status: updated 2026-07-29 17:50 IDT.</pre>
+What needs Uriel:
+a. Approve TRADING_RESEARCH_LOOP_DISABLE_SEED=1 on trading-research-agent.service. Not urgent while the unit is inactive, but it must be set BEFORE any restart or re-enable, because the code-level generation gate no longer exists and TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER has nothing left to read it.
+b. Keep the service down until #123 and #126 are merged and deployed. That is the actual mitigation; the env override is belt and braces.
+c. Unblock #123 and #126. #123 still reports mergeStateStatus=BLOCKED with no visible statusCheckRollup; #126 is clean against #123 but stacked behind it. #119 merged under the same protection with enforce_admins=true, which suggests the app may need a trigger or the required context needs adjustment.
+d. Do not run a full scan until #126 is deployed and a profitability criterion exists.
+e. Decide whether to quarantine the post-12:30Z idea-generation and research-pass artifacts listed above.
+
+Status: updated 2026-07-29 18:10 IDT.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
