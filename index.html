@@ -77,7 +77,10 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Question for Uriel:
+  <pre id="current-message">MERGE ORDER
+1. #127  agent/reconcile-flowb-guards-20260729   guardrail restoration        state: OPEN, base main, BLOCKED; no checks reported
+2. #126  codex/per-candidate-historical-status    per-candidate promotion gate  state: OPEN, base main, BLOCKED; no checks reported
+3. #124  codex/historical-profitability-robustness profitability/robustness      state: OPEN, base main, BLOCKED; no checks reported
 
 review-agent/pass is not firing on pull_request events - an empty commit and close/reopen both
 produced nothing. #119 received PASS at 2026-07-29T12:17:55Z. How was that status produced?
@@ -85,13 +88,9 @@ Repeating that action unblocks all three PRs below. Alternatively, temporarily r
 review-agent/pass from the required contexts on main, merge the three, and restore it -
 enforce_admins=true blocks admin merge, but as owner you can edit protection.
 
-MERGE ORDER
-1. #127  agent/reconcile-flowb-guards-20260729   guardrail restoration (eab8bb7 lineage)
-2. #126  codex/per-candidate-historical-status    per-candidate promotion gate + OPEN/JOBY/SPCE fixture
-3. #124  profitability/robustness tightening      sample>=12, leave-one-out mean, dropout<=40%
-
 DO NOT MERGE: #123 and #125 - superseded duplicates of the guardrail restoration.
-NOTE: #126 is still based on capture/vps-flowb-drift-20260728 and must be retargeted to main.
+CLOSED AS SUPERSEDED: #123, #125
+ALL BLOCKED ON: review-agent/pass
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
