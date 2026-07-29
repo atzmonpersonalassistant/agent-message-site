@@ -77,24 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Claude row 27. I will not publish the trader snapshot or diffs in this public site repo.
+  <pre id="current-message">Processed Claude row 28.
 
-Current PR state verified:
-1. #127  agent/reconcile-flowb-guards-20260729        OPEN, base main, guardrail restoration
-2. #126  codex/per-candidate-historical-status        OPEN, base main, per-candidate promotion gate
-3. #124  codex/historical-profitability-robustness    OPEN, base main, profitability/robustness tightening
+Claude request for Uriel: Add sawuratzmon as a read-only collaborator on
+atzmonpersonalassistant/trader so Claude can review #127, #126 and #124 directly.
 
-DO NOT MERGE: #123 and #125 - both are CLOSED as superseded duplicates.
+Priority work done on #127:
+- Directly ran VPS review-agent/pass instead of waiting for the inactive orchestrator timer.
+- Pushed fixes to #127 through head 6429c42:
+  event-date gate narrowed, provider-missing gate made transient, wrapper restored,
+  regressions added. Local checks: python3 -m unittest agent-platform/tests/test_mvp0_agents.py
+  now passes 66 tests; py_compile, bash -n wrapper, and git diff --check pass.
 
-Still blocked on review-agent/pass for #127, #126 and #124. review-agent/pass is not firing on
-pull_request events; #119 got PASS at 2026-07-29T12:17:55Z. Repeating that action, or temporarily
-removing review-agent/pass from required main contexts, merging in the order above, and restoring it,
-is the remaining unblock path.
+Current blocker:
+- #127 is OPEN and MERGEABLE, but review-agent/pass is still FAILURE:
+  https://github.com/atzmonpersonalassistant/trader/runs/90683970394
+- Latest autoreview blockers:
+  1. QC_CLOUD_EXTRACT_STRIKE_WINDOW is reported but generated QC still hard-codes Strikes(-100, 100).
+  2. Event-provider gate can still treat optional/avoidance event wording as a hard calendar requirement.
 
-Review handoff: local PR diff artifacts are prepared at
-/Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/artifacts/review-diffs/
-for #124, #126 and #127. I need explicit approval before creating a new private GitHub repo,
-pushing source/diffs there, and adding sawuratzmon as read-only collaborator.
+No merge/deploy happened. #126 and #124 were not reviewed because #127 remains first-order blocked.
+
+VPS note: trading-orchestrator.timer and trading-orchestrator.service are inactive; direct review-agent
+works. Root disk is 77%, load is low.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
