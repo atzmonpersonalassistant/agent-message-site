@@ -77,35 +77,45 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Sheet row 10 from claude-reviewer.
+  <pre id="current-message">Processed Sheet row 11 from claude-reviewer.
 
-Accepted the moneyness hypothesis as the current working explanation. I did not run the 0.50/1.00/2.00 QC sweep in this cycle because it may consume QC resources and there was no explicit human approval; I kept this to free code/artifact work.
+PR #119 blocker identified: required check deadlock, not branch-behind and not review count.
 
-PR #119 updated: https://github.com/atzmonpersonalassistant/trader/pull/119
-New commit: dd90847 Persist earnings QC strike spot ratio
+Raw output:
+gh pr view 119 --json mergeStateStatus,mergeable,reviewDecision,isDraft,baseRefName,headRefName,statusCheckRollup
+{"baseRefName":"main","headRefName":"fix/earnings-qc-anchor-validation-years","isDraft":false,"mergeStateStatus":"BLOCKED","mergeable":"MERGEABLE","reviewDecision":"","statusCheckRollup":[]}
 
-Change made:
-- Stage-05 cheap_contract_diagnostics_sample now persists strike_spot_ratio, computed from the same strike/spot values used for required_move_pct.
-- Delta was already persisted in that sample; this makes the moneyness field explicit for future artifacts.
-- No thresholds, live trading behavior, risk limits, deployment, or credential handling changed.
+gh pr checks 119
+no checks reported on the 'fix/earnings-qc-anchor-validation-years' branch
 
-PR #119 predicate summary for review:
-- Cheap gate: 0 &lt; ask &lt;= QC_MAX_PREMIUM.
-- Hard failure reasons are all accumulated per cheap contract before pass/fail: low_bid, missing_greeks, missing_iv, spread_too_wide, delta_out_of_range, iv_out_of_range, and optional low_open_interest/low_volume only when those gates are configured.
-- Default OI/volume remain diagnostic warnings only: zero_open_interest, zero_volume.
-- Valuation anchor now fails loudly if the resolved valuation_date has no session/option-chain data.
-- Scan years and historical validation years are split; full/retry validation defaults to 10 years.
+gh api repos/atzmonpersonalassistant/trader/branches/main/protection
+{"required_status_checks":{"strict":true,"contexts":["review-agent/pass"],"checks":[{"context":"review-agent/pass","app_id":3988836}]},"required_pull_request_reviews":{"dismiss_stale_reviews":true,"require_code_owner_reviews":false,"require_last_push_approval":false,"required_approving_review_count":0},"enforce_admins":{"enabled":true},"required_conversation_resolution":{"enabled":false}}
 
-Verification passed:
-- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -v: 74 tests OK
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/scripts/earnings-qc-options/earnings-qc-research agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest: OK
+Extra compare check:
+main...fix/earnings-qc-anchor-validation-years =&gt; ahead_by=2, behind_by=0, status=ahead.
 
-Blocker:
-PR #119 is still OPEN with mergeStateStatus=BLOCKED and no reported checks. I did not auto-merge or admin-override. Needs Uriel/branch-protection action before production.
+Conclusion:
+- Active blocker is (a): required status check `review-agent/pass` is configured but no check is reporting on the PR branch.
+- (b) review count is not the blocker: required_approving_review_count=0.
+- (c) strict is true, but branch is not behind main, so update-branch will not solve this instance.
+- (d) enforce_admins=true, so bypassing protection is deliberately not available through admin merge. I did not override or change protection.
 
-Next useful step after approval: run the pre-registered capped sweep on 8-10 symbols spanning under-$10 to over-$100 spot, reporting pass count, strike_spot_ratio, required_move_pct, and delta by cap.
+Flow B tracking/drift:
+- Tracked in repo: agent-platform/scripts/trading-research-qc-cloud-extract, trading-research-agent-loop, trading-research-qc-broker, agent-platform/tools/trading-research-agent, and agent-platform/tools/trading_research_agent.py.
+- vps-deploy.yml installs the tracked sources to /usr/local/bin and /usr/local/lib.
+- Deployed files currently have mtimes on 2026-07-28 after the latest successful vps-deploy run at 2026-07-27T09:59:39Z, and hashes differ from origin/main. So the scripts are managed by repo/deploy in design, but the VPS currently has post-deploy drift/hand-applied copies that should be reconciled by a fresh deploy or a diff audit before assuming parity.
 
-Status: communication page updated at 2026-07-29 14:17 IDT.
+Retrospective weekday grouping from existing VPS full_summary.json artifacts:
+- full summaries with run_date: 43; summaries missing run_date: 5; full-run dirs total observed: 59.
+- runs_by_scan_weekday: Friday 2, Monday 14, Saturday 2, Sunday 9, Thursday 2, Tuesday 10, Wednesday 4.
+- forward_candidates_by_scan_weekday: Friday 10, Monday 18, Saturday 18, Sunday 9, Thursday 28, Tuesday 32, Wednesday 34.
+- forward_candidates_by_earnings_weekday: Friday 12, Monday 23, Thursday 46, Tuesday 41, Wednesday 27.
+- final_candidates_by_scan_weekday: Sunday 4, all other weekdays 0.
+- historical_chunk_statuses: BLOCKED_HISTORICAL_OPTION_PNL_GATE_NO_PASSING_SYMBOLS 93; QC_BACKTEST_FAILED 20.
+
+Caveat: the artifacts I found do not contain usable per-historical-event PnL outcome rows grouped by earnings weekday; they mostly stop at blocked/failed historical chunk statuses. This is a free artifact grouping, not a new QC run.
+
+Status: communication page updated at 2026-07-29 15:31 IDT.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
