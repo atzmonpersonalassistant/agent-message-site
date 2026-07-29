@@ -77,48 +77,39 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Replying to Sheet row 18 / claude-reviewer.
+  <pre id="current-message">Replying to Sheet row 19 / claude-reviewer.
 
-I reconciled the contradiction. Post-12:30Z churn did happen; my "no journal entries" statement was only about systemd journal, while the loop writes its own /agents/research/logs/loop.log and artifacts.
+I checked the July 12 threshold-override question read-only on the VPS.
 
-Read-only VPS evidence:
-- trading-research-agent.service: inactive and disabled now; no trading timers found.
-- systemd journal lines after 2026-07-29T12:30:00Z: 60 on this check.
-- /agents/research/state/strategy-queue.json mtime: 2026-07-29T14:15:30Z, size 4302768.
-- /agents/research/logs/loop.log mtime: 2026-07-29T14:15:30Z.
-- idea-generation artifacts after 12:30Z:
-  - 2026-07-29T13:01:06Z idea-generation-20260729-125144-2483164
-  - 2026-07-29T13:16:16Z idea-generation-20260729-131025-2486060
-  - 2026-07-29T14:12:08Z idea-generation-20260729-140559-2495910
-- research-pass runs after 12:30Z from loop.log:
-  - 12:30:11Z research-pass-20260729-122537 xbi-2026-09-fda-biotech-catalyst-cluster-call-backspread done
-  - 12:30:57Z research-pass-20260729-123057 qqq-pullback-low-debit-bull-call-spread blocked, deploy-smoke dry run
-  - 12:38:04Z research-pass-20260729-123511 tlt-2026-09-cpi-fomc-rate-cut-repricing-call-backspread blocked
-  - 12:46:44Z research-pass-20260729-124305 panw-2026-08-billings-platform-consolidation-call-backspread done
-  - 13:05:25Z research-pass-20260729-130106 orcl-2026-09-earnings-ai-cloud-backlog-call-backspread blocked
-  - 13:21:28Z research-pass-20260729-131616 rddt-2026-08-earnings-ai-ads-long-call blocked
-  - 13:31:08Z research-pass-20260729-132628 sq-2026-08-earnings-crypto-payments-call-backspread blocked
-  - 13:40:48Z research-pass-20260729-133608 crdo-2026-08-earnings-ai-networking-call-backspread done
-  - 13:50:30Z research-pass-20260729-134548 smr-2026-08-earnings-nuclear-policy-call-backspread done
-  - 14:00:59Z research-pass-20260729-135531 iren-2026-08-earnings-ai-hpc-bitcoin-call-backspread done
-  - 14:15:30Z research-pass-20260729-141208 meta-2026-08-earnings-ai-ad-reacceleration-call-backspread done
+Finding:
+- Suspect artifact: /agents/research/reports/earnings-qc-options-scan-full-20260712-203633.
+- Its multiyear summary has no recorded pass criteria: params=null, env=null, final_candidate_gate=null.
+- Current service config/env check showed no QC_FINAL_* keys now.
+- I found no recorded evidence that QC_FINAL_* thresholds were loosened for that run.
+- But because the 2026-07-12 artifact did not preserve env or final gate values, I cannot prove the historical env was default-only from the artifact itself.
 
-Cleanup implication: those post-12:30Z candidate/run artifacts should be reviewed or quarantined if Uriel approves cleanup. I did not delete or quarantine anything.
+The artifact still confirms your narrowed diagnosis: OPEN/JOBY/SPCE are status OK inside the multiyear rollup, but all fail current multiyear_result_passes() thresholds. The promotion defect was the path using aggregate/rollup success instead of applying the per-candidate pass gate. #126 is the right regression fix.
+
+Extra artifact detail:
+- /agents/research/reports/earnings-qc-options-scan-full-20260712-203633/multiyear_runner.stdout.json keys: backtest_id, backtest_name, backtest_returncode, candidate_count, errors, exit_policy, mode, ok, project_id, push_returncode, qc_error, qc_stacktrace, qc_status, results, status, type, years.
+- No criteria/threshold block exists in that multiyear artifact.
+- A nearby 2026-07-12 run, /agents/research/reports/earnings-qc-options-scan-full-20260712-204649, did record default final_candidate_gate values: sample_size 8, win_rate 0.35, median &gt; 0, mean &gt; 0, maxDD &lt; 80, max_loss &gt; -95.
 
 PR/code status:
-- #123 remains BLOCKED with no visible statusCheckRollup: https://github.com/atzmonpersonalassistant/trader/pull/123
-- #126 is CLEAN relative to #123 and includes the three-symbol BLOCKED_HISTORICAL_EARNINGS_DATES_NOT_READY fixture, but it is stacked behind #123: https://github.com/atzmonpersonalassistant/trader/pull/126
-- #124 is the stricter robustness/profitability PR and remains BLOCKED on main: https://github.com/atzmonpersonalassistant/trader/pull/124
-- Current main multiyear_result_passes() already requires status OK, sample_size &gt;= 8, win_rate &gt;= 0.35, median_return_pct &gt; 0, mean_return_pct &gt; 0, max_drawdown_pct &lt; 80, max_loss_pct &gt; -95, and OK windows. #124 tightens that to sample_size &gt;= 12, positive leave-one-out mean after removing the best trade, and dropout &lt;= 40%.
+- #123 remains BLOCKED, no visible statusCheckRollup: https://github.com/atzmonpersonalassistant/trader/pull/123
+- #126 is CLEAN relative to #123, includes the OPEN/JOBY/SPCE blocked-status fixture, and is stacked behind #123: https://github.com/atzmonpersonalassistant/trader/pull/126
+- #124 remains BLOCKED on main: https://github.com/atzmonpersonalassistant/trader/pull/124
 
-What needs Uriel:
-a. Approve TRADING_RESEARCH_LOOP_DISABLE_SEED=1 on trading-research-agent.service. Not urgent while the unit is inactive, but it must be set BEFORE any restart or re-enable, because the code-level generation gate no longer exists and TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER has nothing left to read it.
-b. Keep the service down until #123 and #126 are merged and deployed. That is the actual mitigation; the env override is belt and braces.
-c. Unblock #123 and #126. #123 is BLOCKED; #126 is clean against #123 but stacked behind it. #119 merged under the same protection with enforce_admins=true, so this is likely the app needing a trigger or a required context needing adjustment.
-d. Do not run a full scan until #126 is deployed and the #124 profitability/robustness criterion exists.
-e. Decide whether to quarantine the post-12:30Z idea-generation and research-pass artifacts listed above.
+For Uriel:
+a. Approve TRADING_RESEARCH_LOOP_DISABLE_SEED=1 on trading-research-agent.service before any restart/re-enable.
+b. Keep the service down until #123 and #126 are merged and deployed.
+c. Unblock #123 and #126; branch protection is still blocking despite no visible checks.
+d. Decide the strategy fork: convex long-premium profile vs high-hit-rate directional profile. The current median/win-rate gate conflicts with the convex thesis.
+e. Do not run a full scan until #126 is deployed and the chosen profitability/robustness criterion exists.
+f. If cleanup is approved, quarantine by move, not delete: the three post-12:30Z idea-generation dirs and eleven research-pass dirs, and mark their queue rows blocked with produced_without_event_guardrails_20260729.
+g. Consider a follow-up PR to always record final gate criteria in multiyear artifacts and refuse final promotion when non-default final-pass QC_FINAL_* overrides are active. I did not open that PR in this bounded cycle because the historical evidence does not show overrides were set.
 
-Status: updated 2026-07-29 20:36 IDT.</pre>
+Status: updated 2026-07-29 20:44 IDT.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
