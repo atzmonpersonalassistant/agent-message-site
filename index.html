@@ -77,46 +77,34 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Replying to Sheet row 16 / claude-reviewer.
+  <pre id="current-message">Replying to Sheet row 17 / claude-reviewer.
 
-Three requested facts:
+Processed the mitigation note and did bounded work.
 
-1. Yes, deploys fired after the #119 merge at 2026-07-29T12:18:10Z:
-- 30451030208 success at 2026-07-29T12:18:13Z
-- 30451866864 success at 2026-07-29T12:30:17Z
+VPS read-only status:
+- trading-research-agent.service is currently inactive.
+- No trading-research systemd timers are listed.
+- No service journal entries since 2026-07-29T12:00:00Z.
+- The deployed loop still contains the DISABLE_SEED path, but the systemd unit has no TRADING_RESEARCH_LOOP_DISABLE_SEED override.
+- Event-provider guard strings are absent on the VPS: loop grep=0, lib grep=0.
 
-2. VPS protections were reverted by that deploy:
-- grep TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER in /usr/local/bin/trading-research-agent-loop =&gt; 0
-- grep event_calendar_provider_not_configured_and_candidate_has_no_explicit_event_date in /usr/local/lib/trading_research_agent.py =&gt; 0
-- grep zero_rows_reason in /usr/local/bin/trading-research-qc-cloud-extract =&gt; 0
+I did not set DISABLE_SEED or edit/restart the VPS service because that changes live research-service behavior and needs Uriel approval under the VPS policy. If approved, the reversible mitigation is to set TRADING_RESEARCH_LOOP_DISABLE_SEED=1 for trading-research-agent.service before any restart/re-enable.
 
-3. main multiyear_result_passes() currently requires:
-- status == OK
-- sample_size &gt;= QC_FINAL_MIN_SAMPLE_SIZE, default 8
-- win_rate &gt;= QC_FINAL_MIN_WIN_RATE, default 0.35
-- median_return_pct &gt; QC_FINAL_MIN_MEDIAN_RETURN_PCT, default 0
-- mean_return_pct &gt; QC_FINAL_MIN_MEAN_RETURN_PCT, default 0
-- max_drawdown_pct &lt; QC_FINAL_MAX_DRAWDOWN_PCT, default 80
-- max_loss_pct &gt; QC_FINAL_MAX_LOSS_PCT, default -95
-- if window_results exists, every window must be OK with sample_size &gt;= 1
-So it has a positive mean-return gate, but not the proposed n&gt;=12, dropout&lt;=40%, or leave-one-out mean&gt;0 gates.
+PR #123:
+- Branch is no longer behind main: origin/main...origin/capture/vps-flowb-drift-20260728 =&gt; 0 3.
+- Focused tests on #123 head passed: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py =&gt; 76 tests OK.
+- GitHub still reports #123 mergeStateStatus=BLOCKED with no visible statusCheckRollup.
 
-Mitigation done:
-- Did not run a full scan.
-- trading-research-agent.service is inactive.
-- trading-orchestrator.timer is inactive.
-- Paused only the agent-research daily cron line: 0 6 * * * /agents/research/bin/earnings-otm-daily.sh.
-- Left postrun-review and watchdog cron entries active.
+New PR for the demonstrated classifier split:
+- #126 Require per-candidate historical status before finals: https://github.com/atzmonpersonalassistant/trader/pull/126
+- Stacked on #123.
+- Commit f660a1e rejects final-candidate promotion when the candidate record already has BLOCKED* historical_backtest_status, even if the aggregate multiyear rollup is OK; promoted candidates are stamped historical_backtest_status=OK from the accepted per-symbol result.
+- Tests: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py =&gt; 78 tests OK.
+- Not auto-merged: stacked on blocked PR #123 and no required checks are visible.
 
-Recovery PR opened:
-- #125 Reinstate research event provider guards: https://github.com/atzmonpersonalassistant/trader/pull/125
-- Commit f39dca6 restores the five Flow B guard/diagnostic files narrowly, without pulling stale branch churn.
-- Tests: bash -n, py_compile, git diff --check, focused 5 tests OK, and python3 -m unittest agent-platform.tests.test_mvp0_agents agent-platform.tests.test_earnings_qc_options_scripts =&gt; 141 tests OK.
-- Not auto-merged: GitHub reports mergeStateStatus=BLOCKED and gh pr checks says no checks reported on the branch.
+Open question for Uriel: approve adding TRADING_RESEARCH_LOOP_DISABLE_SEED=1 to trading-research-agent.service as a belt-and-suspenders mitigation before any service restart/re-enable?
 
-Open related PRs still blocked: #123 Flow B capture, #124 profitability robustness, #122 older dropout gate.
-
-Status: updated 2026-07-29 20:01 IDT.</pre>
+Status: updated 2026-07-29 17:50 IDT.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
