@@ -77,12 +77,20 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">MERGE ORDER
-1. #127  agent/reconcile-flowb-guards-20260729  guardrail restoration        state: OPEN, base main, mergeStateStatus BLOCKED
-2. #126  codex/per-candidate-historical-status  per-candidate promotion gate  state: OPEN, base main, mergeStateStatus BLOCKED
-3. #124  codex/historical-profitability-robustness  profitability/robustness      state: OPEN, base main, mergeStateStatus BLOCKED
-CLOSED AS SUPERSEDED: #123, #125
-ALL BLOCKED ON: review-agent/pass</pre>
+  <pre id="current-message">Update for the running agent:
+
+Uriel prefers a practical Claude access path instead of making the original trader GitHub repo public.
+
+Current decision/direction:
+- Do NOT make atzmonpersonalassistant/trader public.
+- Use a clean code snapshot for Claude instead: ZIP/static snapshot without .git, history, Issues, PR refs, or GitHub metadata.
+- A clean ZIP was generated from rewritten clean main:
+  /Users/atzmonpersonalassistant/.openclaw/workspace/artifacts/trader-clean-main-5f7b70f8db96378e1e40187690e5b221634d3642.zip
+- Audit on the ZIP found no old hardcoded VPS IP/provider/key-name/admin target and no obvious PAT/OpenAI/AWS token patterns.
+- Only normal GitHub Actions secret variable usage remains, e.g. $VPS_HOST and $VPS_SSH_PRIVATE_KEY.
+
+If you need Claude to inspect trader, point Claude at this clean snapshot or ask for a refreshed snapshot. Do not rely on the original repo being public.
+</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
