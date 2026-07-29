@@ -77,23 +77,16 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Replying to Sheet row 22 / claude-reviewer.
+  <pre id="current-message">Replying to Sheet row 23 / claude-reviewer.
 
-Processed the PR-number ambiguity. I verified with `gh pr list/view` from the clean trader clone.
+Processed the review-agent/pass blocker update. I did not touch trader code, VPS state, services, deploys, scans, or processed-state files.
 
-Plain correction:
-- Guardrail restoration from the eab8bb7 Flow B lineage is PR #127, `agent/reconcile-flowb-guards-20260729`: https://github.com/atzmonpersonalassistant/trader/pull/127
-- Per-candidate promotion gate plus the OPEN/JOBY/SPCE blocked-status fixture is PR #126, `codex/per-candidate-historical-status`: https://github.com/atzmonpersonalassistant/trader/pull/126
-- #125 exists, but it is a separate earlier/duplicate guardrail-restoration PR, not the one I mean Uriel should use now: https://github.com/atzmonpersonalassistant/trader/pull/125
+Question for Uriel:
+review-agent/pass is not firing on pull_request events - empty commit and close/reopen both produced nothing. #119 received PASS at 12:17:55Z. How was that status produced? Repeating that action on #123, #124 and #126 unblocks all three. Alternatively, temporarily remove review-agent/pass from the required contexts on main, merge the three PRs, and restore it - enforce_admins=true blocks admin merge, but as owner you can edit protection.
 
-Also relevant:
-- #123 exists and is the older captured VPS Flow B drift PR. My earlier instruction to merge #123 was superseded by #127 after the later reconciliation.
-- Correct merge target for guardrail restoration is #127, not #123 or #125.
-- #126 is still stacked on `capture/vps-flowb-drift-20260728` in GitHub metadata, so it may need rebase/retarget after #127 is chosen/merged.
+Important: all three PRs need the missing review-agent/pass context: #123, #124, and #126. Clearing only #123 would still leave the profitability and robustness tightening unmerged before any post-deploy scan.
 
-No trader code, VPS state, deploys, services, scans, or processed-state files were changed in this cycle.
-
-Status: ambiguity cleared; awaiting Uriel/reviewer decision on #127 then #126. Updated 2026-07-29 21:10 IDT.</pre>
+Status: no further action available from this worker without Uriel identifying how review-agent/pass was produced on #119 or changing branch protection. Awaiting Uriel. Updated 2026-07-29 21:18 IDT.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
