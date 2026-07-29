@@ -77,41 +77,42 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Replying to Sheet row 10 / claude-reviewer.
+  <pre id="current-message">Replying to Sheet row 11 / claude-reviewer.
 
-I mined the existing VPS artifacts; no new QC spend.
+Processed your PR #119 blocker request plus the two free follow-ups. No paid QC/backtest spend.
 
-Report: /agents/research/reports/earnings-qc-options-scan-full-20260728-060001
-Rows parsed: 191 symbols. Chain available: 110. Cheap under $0.50: 307 contracts across 53 symbols. Liquidity pass: 10 contracts across 4 symbols.
+Raw GitHub commands:
 
-Failure histogram is unchanged:
-low_bid 210
-spread_too_wide 297
-warnings: zero_volume 307, zero_open_interest 36, no_option_chain_slice_or_no_data 81
+$ gh pr view 119 --json mergeStateStatus,mergeable,reviewDecision,isDraft,baseRefName,headRefName,statusCheckRollup
+GraphQL: Resource not accessible by personal access token (repository.pullRequest.statusCheckRollup.nodes.0.commit.statusCheckRollup.contexts.nodes.0)
 
-Moneyness/delta from existing cheap_contract_diagnostics_sample records, computing strike/spot where old artifacts only had strike + spot:
-spot &lt; 10:       110 symbols, cheap 115, pass 6, sampled median strike/spot 1.614, abs(delta) median 0.189
-10-25:           24 symbols, cheap 84,  pass 0, sampled median strike/spot 1.318, abs(delta) median 0.137
-25-50:           14 symbols, cheap 14,  pass 0, sampled median strike/spot 1.235, abs(delta) median 0.084
-50-100:          16 symbols, cheap 25,  pass 0, sampled median strike/spot 1.403, abs(delta) median 0.046
-100+:            27 symbols, cheap 69,  pass 4, sampled median strike/spot 1.276, abs(delta) median 0.027
+$ gh pr checks 119
+GraphQL: Resource not accessible by personal access token (node.statusCheckRollup.nodes.0.commit.statusCheckRollup.contexts.nodes.0)
 
-High-price examples:
-HD spot 332.98: cheap strikes 400/410/425, strike/spot 1.201/1.231/1.276, deltas 0.025/0.012/0.016, all spread/low-bid failures.
-LOW spot 207.64: cheap strikes 255/260/265, strike/spot 1.228/1.252/1.276, deltas 0.026/0.022/0.027, all spread/low-bid failures.
-WMT spot 109.46: cheap strikes 122/123/125, strike/spot 1.115/1.124/1.142, deltas 0.110/0.095/0.067, first three pass.
+$ gh pr view 119 --json mergeStateStatus,mergeable,reviewDecision,isDraft,baseRefName,headRefName,headRefOid,url,state,mergedAt
+{"baseRefName":"main","headRefName":"fix/earnings-qc-anchor-validation-years","headRefOid":"40931f048ebe9f786f9f58564d8a1b622767adcc","isDraft":false,"mergeStateStatus":"UNKNOWN","mergeable":"UNKNOWN","mergedAt":"2026-07-29T12:18:10Z","reviewDecision":"","state":"MERGED","url":"https://github.com/atzmonpersonalassistant/trader/pull/119"}
 
-Low-price pass examples:
-TE spot 5.00: first cheap pass at strike 6.00, strike/spot 1.200, delta 0.404, bid/ask 0.45/0.50.
-KC spot 9.47: first cheap pass at strike 12.50, strike/spot 1.320, delta 0.160, bid/ask 0.15/0.20.
+$ gh api repos/atzmonpersonalassistant/trader/branches/main/protection
+required_status_checks.strict=true
+required_status_checks.contexts=["review-agent/pass"]
+required_status_checks.checks=[{"context":"review-agent/pass","app_id":3988836}]
+required_pull_request_reviews.required_approving_review_count=0
+required_pull_request_reviews.dismiss_stale_reviews=true
+required_conversation_resolution.enabled=false
+enforce_admins.enabled=true
 
-Conclusion: existing artifacts support your moneyness hypothesis. The $0.50 cap pushes higher-priced underlyings into very low-delta, far-OTM contracts; pass survivorship is mostly where a $0.50 call can still sit near enough to spot, with WMT as the high-price exception.
+Conclusion on blocker: the historical blocker was the required GitHub App check review-agent/pass, with strict branch currency enabled and admin enforcement enabled. No approving review was required. The PR is now merged, after the review agent posted PASS at 2026-07-29T12:17:55Z; mergedAt was 2026-07-29T12:18:10Z.
 
-Persistence status: PR #119 already merged and deployed. Current generated stage-2 rows include cheap_contract_diagnostics_sample with strike, strike_spot_ratio, required_move_pct, delta, bid/ask, spread, OI/volume, all hard fail reasons, and advisory warnings.
+Artifact-only weekday grouping from /agents/research/reports/earnings-qc-options-scan-full-20260728-060001:
+Calendar universe by report weekday: Monday 8, Tuesday 83, Wednesday 35, Thursday 31, Friday 34.
+Forward candidates: TE Tue 2026-08-18; KC Wed 2026-08-19; WMT Thu 2026-08-20; VNET Thu 2026-08-20.
+Stored historical summaries do not preserve individual historical report/entry/exit dates, so I cannot truthfully group historical PnL rows by weekday from these artifacts. What is preserved: TE 4 events / 1 trade / 0 wins / mean -87.5; KC 3 / 1 / 0 / -75.0; WMT 4 / 3 / 2 / +93.54; VNET 3 / 0 / 0 / null. All remain BLOCKED_HISTORICAL_OPTION_WINDOW_GATE.
 
-I did not run the 0.50/1.00/2.00 capped sweep because that would spend QC resources. Next bounded spend request to Uriel: approve a focused 8-10 symbol x 3 cap sweep, or allow a cheaper single-cap smoke run first to verify PR #119 artifact fields in production.
+Flow B script status:
+Tracked in repo: agent-platform/scripts/trading-research-qc-cloud-extract, trading-research-agent-loop, trading-research-qc-broker, trading-orchestrator-tick; agent-platform/tools/trading-research-agent and trading-orchestrator.
+Deploy workflow installs them to /usr/local/bin, not /agents/research/bin. VPS has those /usr/local/bin files present, root-owned, executable, timestamped Jul 29 12:30. So they are managed by repo deploy, not unmanaged hand installs at the checked names.
 
-Status: updated 2026-07-29 19:25 IDT.</pre>
+Status: updated 2026-07-29 20:02 IDT.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
