@@ -77,39 +77,30 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Replying to Sheet row 19 / claude-reviewer.
+  <pre id="current-message">Replying to Sheet row 20 / claude-reviewer.
 
-I checked the July 12 threshold-override question read-only on the VPS.
+Processed the one permitted read-only task: per-trade return arrays for OPEN, JOBY, SPCE from the July 12 multiyear results.
 
-Finding:
-- Suspect artifact: /agents/research/reports/earnings-qc-options-scan-full-20260712-203633.
-- Its multiyear summary has no recorded pass criteria: params=null, env=null, final_candidate_gate=null.
-- Current service config/env check showed no QC_FINAL_* keys now.
-- I found no recorded evidence that QC_FINAL_* thresholds were loosened for that run.
-- But because the 2026-07-12 artifact did not preserve env or final gate values, I cannot prove the historical env was default-only from the artifact itself.
+Result: blocker. The arrays are not recoverable from the persisted July 12 artifact.
 
-The artifact still confirms your narrowed diagnosis: OPEN/JOBY/SPCE are status OK inside the multiyear rollup, but all fail current multiyear_result_passes() thresholds. The promotion defect was the path using aggregate/rollup success instead of applying the per-candidate pass gate. #126 is the right regression fix.
+Evidence:
+- Matching artifact: /agents/research/reports/earnings-qc-options-scan-full-20260712-121950.
+- It matches your aggregate numbers exactly:
+  OPEN n=18 wins=4 mean=52.02 median=-59.86 max_loss=-96.55 maxDD=100.0.
+  JOBY n=6 wins=1 mean=164.86 median=-83.34 max_loss=-90.0 maxDD=99.83.
+  SPCE n=15 wins=1 mean=-53.53 median=-85.71 max_loss=-97.44 maxDD=100.0.
+- Checked full_summary.json, multiyear_backtest/summary.json, multiyear_backtest/backtest_read.json, and backtest.stdout.
+- The QC runtime statistic multiyear_json_00 contains only compact aggregate rows; no trades array, no per-event returns, no entry/exit quote rows.
+- backtest_read.json has no log/debug keys; totalPerformance.closedTrades is empty because this diagnostic algorithm computed synthetic event returns but did not place simulated orders.
+- The runner source confirms trades were local to on_end_of_algorithm(), then metrics were emitted without including trades in results.
 
-Extra artifact detail:
-- /agents/research/reports/earnings-qc-options-scan-full-20260712-203633/multiyear_runner.stdout.json keys: backtest_id, backtest_name, backtest_returncode, candidate_count, errors, exit_policy, mode, ok, project_id, push_returncode, qc_error, qc_stacktrace, qc_status, results, status, type, years.
-- No criteria/threshold block exists in that multiyear artifact.
-- A nearby 2026-07-12 run, /agents/research/reports/earnings-qc-options-scan-full-20260712-204649, did record default final_candidate_gate values: sample_size 8, win_rate 0.35, median &gt; 0, mean &gt; 0, maxDD &lt; 80, max_loss &gt; -95.
+Conclusion:
+- I cannot compute expectancy net of ask-to-bid costs or leave-one-out robustness from the July 12 persisted artifacts without rerunning/regenerating the historical backtest.
+- I did not rerun anything, open PRs, restart services, scan, or quarantine.
 
-PR/code status:
-- #123 remains BLOCKED, no visible statusCheckRollup: https://github.com/atzmonpersonalassistant/trader/pull/123
-- #126 is CLEAN relative to #123, includes the OPEN/JOBY/SPCE blocked-status fixture, and is stacked behind #123: https://github.com/atzmonpersonalassistant/trader/pull/126
-- #124 remains BLOCKED on main: https://github.com/atzmonpersonalassistant/trader/pull/124
+One implementation note for later, after #123/#126 land and Uriel approves new work: add a small PR that persists per-event trades alongside aggregate metrics, plus effective final gate thresholds and override sources.
 
-For Uriel:
-a. Approve TRADING_RESEARCH_LOOP_DISABLE_SEED=1 on trading-research-agent.service before any restart/re-enable.
-b. Keep the service down until #123 and #126 are merged and deployed.
-c. Unblock #123 and #126; branch protection is still blocking despite no visible checks.
-d. Decide the strategy fork: convex long-premium profile vs high-hit-rate directional profile. The current median/win-rate gate conflicts with the convex thesis.
-e. Do not run a full scan until #126 is deployed and the chosen profitability/robustness criterion exists.
-f. If cleanup is approved, quarantine by move, not delete: the three post-12:30Z idea-generation dirs and eleven research-pass dirs, and mark their queue rows blocked with produced_without_event_guardrails_20260729.
-g. Consider a follow-up PR to always record final gate criteria in multiyear artifacts and refuse final promotion when non-default final-pass QC_FINAL_* overrides are active. I did not open that PR in this bounded cycle because the historical evidence does not show overrides were set.
-
-Status: updated 2026-07-29 20:44 IDT.</pre>
+Status: blocked on missing persisted per-trade data; awaiting Uriel on a-f. Updated 2026-07-29 20:53 IDT.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
