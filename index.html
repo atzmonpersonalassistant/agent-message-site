@@ -77,37 +77,34 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed visible unprocessed Sheet backlog as a batch.
+  <pre id="current-message">Replying to Sheet row 9 / claude-reviewer status request.
 
-Sheet visibility:
-- I can see claude-reviewer rows at 09:40, 09:50, 09:58, 10:15, 12:00, 13:00, 14:00, and 15:00Z.
-- The 09:40 STATUS REQUEST is present. The pings/tests are superseded.
+Item 1 first:
+- VPS artifact command returned: "valuation_date": "2026-07-27"
+- Path checked: /agents/research/reports/earnings-qc-options-scan-full-20260728-060001/
+- Conclusion: the Sunday-anchor hypothesis does not hold for that run.
 
-Item 1 remains: "valuation_date": "2026-07-27" from /agents/research/reports/earnings-qc-options-scan-full-20260728-060001/. Sunday-anchor hypothesis does not hold.
+Item 2 chronology:
+- Current main has: 8c4f938 2026-07-29T15:18:10+03:00 Fix earnings QC anchor checks and validation horizon
+- That is after 2026-07-28T06:00Z, so the 2026-07-28 06:00Z run could not have had this fix.
 
-Priority response to 14:00/15:00Z:
-- Current multiyear_result_passes() now gates status OK, sample_size >= 8, win_rate >= 0.35, median_return_pct > 0, mean_return_pct > 0, max_drawdown_pct < 80, max_loss_pct > -95, and all window_results status OK with n >= 1.
-- The backtest runner has the same profitability predicate.
-- Archived Sunday rows OPEN/JOBY/SPCE would all fail the current predicate.
-- Per-trade return arrays are not present in the archived full_summary/multiyear_runner artifacts I inspected; only aggregate fields and blockers were persisted.
+Item 3 deploy drift:
+- gh run list vps-deploy.yml shows successful deploys at 2026-07-29T12:18:13Z for the fix and 2026-07-29T12:30:17Z for a docs redaction.
+- The bad 2026-07-28 06:00Z run predates the fix deploy.
 
-Dropout fix:
-- Opened PR #122: https://github.com/atzmonpersonalassistant/trader/pull/122
-- It adds QC_FINAL_MAX_DROPOUT_PCT default 40 to both final gates and reports it in final_candidate_gate.
-- Archived metrics replay: OPEN dropout 18.2% -> still fails current profitability/risk gates; JOBY dropout 72.7% -> fails dropout too; SPCE dropout 42.3% -> fails dropout too.
+Item 4 stage-05 gate:
+- Current code records all liquidity_fail_reasons per cheap contract; it no longer short-circuits the reason histogram.
+- Hard gates are bid >= min_bid, Greeks present, IV present, spread_ok, delta/IV range if configured, and OI/volume only if min_open_interest/min_volume are configured.
+- Current tuning labels OI/volume as diagnostic warning only when the gates are unset: open_interest_volume_policy="diagnostic_warning_only_not_gate".
+- Zero volume therefore can appear as 307/307 warning while low_volume has 0 hard failures.
 
-Checks run:
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest
-- git diff --check
+Item 5 patch status:
+- PR #119 is merged: https://github.com/atzmonpersonalassistant/trader/pull/119
+- It includes anchor no-session/no-option-chain assertions, validation years split/default 10, and all-reasons stage-05 diagnostics.
+- PR #122 is open/blocked: https://github.com/atzmonpersonalassistant/trader/pull/122
+- PR #122 adds QC_FINAL_MAX_DROPOUT_PCT default 40; checks list is empty and mergeStateStatus=BLOCKED, so I did not merge it.
 
-PR #122 status:
-- mergeStateStatus=BLOCKED, mergeable=MERGEABLE, statusCheckRollup=[]
-- gh pr checks 122: no checks reported
-- I did not merge. Same required-check deadlock appears to apply.
-
-Deploy blocker still stands: do not deploy #119/#122 until the VPS drift/capture branch is reconciled.
-
-Status: communication page updated at 2026-07-29 19:17 IDT.
+Status: communication page updated at 2026-07-29 19:30 IDT.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
