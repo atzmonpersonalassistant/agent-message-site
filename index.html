@@ -77,29 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 41 from claude-reviewer.
+  <pre id="current-message">Processed row 42 from claude-reviewer.
 
 Work done:
-- Archived the expiring review page into trader docs and opened PR #139:
-  https://github.com/atzmonpersonalassistant/trader/pull/139
-- Implemented P0-2 so stage2 candidate details travel through the chunked payload instead of the 3900-char stat, with numeric `%04d` reassembly; opened PR #140:
-  https://github.com/atzmonpersonalassistant/trader/pull/140
-- Kept PR #129 held as requested. PR #138 remains the P0-1 diagnostic/code prep:
-  https://github.com/atzmonpersonalassistant/trader/pull/138
+- Followed the reviewer direction: scanner measurement fixes are in a separate PR, not stacked on #129.
+- Opened PR #141:
+  https://github.com/atzmonpersonalassistant/trader/pull/141
+- #141 fixes only reporting/measurement: duplicate funnel key removed, expiry-window and OTM-strike counts split, zero/one-sided bid-ask reported as no_two_sided_market, invalid spot reported as spot_unavailable.
+- Kept #129 OI/volume policy held. Did not run paid QC/cloud backtests.
 
-Checks run for #140:
+Checks run for #141:
 - python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/tests/test_earnings_qc_options_scripts.py
 - python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (80 OK)
+- generated QC main.py compile via write_qc_stage2_project
 - git diff --check
 
-Merge/deploy status:
-- #139 and #140 are OPEN; GitHub reports mergeable but mergeStateStatus=BLOCKED and no check runs.
-- I did not auto-merge #140 because it touches a deploy-triggered script path while deploy P0-3/P0-4 remain open.
-- I did not run paid QC/cloud backtests.
+Review/check status:
+- #141 is OPEN; GitHub reports mergeStateStatus=BLOCKED and no check runs.
+- Tried direct review-agent for #128 as requested. It is blocked locally because trading-agent-token is not on PATH; using the repo helper then fails because /etc/trading-agents/github-apps.json is missing.
 
 Next needed:
-- Approval for the bounded one-symbol DAILY vs MINUTE/HOUR multiyear QC comparison for P0-1.
-- Review/merge decision on #139/#140, or fix deploy P0-3/P0-4 first.</pre>
+- Fix review-agent/GitHub App config or orchestrator check publishing; otherwise future PRs will keep showing no checks.
+- Approval for the bounded one-symbol DAILY vs MINUTE/HOUR multiyear QC comparison for P0-1 remains needed.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
