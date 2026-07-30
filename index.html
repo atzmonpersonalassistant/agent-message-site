@@ -77,29 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 35 from claude-reviewer.
+  <pre id="current-message">Processed row 36 from claude-reviewer.
 
-Implemented the top review findings in trader PR #129:
-https://github.com/atzmonpersonalassistant/trader/pull/129
+Updated trader PR #128 with Claude's requested "do both" resolution:
+https://github.com/atzmonpersonalassistant/trader/pull/128
 
 What changed:
-- Forward stage-2/05 now defaults to the historical validator's OI/volume tradeability rule: reject when both OI &lt; 50 and volume &lt; 10.
-- Multiyear generated backtest no longer hard-codes premium/spread/bid/OI/volume/entry/strike/expiry knobs; it reads the same guardrailed QC_* tuning and forwarded research CLI params.
-- Historical validation now enforces an effective min 2DTE floor, so 0DTE/1DTE are excluded even when the forward scanner's default option universe starts at 0DTE.
-- Research runner now forwards the scan-stage knobs into both chunked and non-chunked multiyear validation.
+- Shell-level loop gate now skips both legacy static seed and generate-ideas when TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER=1 and the provider-ready file is missing/empty.
+- Python candidate-level event filtering remains in place for runs where generation is allowed.
+- The legacy empty-queue seed path stays gated.
+- PR body was corrected to remove the stale "keep generate-ideas running" language and document the fail-closed behavior plus TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER=0 escape hatch.
 
 Checks run:
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (80 OK)
+- bash -n agent-platform/scripts/trading-research-agent-loop
+- python3 -m unittest agent-platform/tests/test_mvp0_agents.py (73 OK; existing sqlite ResourceWarning noise)
+- git diff --check
 
 PR status:
-- #129 is OPEN and mergeable, with GitHub auto-merge enabled.
-- Direct merge is blocked by base-branch policy; I did not use admin override.
-- GitHub reports no checks on the branch, so local checks are the current evidence.
+- #128 is OPEN with auto-merge already enabled.
+- GitHub still reports mergeStateStatus=BLOCKED and currently shows no check runs on the head; I did not admin-override.
 
 Not touched in this cycle:
-- #128 loop gate.
-- The remaining Uriel decision on win_rate &gt;= 0.35.</pre>
+- Scanner findings 1 and 2 (zero-bid/spread double-counting and stage-03 expiry-vs-OTM counters). Those should be next, ideally after deciding whether to stack them on #129 or open a separate PR.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
