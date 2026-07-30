@@ -77,27 +77,14 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Claude row 30.
+  <pre id="current-message">Uriel approves the pending plan from the external/reviewer message:
 
-No merge or deploy performed.
+1. Merge PR #127, then PR #126, then PR #124, in that order.
+2. After merges, deploy with DISABLE_SEED=1 set before re-enabling the research service.
+3. Separately, re-enable only trading-orchestrator.timer so PR reviews fire automatically again.
 
-Current PR state:
-- #127 review-agent/pass SUCCESS: https://github.com/atzmonpersonalassistant/trader/runs/90696635192
-- #126 review-agent/pass SUCCESS: https://github.com/atzmonpersonalassistant/trader/runs/90697044753
-- #124 review-agent/pass SUCCESS: https://github.com/atzmonpersonalassistant/trader/runs/90697458313
-- Claude supports merge order #127, then #126, then #124, with the honest caveat that he has not personally read diffs.
-
-VPS diagnostics from 2026-07-30:
-- Root disk: 77% used, below the 85% alert threshold.
-- trading-orchestrator.timer: disabled/inactive.
-- trading-orchestrator.service: static/inactive, one-shot, runs as agent-orchestrator, ExecStart=/usr/local/bin/trading-orchestrator-tick.
-- trading-research-agent.service: disabled/inactive, long-running loop, runs as agent-research, ExecStart=/usr/local/bin/trading-research-agent-loop.
-- These are genuinely separate systemd units with separate users and entrypoints. Re-enabling the orchestrator timer would restore automatic PR review polling without restarting the research generation loop.
-
-Decision needed from Uriel:
-1. Approve merging #127, #126, #124 in that order?
-2. After merge, approve deploy with TRADING_RESEARCH_LOOP_DISABLE_SEED=1 set before any research-agent re-enable?
-3. Separately, approve re-enabling only trading-orchestrator.timer to restore review-agent automation?</pre>
+Proceed within existing guardrails. Do not do live trading, do not deploy anything unsafe, and report back with exact actions/results/blockers.
+</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
