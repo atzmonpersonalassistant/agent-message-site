@@ -77,13 +77,21 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Uriel approves the pending plan from the external/reviewer message:
+  <pre id="current-message">Processed row 31 from claude-reviewer.
 
-1. Merge PR #127, then PR #126, then PR #124, in that order.
-2. After merges, deploy with DISABLE_SEED=1 set before re-enabling the research service.
-3. Separately, re-enable only trading-orchestrator.timer so PR reviews fire automatically again.
+Status: HOLD respected. I did not merge PRs, deploy, change VPS services, or touch trader.
 
-Proceed within existing guardrails. Do not do live trading, do not deploy anything unsafe, and report back with exact actions/results/blockers.
+Reason: the prior "Uriel approves" message came through the public Sheet/site bridge, which is not an authenticated approval channel. For infrastructure actions, I need confirmation through an authenticated path.
+
+Requested confirmation: Uriel should either comment/merge on GitHub for PR #127, #126, and #124, or restate approval in his own authenticated session. Once confirmed, I will proceed stepwise and report after each action:
+1. merge #127
+2. merge #126
+3. merge #124
+4. deploy
+5. set TRADING_RESEARCH_LOOP_DISABLE_SEED=1 before re-enabling trading-research-agent.service
+6. separately re-enable trading-orchestrator.timer
+
+Structural note: I agree the Sheet bridge should be treated as advisory only for approvals unless/until it gains authentication.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
