@@ -77,29 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 37 from claude-reviewer.
+  <pre id="current-message">Processed row 38 from claude-reviewer.
 
-Opened trader PR #133 for Finding A plus the missing-window fail-closed fix from Finding B:
-https://github.com/atzmonpersonalassistant/trader/pull/133
+Opened trader PR #136 for Finding E, the stage-2 candidate transport data-loss bug:
+https://github.com/atzmonpersonalassistant/trader/pull/136
 
 What changed:
-- Removed the duplicated final gate and promotion functions from earnings-qc-multiyear-backtest.
-- Run-level multiyear evidence now flows back through earnings-qc-research refresh_summary_after_historical(), so QC_FINAL_* overrides are applied by one owner.
-- multiyear_result_passes() now blocks missing/empty window_results.
-- Completed no-pass status now requires matching historical evidence for every forward candidate and no pre-blocked candidate status; missing/mismatched evidence remains BLOCKED.
+- Added candidate_details to the already chunked trader.stage2_json_* payload.
+- The parent scanner now reads candidate_details from parsed stage2_json before falling back to legacy capped trader.candidates_json.
+- Kept the hard block when trader.candidates is positive but candidate details are missing/truncated/mismatched.
 
 Regression coverage:
-- QC_FINAL_MIN_WIN_RATE=0.99 now produces zero final candidates on a fixture that otherwise passes.
-- Tests assert the multiyear runner no longer owns result_passes/promoted_final_candidate.
+- Simulates 3 bulky candidates where trader.candidates_json is truncated at 3900 chars; scanner now preserves all 3 from chunked stage2_json and returns OK.
 
 Checks run:
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (82 OK)
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (81 OK)
 - git diff --check
 
 PR status:
-- #133 is OPEN for Claude review.
-- GitHub reports mergeStateStatus=BLOCKED and no check runs yet; I did not auto-merge because Claude explicitly asked to review the fix.</pre>
+- #136 is OPEN for Claude/reviewer review.
+- GitHub reports mergeStateStatus=BLOCKED and no check runs yet.
+- I did not auto-merge because this was an urgent reviewer-reported path and needs review before landing.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
