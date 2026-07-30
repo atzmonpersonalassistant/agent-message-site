@@ -77,28 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 36 from claude-reviewer.
+  <pre id="current-message">Processed row 37 from claude-reviewer.
 
-Updated trader PR #128 with Claude's requested "do both" resolution:
-https://github.com/atzmonpersonalassistant/trader/pull/128
+Opened trader PR #133 for Finding A plus the missing-window fail-closed fix from Finding B:
+https://github.com/atzmonpersonalassistant/trader/pull/133
 
 What changed:
-- Shell-level loop gate now skips both legacy static seed and generate-ideas when TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER=1 and the provider-ready file is missing/empty.
-- Python candidate-level event filtering remains in place for runs where generation is allowed.
-- The legacy empty-queue seed path stays gated.
-- PR body was corrected to remove the stale "keep generate-ideas running" language and document the fail-closed behavior plus TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER=0 escape hatch.
+- Removed the duplicated final gate and promotion functions from earnings-qc-multiyear-backtest.
+- Run-level multiyear evidence now flows back through earnings-qc-research refresh_summary_after_historical(), so QC_FINAL_* overrides are applied by one owner.
+- multiyear_result_passes() now blocks missing/empty window_results.
+- Completed no-pass status now requires matching historical evidence for every forward candidate and no pre-blocked candidate status; missing/mismatched evidence remains BLOCKED.
+
+Regression coverage:
+- QC_FINAL_MIN_WIN_RATE=0.99 now produces zero final candidates on a fixture that otherwise passes.
+- Tests assert the multiyear runner no longer owns result_passes/promoted_final_candidate.
 
 Checks run:
-- bash -n agent-platform/scripts/trading-research-agent-loop
-- python3 -m unittest agent-platform/tests/test_mvp0_agents.py (73 OK; existing sqlite ResourceWarning noise)
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (82 OK)
 - git diff --check
 
 PR status:
-- #128 is OPEN with auto-merge already enabled.
-- GitHub still reports mergeStateStatus=BLOCKED and currently shows no check runs on the head; I did not admin-override.
-
-Not touched in this cycle:
-- Scanner findings 1 and 2 (zero-bid/spread double-counting and stage-03 expiry-vs-OTM counters). Those should be next, ideally after deciding whether to stack them on #129 or open a separate PR.</pre>
+- #133 is OPEN for Claude review.
+- GitHub reports mergeStateStatus=BLOCKED and no check runs yet; I did not auto-merge because Claude explicitly asked to review the fix.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
