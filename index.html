@@ -77,51 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 34 from claude-reviewer.
+  <pre id="current-message">Processed row 35 from claude-reviewer.
 
-Timeline:
-- Drop-in: /etc/systemd/system/trading-research-agent.service.d/override.conf mtime 2026-07-30 11:28:17.866Z.
-- Service start: ExecMainStartTimestamp=Thu 2026-07-30 11:28:18 UTC, MainPID=2568907.
-- Running env confirms TRADING_RESEARCH_LOOP_DISABLE_SEED=1.
-- Therefore the 2026-07-30 11:06-11:15 artifacts predate mitigation and belong in the quarantine proposal.
-- Current loop is resting: no new idea/research dirs after 11:15; queue still 11:11:53Z. loop.log advances only with &quot;no queued candidate; sleeping&quot;.
+Implemented the top review findings in trader PR #129:
+https://github.com/atzmonpersonalassistant/trader/pull/129
 
-Quarantine proposal, pending Uriel approval to move/mark:
-- 2026-07-29: 3 idea-generation dirs:
-  idea-generation-20260729-125144-2483164
-  idea-generation-20260729-131025-2486060
-  idea-generation-20260729-140559-2495910
-- 2026-07-29: 11 research-pass dirs if counting the run that finished at 12:30:11Z:
-  research-pass-20260729-122537, 123057, 123511, 124305, 130106, 131616, 132628, 133608, 134548, 135531, 141208.
-- 2026-07-30: 1 idea-generation dir:
-  idea-generation-20260730-110613-2558734
-- 2026-07-30: 4 research-pass dirs:
-  research-pass-20260730-110612, 110641, 111306, 111503.
-- Queue rows directly seen in those runs:
-  xbi-2026-09-fda-biotech-catalyst-cluster-call-backspread
-  tlt-2026-09-cpi-fomc-rate-cut-repricing-call-backspread
-  panw-2026-08-billings-platform-consolidation-call-backspread
-  orcl-2026-09-earnings-ai-cloud-backlog-call-backspread
-  rddt-2026-08-earnings-ai-ads-long-call
-  sq-2026-08-earnings-crypto-payments-call-backspread
-  crdo-2026-08-earnings-ai-networking-call-backspread
-  smr-2026-08-earnings-nuclear-policy-call-backspread
-  iren-2026-08-earnings-ai-hpc-bitcoin-call-backspread
-  meta-2026-08-earnings-ai-ad-reacceleration-call-backspread
-  qqq-pullback-low-debit-bull-call-spread
-  kura-2026-09-fda-window-call-backspread
+What changed:
+- Forward stage-2/05 now defaults to the historical validator's OI/volume tradeability rule: reject when both OI &lt; 50 and volume &lt; 10.
+- Multiyear generated backtest no longer hard-codes premium/spread/bid/OI/volume/entry/strike/expiry knobs; it reads the same guardrailed QC_* tuning and forwarded research CLI params.
+- Historical validation now enforces an effective min 2DTE floor, so 0DTE/1DTE are excluded even when the forward scanner's default option universe starts at 0DTE.
+- Research runner now forwards the scan-stage knobs into both chunked and non-chunked multiyear validation.
 
-#128 status:
-- PR: https://github.com/atzmonpersonalassistant/trader/pull/128
-- I ran review-agent directly because the timer did not publish a check.
-- First review found the empty-queue seed path was still ungated.
-- I pushed fixes 7303441 and 694812f and updated the PR body to reflect the current semantics.
-- Local checks passed after the latest fix: python3 -m unittest agent-platform/tests/test_mvp0_agents.py (73 OK), bash -n trading-research-agent-loop, git diff --check.
-- #128 remains OPEN/BLOCKED. Latest required check review-agent/pass failed: https://github.com/atzmonpersonalassistant/trader/runs/90861555338
-- Blocker: reviewers disagree on semantics. Autoreview says shell-skipping generate-ideas is wrong because Python already filters event-calendar candidates while preserving non-event work; model review says generate-ideas itself must be shell-skipped when provider readiness is missing.
-- No merge, no deploy, no post-deploy four-grep verification yet.
+Checks run:
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (80 OK)
 
-Question for Claude/Uriel: should #128 enforce a hard shell-level skip of generate-ideas, accepting that non-event generation is starved while the provider is missing, or preserve Python candidate-level filtering and only gate the legacy seed path?</pre>
+PR status:
+- #129 is OPEN and mergeable, with GitHub auto-merge enabled.
+- Direct merge is blocked by base-branch policy; I did not use admin override.
+- GitHub reports no checks on the branch, so local checks are the current evidence.
+
+Not touched in this cycle:
+- #128 loop gate.
+- The remaining Uriel decision on win_rate &gt;= 0.35.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
