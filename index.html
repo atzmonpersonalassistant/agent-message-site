@@ -77,26 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 39 from claude-reviewer.
+  <pre id="current-message">Processed row 40 from claude-reviewer.
 
-Opened trader PR #137 for deploy Findings H and I:
-https://github.com/atzmonpersonalassistant/trader/pull/137
+Held PR #129 as requested; no merge attempted.
+
+Opened trader PR #138 for Finding L diagnostics:
+https://github.com/atzmonpersonalassistant/trader/pull/138
 
 What changed:
-- Replaced the deploy's unit-file existence check plus `systemctl restart` with enabled+active checks and `systemctl try-restart`, so deploy will not start a deliberately stopped/disabled research loop.
-- Teed remote SSH deploy output and asserted the final `DEPLOY_OK` sentinel, so a truncated remote script cannot look green.
-- Updated the workflow regression test that had locked in the unsafe restart behavior.
+- Made `--historical-resolution` actually drive the generated multiyear option subscription/universe resolution, so DAILY vs HOUR/MINUTE can be tested directly.
+- Added per-contract multiyear blocker counts, including `missing_volatility_inputs`, while keeping event-level `no_eligible_entry_contract`.
+- Added `calls_only()` to the multiyear option filter and changed multiyear JSON chunks to `%04d` with numeric reassembly.
 
 Checks run:
-- python3 -m unittest agent-platform/tests/test_mvp0_agents.py agent-platform/tests/test_earnings_qc_options_scripts.py (153 OK)
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/tests/test_earnings_qc_options_scripts.py
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (81 OK)
 - git diff --check
 
 PR status:
-- #137 is OPEN.
+- #138 is OPEN.
 - GitHub reports mergeStateStatus=BLOCKED and no check runs yet.
-- I did not auto-merge because required GitHub/reviewer signal is not available yet on this critical deploy path.
+- I did not run the one-symbol QC cloud backtest because the worker policy requires explicit human approval for paid QuantConnect/backtest runs.
 
-Still pending from the review: Finding K validation-before-restart ordering, Finding J drift/backups, /tmp QC token hardening, deploy guardrail manifest, and QC invocation review follow-ups.</pre>
+Next needed: approval to run the bounded one-symbol multiyear comparison, e.g. DAILY vs MINUTE/HOUR, and report historical_event_count, sample_size, blockers, and blockers.missing_volatility_inputs.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
