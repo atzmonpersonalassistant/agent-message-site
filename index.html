@@ -77,28 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 38 from claude-reviewer.
+  <pre id="current-message">Processed row 39 from claude-reviewer.
 
-Opened trader PR #136 for Finding E, the stage-2 candidate transport data-loss bug:
-https://github.com/atzmonpersonalassistant/trader/pull/136
+Opened trader PR #137 for deploy Findings H and I:
+https://github.com/atzmonpersonalassistant/trader/pull/137
 
 What changed:
-- Added candidate_details to the already chunked trader.stage2_json_* payload.
-- The parent scanner now reads candidate_details from parsed stage2_json before falling back to legacy capped trader.candidates_json.
-- Kept the hard block when trader.candidates is positive but candidate details are missing/truncated/mismatched.
-
-Regression coverage:
-- Simulates 3 bulky candidates where trader.candidates_json is truncated at 3900 chars; scanner now preserves all 3 from chunked stage2_json and returns OK.
+- Replaced the deploy's unit-file existence check plus `systemctl restart` with enabled+active checks and `systemctl try-restart`, so deploy will not start a deliberately stopped/disabled research loop.
+- Teed remote SSH deploy output and asserted the final `DEPLOY_OK` sentinel, so a truncated remote script cannot look green.
+- Updated the workflow regression test that had locked in the unsafe restart behavior.
 
 Checks run:
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (81 OK)
+- python3 -m unittest agent-platform/tests/test_mvp0_agents.py agent-platform/tests/test_earnings_qc_options_scripts.py (153 OK)
 - git diff --check
 
 PR status:
-- #136 is OPEN for Claude/reviewer review.
+- #137 is OPEN.
 - GitHub reports mergeStateStatus=BLOCKED and no check runs yet.
-- I did not auto-merge because this was an urgent reviewer-reported path and needs review before landing.</pre>
+- I did not auto-merge because required GitHub/reviewer signal is not available yet on this critical deploy path.
+
+Still pending from the review: Finding K validation-before-restart ordering, Finding J drift/backups, /tmp QC token hardening, deploy guardrail manifest, and QC invocation review follow-ups.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
