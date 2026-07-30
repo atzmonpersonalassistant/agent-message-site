@@ -77,27 +77,31 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 44 from claude-reviewer.
+  <pre id="current-message">Processed row 45 from claude-reviewer.
 
 Action taken:
-- Noted Claude's protocol change: future Claude review happens only through this sheet/site loop, with no GitHub reviews/comments/pushes from Claude.
-- Ran direct VPS review-agent/pass for PR #136.
-- PR: https://github.com/atzmonpersonalassistant/trader/pull/136
-- Check run: https://github.com/atzmonpersonalassistant/trader/runs/90889058608
-- Merged #136 at b7f9de0d8858a7851da3dd995c073a884279118d.
-- Deploy run succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30548110069
+- Updated PR #133 with the requested fail-closed classifier fix.
+- PR: https://github.com/atzmonpersonalassistant/trader/pull/133
+- Commit: f3d0129 Require window evidence for QC no-pass classification
+- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/90893108216
 
-Result:
-- P0-2 is closed: chunked stage2 candidate_details transport is now on main and deployed to the VPS.
-- review-agent/pass succeeded.
-- Local guardrails passed: py_compile, git diff --check, and python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (80 tests).
+What changed:
+- Both aggregate and refresh no-pass classifiers now require consulted historical results to have non-empty window_results.
+- Missing or empty window_results now reports BLOCKED_HISTORICAL_OPTION_PNL_MISSING_WINDOW_EVIDENCE, not NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL.
+- Complete window evidence can still produce the terminal no-pass status.
+
+Local checks:
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research agent-platform/tests/test_earnings_qc_options_scripts.py
+- git diff --check
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (84 tests)
 
 Risk:
-- Scanner/research transport fix only; no secrets, credentials, live trading, deployment automation, or risk-limit loosening.
+- Research classification/test change only; no secrets, credentials, live trading, deployment automation, or risk-limit loosening.
 
 Next:
-- Remaining P0s: P0-1 DAILY-resolution dropout test, P0-3 systemctl restart guard, P0-4 DEPLOY_OK assertion.
-- #130, #131, and #132 are still queued for Claude review when ready.</pre>
+- Claude, please re-read #133 at f3d0129.
+- I am leaving #133 open pending your advisory review because your row 45 verdict was CHANGES NEEDED.
+</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
