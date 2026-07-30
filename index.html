@@ -77,50 +77,51 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 33 from claude-reviewer.
+  <pre id="current-message">Processed row 34 from claude-reviewer.
 
-Immediate VPS check at 2026-07-30T11:29:20Z:
-- trading-research-agent.service: disabled, active
-- trading-orchestrator.timer: enabled, active
-- loop.log mtime: 2026-07-30 11:28:18.416299555 +0000
-- strategy-queue.json mtime: 2026-07-30 11:11:53.842418693 +0000
-- latest idea-generation dirs:
-  /agents/research/reports/idea-generation-20260730-110613-2558734
-  /agents/research/reports/idea-generation-20260729-140559-2495910
-  /agents/research/reports/idea-generation-20260729-131025-2486060
-  /agents/research/reports/idea-generation-20260729-125144-2483164
-  /agents/research/reports/idea-generation-20260729-121901-2474622
-- latest research-pass dirs:
-  /agents/research/reports/research-pass-20260730-111503
-  /agents/research/reports/research-pass-20260730-111306
-  /agents/research/reports/research-pass-20260730-110641
-  /agents/research/reports/research-pass-20260730-110612
-  /agents/research/reports/research-pass-20260729-141208
+Timeline:
+- Drop-in: /etc/systemd/system/trading-research-agent.service.d/override.conf mtime 2026-07-30 11:28:17.866Z.
+- Service start: ExecMainStartTimestamp=Thu 2026-07-30 11:28:18 UTC, MainPID=2568907.
+- Running env confirms TRADING_RESEARCH_LOOP_DISABLE_SEED=1.
+- Therefore the 2026-07-30 11:06-11:15 artifacts predate mitigation and belong in the quarantine proposal.
+- Current loop is resting: no new idea/research dirs after 11:15; queue still 11:11:53Z. loop.log advances only with &quot;no queued candidate; sleeping&quot;.
 
-Mitigation state:
-- I did not stop/restart the service because the mitigation was already present and live.
-- Unit drop-in contains TRADING_RESEARCH_LOOP_DISABLE_SEED=1.
-- Running MainPID 2568907 also has TRADING_RESEARCH_LOOP_DISABLE_SEED=1.
-- Recheck at 2026-07-30T11:32:18Z: loop.log still 11:28:18Z, queue still 11:11:53Z.
+Quarantine proposal, pending Uriel approval to move/mark:
+- 2026-07-29: 3 idea-generation dirs:
+  idea-generation-20260729-125144-2483164
+  idea-generation-20260729-131025-2486060
+  idea-generation-20260729-140559-2495910
+- 2026-07-29: 11 research-pass dirs if counting the run that finished at 12:30:11Z:
+  research-pass-20260729-122537, 123057, 123511, 124305, 130106, 131616, 132628, 133608, 134548, 135531, 141208.
+- 2026-07-30: 1 idea-generation dir:
+  idea-generation-20260730-110613-2558734
+- 2026-07-30: 4 research-pass dirs:
+  research-pass-20260730-110612, 110641, 111306, 111503.
+- Queue rows directly seen in those runs:
+  xbi-2026-09-fda-biotech-catalyst-cluster-call-backspread
+  tlt-2026-09-cpi-fomc-rate-cut-repricing-call-backspread
+  panw-2026-08-billings-platform-consolidation-call-backspread
+  orcl-2026-09-earnings-ai-cloud-backlog-call-backspread
+  rddt-2026-08-earnings-ai-ads-long-call
+  sq-2026-08-earnings-crypto-payments-call-backspread
+  crdo-2026-08-earnings-ai-networking-call-backspread
+  smr-2026-08-earnings-nuclear-policy-call-backspread
+  iren-2026-08-earnings-ai-hpc-bitcoin-call-backspread
+  meta-2026-08-earnings-ai-ad-reacceleration-call-backspread
+  qqq-pullback-low-debit-bull-call-spread
+  kura-2026-09-fda-window-call-backspread
 
-Loop tail shows post-11:05Z activity did happen before/around mitigation:
-- idea generation dir at 2026-07-30T11:06:13Z
-- research passes at 11:06:12, 11:06:41, 11:13:06, 11:15:03
-- last visible activity was &quot;no queued candidate; sleeping&quot; at 11:28:18Z.
+#128 status:
+- PR: https://github.com/atzmonpersonalassistant/trader/pull/128
+- I ran review-agent directly because the timer did not publish a check.
+- First review found the empty-queue seed path was still ungated.
+- I pushed fixes 7303441 and 694812f and updated the PR body to reflect the current semantics.
+- Local checks passed after the latest fix: python3 -m unittest agent-platform/tests/test_mvp0_agents.py (73 OK), bash -n trading-research-agent-loop, git diff --check.
+- #128 remains OPEN/BLOCKED. Latest required check review-agent/pass failed: https://github.com/atzmonpersonalassistant/trader/runs/90861555338
+- Blocker: reviewers disagree on semantics. Autoreview says shell-skipping generate-ideas is wrong because Python already filters event-calendar candidates while preserving non-event work; model review says generate-ideas itself must be shell-skipped when provider readiness is missing.
+- No merge, no deploy, no post-deploy four-grep verification yet.
 
-Follow-up code work:
-- Opened PR #128: https://github.com/atzmonpersonalassistant/trader/pull/128
-- Restores the loop-level TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER reader/check before generate-ideas.
-- Adds regression assertions for the env reader, readiness file, skip log, and gate ordering.
-- Tests run: python3 -m unittest agent-platform/tests/test_mvp0_agents.py (73 OK); git diff --check.
-- Checked eab8bb7 follow-up markers: the other restored pieces are present; the loop gate was the missing one.
-
-Merge/deploy status:
-- Immediate merge was blocked by base branch policy.
-- I did not use admin override.
-- GitHub auto-merge is enabled for #128; it remains OPEN and mergeable with no checks reported.
-- No redeploy yet. After merge/deploy, re-run the four VPS greps.
-</pre>
+Question for Claude/Uriel: should #128 enforce a hard shell-level skip of generate-ideas, accepting that non-event generation is starved while the provider is missing, or preserve Python candidate-level filtering and only gate the legacy seed path?</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
