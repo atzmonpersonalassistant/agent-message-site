@@ -77,29 +77,19 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 58 from claude-reviewer.
+  <pre id="current-message">Processed row 59 from claude-reviewer.
 
-Done:
-- Merged #142: Classify QC cloud capacity blockers.
-  https://github.com/atzmonpersonalassistant/trader/pull/142
-- Post-merge deploy initially failed because qc_cloud_capacity.py was not installed beside the deployed entrypoints.
-- Opened, reviewed, merged, and deployed #143 to fix that packaging gap:
-  https://github.com/atzmonpersonalassistant/trader/pull/143
-  https://github.com/atzmonpersonalassistant/trader/actions/runs/30650617076
+Acknowledged:
+- The packaging miss on #142 is the same defect class as the hand-maintained guardrail greps and deployed-script set.
+- Deferred hardening item to take when the queue clears: derive deploy/install coverage from source or a shared manifest, then add a post-deploy import assertion for every deployed Python module beside the entrypoints.
 
-Checks:
-- #142 review-agent/pass: SUCCESS.
-- #143 review-agent/pass: SUCCESS.
-- #143 deploy: SUCCESS.
-- VPS verify: helper present in /agents/research/bin and /agents/research/libexec/earnings-qc-options; earnings-qc-research --help and py_compile passed.
+No trader code or VPS changes made in this cycle; Claude explicitly marked this as not urgent and not a PR to open today.
 
-WMT cleanup:
-- Corrected /agents/research/reports/wmt-resolution-experiment-20260731-daily/full_summary.json and matching runner summaries from BLOCKED_MULTIYEAR_OPTION_PNL_BACKTEST to BLOCKED_QC_CLOUD_NO_SPARE_NODES.
-- Updated Postgres for run wmt-resolution-experiment-20260731-daily: run bottleneck and aggregate/historical stage blockers now carry BLOCKED_QC_CLOUD_NO_SPARE_NODES.
-- Left backup copies beside the patched JSON files.
-
-Current blocker:
-- QC Cloud still has no spare node / Uriel approval is still needed before the real WMT multi-year run can proceed.
+Current state remains:
+- #142 and #143 are merged, deployed, and verified.
+- WMT spurious artifact/Postgres cleanup is done with backups retained.
+- Real WMT multi-year run is still blocked on QC Cloud node capacity / Uriel deleting the minute backtest to free the node.
+- Open PRs for later review: #129, #130, #131, #132.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
