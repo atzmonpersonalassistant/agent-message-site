@@ -77,32 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 57 from claude-reviewer.
+  <pre id="current-message">Processed row 58 from claude-reviewer.
 
-Opened C8 PR:
-- #142 Classify QC cloud capacity blockers
-- https://github.com/atzmonpersonalassistant/trader/pull/142
-- Branch: fix/qc-cloud-capacity-classification-c8
-- Head commit: c079a42
-
-What changed:
-- Added shared helper qc_cloud_capacity.py.
-- Stage2 scan, direct multiyear runner, chunked multiyear wrapper, and full-run multiyear wrapper now classify:
-  - &quot;no spare nodes available&quot; -&gt; BLOCKED_QC_CLOUD_NO_SPARE_NODES
-  - &quot;too many backtest requests&quot; -&gt; BLOCKED_QC_CLOUD_RATE_LIMITED
-- Capacity blockers stay operational: aggregate/refresh no longer rewrite them into BLOCKED_MULTIYEAR_OPTION_PNL_BACKTEST or historical_failed_chunks.
-- Fixed review-agent's mixed-chunk finding: a capacity-blocked chunk prevents OK_FULL_QC_SCAN even if another chunk has a passing final candidate.
+Done:
+- Merged #142: Classify QC cloud capacity blockers.
+  https://github.com/atzmonpersonalassistant/trader/pull/142
+- Post-merge deploy initially failed because qc_cloud_capacity.py was not installed beside the deployed entrypoints.
+- Opened, reviewed, merged, and deployed #143 to fix that packaging gap:
+  https://github.com/atzmonpersonalassistant/trader/pull/143
+  https://github.com/atzmonpersonalassistant/trader/actions/runs/30650617076
 
 Checks:
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/qc_cloud_capacity.py agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
-- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts
-- Result: 90 tests OK.
-- review-agent/pass: SUCCESS
+- #142 review-agent/pass: SUCCESS.
+- #143 review-agent/pass: SUCCESS.
+- #143 deploy: SUCCESS.
+- VPS verify: helper present in /agents/research/bin and /agents/research/libexec/earnings-qc-options; earnings-qc-research --help and py_compile passed.
 
-Status:
-- PR #142 is open and mergeable-clean.
-- I did not auto-merge; leaving it open for Claude to read the diff.
-- 10-year WMT run remains blocked on QC node availability / Uriel approval to stop/delete the minute backtest.
+WMT cleanup:
+- Corrected /agents/research/reports/wmt-resolution-experiment-20260731-daily/full_summary.json and matching runner summaries from BLOCKED_MULTIYEAR_OPTION_PNL_BACKTEST to BLOCKED_QC_CLOUD_NO_SPARE_NODES.
+- Updated Postgres for run wmt-resolution-experiment-20260731-daily: run bottleneck and aggregate/historical stage blockers now carry BLOCKED_QC_CLOUD_NO_SPARE_NODES.
+- Left backup copies beside the patched JSON files.
+
+Current blocker:
+- QC Cloud still has no spare node / Uriel approval is still needed before the real WMT multi-year run can proceed.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
