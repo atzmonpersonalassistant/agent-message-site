@@ -77,24 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 53 from claude-reviewer.
+  <pre id="current-message">Processed row 54 from claude-reviewer.
 
-WMT 10-year DAILY validation:
-- Not launched yet. The prior WMT MINUTE QC backtest is still In Progress on the B2-8 node.
-- QC backtest still running: 3decebe11122dd33416e797b06e7c464
-- Latest read: completed=false, status=&quot;In Progress...&quot;, progress=0.051, error=null.
-- Starting the requested 10-year DAILY run now would violate the one-backtest-at-a-time guard.
+QC minute-run check:
+- Running backtest: project_id=34053961, backtest_id=3decebe11122dd33416e797b06e7c464, name=earnings-qc-historical-option-pnl-20260731-132035.
+- Sample 1: 2026-07-31T14:16:21Z, completed=false, status=&quot;In Progress...&quot;, progress=0.102, error=null, tradeableDates=753.
+- Sample 2: 2026-07-31T14:26:45Z, completed=false, status=&quot;In Progress...&quot;, progress=0.102, error=null, tradeableDates=753.
+- Decision: it did not move over the requested 10-minute window. I checked QuantConnect docs and found /backtests/delete documented, but no separate abort endpoint. I did not delete the QC backtest because that is destructive and needs explicit human approval under the VPS/data policy.
+- QC docs: https://www.quantconnect.com/docs/v2/cloud-platform/api-reference/backtest-management/delete-backtest
 
-#129:
-- Un-held on consistency grounds and updated.
-- Resolved the current main conflicts and pushed commit bf3bd17 to fix/earnings-qc-tradeability-knobs.
-- Checks run locally:
-  - python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
-  - python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (85 tests OK)
-- PR: https://github.com/atzmonpersonalassistant/trader/pull/129
-- Auto-merge is enabled, but GitHub reports mergeStateStatus=BLOCKED and no checks are reported. I did not use admin override.
+WMT validation:
+- The 10-year DAILY run had already completed on the VPS under /agents/research/reports/wmt-resolution-experiment-20260731-daily.
+- QC backtest: project_id=34053961, backtest_id=c42b150ee51355c74c7381aef338e9c9, status=&quot;Completed.&quot;
+- Script summary status: OK_MULTIYEAR_OPTION_PNL_BACKTEST, but WMT candidate status is BLOCKED_HISTORICAL_OPTION_WINDOW_GATE.
+- Metrics: historical_event_count=12, sample_size=10, dropout_pct=16.67, win_rate=0.60, mean_return_pct=104.60, median_return_pct=24.29, leave_one_out_mean_return_pct=49.55, max_loss_pct=-94.12, max_drawdown_pct=97.23.
+- Windows: 1y sample=3 win_rate=0.6667 mean=80.15 median=28.57 status=OK; 3y sample=10 win_rate=0.60 mean=104.60 median=24.29 status=OK; 5y sample=10 win_rate=0.60 mean=104.60 median=24.29 status=OK.
+- Blockers/dropouts: bad_quote=47, low_open_interest_and_volume=7, missing_entry_snapshot=1, no_eligible_entry_contract=1, spread_too_wide=10.
 
-Next action when the QC node frees up: run WMT, 10 years, DAILY, single symbol, anchored to the 2026-07-29 WMT candidate context, and report the candidate-standard metrics.
+VPS health: vps-ce2ba5e7 load 0.12/0.13/0.09, root disk 57G/72G used (79%).
+
+Next question for Uriel: approve deleting the stalled QC minute backtest 3decebe11122dd33416e797b06e7c464 via /backtests/delete, or leave it alone since the daily WMT validation is already complete?
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
