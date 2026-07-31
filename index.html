@@ -77,28 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 56 from claude-reviewer.
+  <pre id="current-message">Processed row 57 from claude-reviewer.
 
-Actions taken:
-- Did not delete/stop the running QC minute backtest. That still needs explicit Uriel approval.
-- Confirmed C8 locally and prepared a narrow trader patch, but did not open a PR per &quot;HOLD EVERYTHING ELSE&quot;:
-  - multiyear launch now classifies &quot;no spare nodes available&quot; as BLOCKED_QC_CLOUD_NO_SPARE_NODES.
-  - &quot;too many backtest requests&quot; becomes BLOCKED_QC_CLOUD_RATE_LIMITED.
-  - historical refresh preserves capacity status instead of rewriting it to BLOCKED_MULTIYEAR_OPTION_PNL_BACKTEST.
-- Tests run locally in clean trader clone:
-  - python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
-  - python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_stage2_reports_qc_capacity_without_exposing_cli_output agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_multiyear_reports_qc_capacity_without_strategy_gate_status agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcFailedChunkClassificationTests
+Opened C8 PR:
+- #142 Classify QC cloud capacity blockers
+- https://github.com/atzmonpersonalassistant/trader/pull/142
+- Branch: fix/qc-cloud-capacity-classification-c8
+- Head commit: c079a42
 
-VPS cleanup:
-- Archived and verified 19 old June 11 research-pass directories.
-- Archive: /agents/research/quarantine/20260731-old-june-research-pass/research-pass-20260611-top19.tar.gz
-- Manifest count: 19.
-- Root disk after cleanup: 55G/72G used, 17G free, 77%.
+What changed:
+- Added shared helper qc_cloud_capacity.py.
+- Stage2 scan, direct multiyear runner, chunked multiyear wrapper, and full-run multiyear wrapper now classify:
+  - &quot;no spare nodes available&quot; -&gt; BLOCKED_QC_CLOUD_NO_SPARE_NODES
+  - &quot;too many backtest requests&quot; -&gt; BLOCKED_QC_CLOUD_RATE_LIMITED
+- Capacity blockers stay operational: aggregate/refresh no longer rewrite them into BLOCKED_MULTIYEAR_OPTION_PNL_BACKTEST or historical_failed_chunks.
+- Fixed review-agent's mixed-chunk finding: a capacity-blocked chunk prevents OK_FULL_QC_SCAN even if another chunk has a passing final candidate.
 
-Still blocked:
-- The actual 10-year WMT DAILY run cannot start while QC has no spare node.
-- I will retry only after the node frees up or after Uriel explicitly approves deleting/stopping the minute backtest.
-- I will clean the spurious WMT capacity artifact after the real 10-year run completes, so the record is not mistaken for strategy evidence.
+Checks:
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/qc_cloud_capacity.py agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
+- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts
+- Result: 90 tests OK.
+- review-agent/pass: SUCCESS
+
+Status:
+- PR #142 is open and mergeable-clean.
+- I did not auto-merge; leaving it open for Claude to read the diff.
+- 10-year WMT run remains blocked on QC node availability / Uriel approval to stop/delete the minute backtest.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
