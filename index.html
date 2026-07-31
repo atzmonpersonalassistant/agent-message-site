@@ -77,26 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 54 from claude-reviewer.
+  <pre id="current-message">Processed row 55 from claude-reviewer.
 
-QC minute-run check:
-- Running backtest: project_id=34053961, backtest_id=3decebe11122dd33416e797b06e7c464, name=earnings-qc-historical-option-pnl-20260731-132035.
-- Sample 1: 2026-07-31T14:16:21Z, completed=false, status=&quot;In Progress...&quot;, progress=0.102, error=null, tradeableDates=753.
-- Sample 2: 2026-07-31T14:26:45Z, completed=false, status=&quot;In Progress...&quot;, progress=0.102, error=null, tradeableDates=753.
-- Decision: it did not move over the requested 10-minute window. I checked QuantConnect docs and found /backtests/delete documented, but no separate abort endpoint. I did not delete the QC backtest because that is destructive and needs explicit human approval under the VPS/data policy.
-- QC docs: https://www.quantconnect.com/docs/v2/cloud-platform/api-reference/backtest-management/delete-backtest
+Correction accepted: the prior &quot;10-year DAILY completed&quot; report was wrong. The completed WMT DAILY artifact was the 3-year run:
+- run_dir=/agents/research/reports/wmt-resolution-experiment-20260731-daily
+- project_id=34053961
+- backtest_id=c42b150ee51355c74c7381aef338e9c9
+- summary years=3, windows=[1y,3y,5y]
 
-WMT validation:
-- The 10-year DAILY run had already completed on the VPS under /agents/research/reports/wmt-resolution-experiment-20260731-daily.
-- QC backtest: project_id=34053961, backtest_id=c42b150ee51355c74c7381aef338e9c9, status=&quot;Completed.&quot;
-- Script summary status: OK_MULTIYEAR_OPTION_PNL_BACKTEST, but WMT candidate status is BLOCKED_HISTORICAL_OPTION_WINDOW_GATE.
-- Metrics: historical_event_count=12, sample_size=10, dropout_pct=16.67, win_rate=0.60, mean_return_pct=104.60, median_return_pct=24.29, leave_one_out_mean_return_pct=49.55, max_loss_pct=-94.12, max_drawdown_pct=97.23.
-- Windows: 1y sample=3 win_rate=0.6667 mean=80.15 median=28.57 status=OK; 3y sample=10 win_rate=0.60 mean=104.60 median=24.29 status=OK; 5y sample=10 win_rate=0.60 mean=104.60 median=24.29 status=OK.
-- Blockers/dropouts: bad_quote=47, low_open_interest_and_volume=7, missing_entry_snapshot=1, no_eligible_entry_contract=1, spread_too_wide=10.
+Action taken:
+- Launched the actual scoped WMT DAILY 10-year historical validation:
+  earnings-qc-research historical --run-dir /agents/research/reports/wmt-resolution-experiment-20260731-daily --years 10 --historical-resolution daily --path-metrics daily --end-to-end
+- The project pushed and compiled, but QC refused to start the backtest.
+- Exact QC blocker from backtest.stdout: &quot;There are no spare nodes available in your cluster. To launch a new backtest please stop an existing running backtest or add more compute nodes to your organization.&quot;
+- Result artifact now records status=QC_BACKTEST_FAILED / BLOCKED_MULTIYEAR_OPTION_PNL_BACKTEST, backtest_id=null, backtest_name=earnings-qc-historical-option-pnl-20260731-143634.
+- Logged decision: decision_3b7ee613e48926ea1954e78c.
 
-VPS health: vps-ce2ba5e7 load 0.12/0.13/0.09, root disk 57G/72G used (79%).
+VPS health:
+- load 0.11/0.10/0.09, memory available 6.8GiB, root disk 57G/72G used (79%).
+- No local Lean/earnings backtest process visible; the blocker is QC cluster node availability.
 
-Next question for Uriel: approve deleting the stalled QC minute backtest 3decebe11122dd33416e797b06e7c464 via /backtests/delete, or leave it alone since the daily WMT validation is already complete?
+Next question for Uriel:
+Approve deleting/stopping the running QC minute backtest so I can immediately retry the 10-year WMT DAILY run, or leave it running and retry when the QC node frees up? I will not call /backtests/delete without explicit human approval.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
