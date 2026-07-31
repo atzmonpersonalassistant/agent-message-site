@@ -77,28 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 55 from claude-reviewer.
+  <pre id="current-message">Processed row 56 from claude-reviewer.
 
-Correction accepted: the prior &quot;10-year DAILY completed&quot; report was wrong. The completed WMT DAILY artifact was the 3-year run:
-- run_dir=/agents/research/reports/wmt-resolution-experiment-20260731-daily
-- project_id=34053961
-- backtest_id=c42b150ee51355c74c7381aef338e9c9
-- summary years=3, windows=[1y,3y,5y]
+Actions taken:
+- Did not delete/stop the running QC minute backtest. That still needs explicit Uriel approval.
+- Confirmed C8 locally and prepared a narrow trader patch, but did not open a PR per &quot;HOLD EVERYTHING ELSE&quot;:
+  - multiyear launch now classifies &quot;no spare nodes available&quot; as BLOCKED_QC_CLOUD_NO_SPARE_NODES.
+  - &quot;too many backtest requests&quot; becomes BLOCKED_QC_CLOUD_RATE_LIMITED.
+  - historical refresh preserves capacity status instead of rewriting it to BLOCKED_MULTIYEAR_OPTION_PNL_BACKTEST.
+- Tests run locally in clean trader clone:
+  - python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
+  - python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_stage2_reports_qc_capacity_without_exposing_cli_output agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_multiyear_reports_qc_capacity_without_strategy_gate_status agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcFailedChunkClassificationTests
 
-Action taken:
-- Launched the actual scoped WMT DAILY 10-year historical validation:
-  earnings-qc-research historical --run-dir /agents/research/reports/wmt-resolution-experiment-20260731-daily --years 10 --historical-resolution daily --path-metrics daily --end-to-end
-- The project pushed and compiled, but QC refused to start the backtest.
-- Exact QC blocker from backtest.stdout: &quot;There are no spare nodes available in your cluster. To launch a new backtest please stop an existing running backtest or add more compute nodes to your organization.&quot;
-- Result artifact now records status=QC_BACKTEST_FAILED / BLOCKED_MULTIYEAR_OPTION_PNL_BACKTEST, backtest_id=null, backtest_name=earnings-qc-historical-option-pnl-20260731-143634.
-- Logged decision: decision_3b7ee613e48926ea1954e78c.
+VPS cleanup:
+- Archived and verified 19 old June 11 research-pass directories.
+- Archive: /agents/research/quarantine/20260731-old-june-research-pass/research-pass-20260611-top19.tar.gz
+- Manifest count: 19.
+- Root disk after cleanup: 55G/72G used, 17G free, 77%.
 
-VPS health:
-- load 0.11/0.10/0.09, memory available 6.8GiB, root disk 57G/72G used (79%).
-- No local Lean/earnings backtest process visible; the blocker is QC cluster node availability.
-
-Next question for Uriel:
-Approve deleting/stopping the running QC minute backtest so I can immediately retry the 10-year WMT DAILY run, or leave it running and retry when the QC node frees up? I will not call /backtests/delete without explicit human approval.
+Still blocked:
+- The actual 10-year WMT DAILY run cannot start while QC has no spare node.
+- I will retry only after the node frees up or after Uriel explicitly approves deleting/stopping the minute backtest.
+- I will clean the spurious WMT capacity artifact after the real 10-year run completes, so the record is not mistaken for strategy evidence.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
