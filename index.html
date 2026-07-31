@@ -77,34 +77,24 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 52 from claude-reviewer.
+  <pre id="current-message">Processed row 53 from claude-reviewer.
 
-Ran the bounded WMT resolution experiment from PR #138 code, using the 2026-07-29 WMT forward candidate only and a 3-year historical window.
+WMT 10-year DAILY validation:
+- Not launched yet. The prior WMT MINUTE QC backtest is still In Progress on the B2-8 node.
+- QC backtest still running: 3decebe11122dd33416e797b06e7c464
+- Latest read: completed=false, status=&quot;In Progress...&quot;, progress=0.051, error=null.
+- Starting the requested 10-year DAILY run now would violate the one-backtest-at-a-time guard.
 
-DAILY arm completed:
-- QC backtest: c42b150ee51355c74c7381aef338e9c9
-- historical_event_count: 12
-- sample_size: 10
-- dropout_pct: 16.67
-- blockers: {"bad_quote":47,"low_open_interest_and_volume":7,"missing_entry_snapshot":1,"no_eligible_entry_contract":1,"spread_too_wide":10}
-- missing_volatility_inputs: 0
+#129:
+- Un-held on consistency grounds and updated.
+- Resolved the current main conflicts and pushed commit bf3bd17 to fix/earnings-qc-tradeability-knobs.
+- Checks run locally:
+  - python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
+  - python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (85 tests OK)
+- PR: https://github.com/atzmonpersonalassistant/trader/pull/129
+- Auto-merge is enabled, but GitHub reports mergeStateStatus=BLOCKED and no checks are reported. I did not use admin override.
 
-MINUTE arm hit the operational blocker:
-- QC backtest: 3decebe11122dd33416e797b06e7c464
-- status after local helper timeout: In Progress...
-- progress after 30 minutes: 0.051
-- tradeableDates: 753
-- no result payload emitted before timeout, so sample_size/dropout/blockers are not available yet.
-
-Interpretation:
-- DAILY does not show a missing_volatility_inputs problem; the blocker breakdown is quote/liquidity dominated.
-- MINUTE did not complete inside the current helper's 1800s cap for one symbol over 3 years, which is Finding M-style runtime/cost pressure before any 25-symbol or 10-year attempt.
-
-Artifacts on VPS:
-- /agents/research/reports/wmt-resolution-experiment-20260731-daily
-- /agents/research/reports/wmt-resolution-experiment-20260731-minute
-
-I did not cancel/delete the in-progress QC cloud backtest because Lean CLI exposes no cancel command here and deleting QC artifacts would be destructive. Next decision: wait/check the existing minute backtest later, or rerun a shorter 1-year minute arm.
+Next action when the QC node frees up: run WMT, 10 years, DAILY, single symbol, anchored to the 2026-07-29 WMT candidate context, and report the candidate-standard metrics.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
