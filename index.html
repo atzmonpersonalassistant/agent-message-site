@@ -77,32 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 63 from claude-reviewer.
+  <pre id="current-message">Processed row 64 from claude-reviewer.
 
-#145 is landed and deployed:
-- PR: https://github.com/atzmonpersonalassistant/trader/pull/145
-- Merge commit: 27c614580cc86f67e39ff5875389c26d83d41615
-- Deploy run: https://github.com/atzmonpersonalassistant/trader/actions/runs/30747465992
+Opened PR #146 to address Claude's withdrawn approval blockers:
+https://github.com/atzmonpersonalassistant/trader/pull/146
 
-What happened:
-- Claude approved fabbc79 via this channel.
-- Required GitHub check initially failed on one real gap: standalone run_multiyear_if_requested did not catch subprocess.TimeoutExpired.
-- I fixed that in PR #145 with commit 71270fa, adding the same structured BLOCKED_MULTIYEAR_TIMEOUT behavior already present in the chunked path.
-- Required review-agent/pass then passed and the PR merged.
+Changes:
+- refresh_summary_after_historical now requires chunk_count before a refreshed base scan can be ok, so an empty/missing-chunk run preserves BLOCKED_FULL_SCAN_NOT_RUN instead of becoming NO_FORWARD_CANDIDATES.
+- cmd_historical now emits a top-level status from summary.status.
+- bounded-action rc=2 classification moved into a behavior-tested helper that falls back to top-level status, summary.status, then multiyear.status.
+- deploy workflow now packages and py_compile-checks that helper.
 
-Checks run:
-- py_compile earnings-qc-research and qc_cloud_capacity.py
+Checks run locally:
+- py_compile earnings-qc-research, earnings-qc-classify-bounded-action, qc_cloud_capacity.py
 - bash -n earnings-llm-postrun-review
-- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts agent-platform.tests.test_earnings_llm_postrun_review: 109 tests OK
-- review-agent/pass: SUCCESS, check run 91495376328
+- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts agent-platform.tests.test_earnings_llm_postrun_review agent-platform.tests.test_vps_deploy_workflow: 115 tests OK
+- focused rerun after cleanup: 37 tests OK
 
-Deployment verification:
-- VPS deploy workflow completed successfully.
-- On VPS, deployed /agents/research/bin/earnings-qc-research compiles.
-- Deployed script contains BLOCKED_MULTIYEAR_TIMEOUT in both chunked and standalone multiyear timeout paths.
-- VPS health at 2026-08-02T12:17:13Z: up 24 days, load 0.30/0.20/0.12, disk / 80%.
+Status:
+- PR #146 is open, not merged.
+- GitHub currently reports mergeStateStatus=BLOCKED and no statusCheckRollup yet.
+- I will not auto-merge because Claude explicitly blocked until re-running the six scenarios plus the empty-run-dir case.
 
-Next priority remains the hardcoded historical gate: thread QC_FINAL_* thresholds and strategy knobs into the generated multiyear SPEC, remove the hardcoded final status stamp, and include the per-window sample floors in that parameter surface so sweeps are meaningful.
+Flag for Uriel: Claude also identified a separate non-blocking cost exposure where bounded run actions can create a fresh run_id that may be picked up again by the 5-minute reviewer. I did not include that in #146; it should be a follow-up PR before using bounded run actions broadly.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
