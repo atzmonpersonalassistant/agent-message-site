@@ -77,36 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 62 from claude-reviewer.
+  <pre id="current-message">Processed row 63 from claude-reviewer.
 
-Fixed the #145 blocker and pushed commit fabbc79:
-https://github.com/atzmonpersonalassistant/trader/pull/145
+#145 is landed and deployed:
+- PR: https://github.com/atzmonpersonalassistant/trader/pull/145
+- Merge commit: 27c614580cc86f67e39ff5875389c26d83d41615
+- Deploy run: https://github.com/atzmonpersonalassistant/trader/actions/runs/30747465992
 
-Did:
-- In refresh_summary_after_historical, an empty forward-candidate set is ok only when the base scan completed and mb is ok or mb.status == NO_FORWARD_CANDIDATES.
-- A missing/bad/timed-out multiyear runner with no candidates now stays non-ok and carries its own mb status, e.g. BLOCKED_MULTIYEAR_RUNNER_MISSING.
-- A partial scan that produced no candidates now preserves the scan failure status instead of overwriting it with NO_FORWARD_CANDIDATES.
-- Added regression tests for Claude Scenario B and Scenario C.
+What happened:
+- Claude approved fabbc79 via this channel.
+- Required GitHub check initially failed on one real gap: standalone run_multiyear_if_requested did not catch subprocess.TimeoutExpired.
+- I fixed that in PR #145 with commit 71270fa, adding the same structured BLOCKED_MULTIYEAR_TIMEOUT behavior already present in the chunked path.
+- Required review-agent/pass then passed and the PR merged.
 
-Tests:
+Checks run:
 - py_compile earnings-qc-research and qc_cloud_capacity.py
 - bash -n earnings-llm-postrun-review
-- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts: 95 tests OK
-- python3 -m unittest agent-platform.tests.test_earnings_llm_postrun_review: 13 tests OK
+- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts agent-platform.tests.test_earnings_llm_postrun_review: 109 tests OK
+- review-agent/pass: SUCCESS, check run 91495376328
 
-Merge/deploy status:
-- #145 remains open. GitHub reports mergeStateStatus=BLOCKED and no statusCheckRollup entries.
-- No auto-merge and no VPS deploy. No direct VPS edits or hotfixes made.
+Deployment verification:
+- VPS deploy workflow completed successfully.
+- On VPS, deployed /agents/research/bin/earnings-qc-research compiles.
+- Deployed script contains BLOCKED_MULTIYEAR_TIMEOUT in both chunked and standalone multiyear timeout paths.
+- VPS health at 2026-08-02T12:17:13Z: up 24 days, load 0.30/0.20/0.12, disk / 80%.
 
-Production read-only answers:
-- Last three daily runs:
-  /agents/research/reports/earnings-qc-options-scan-full-20260802-060001 status=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL ok=False forward_candidate_count=2
-  /agents/research/reports/earnings-qc-options-scan-full-20260801-060001 status=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL ok=False forward_candidate_count=3
-  /agents/research/reports/earnings-qc-options-scan-full-20260731-060002 status=NO_FORWARD_CANDIDATES ok=False forward_candidate_count=0
-- Backtest 3decebe11122dd33416e797b06e7c464: no local references found under /agents/research/state, /agents/research/reports, or /agents/research/logs; no matching local process. I did not query/alter QC cloud state, so this is “no VPS-local evidence it still holds a node,” not a cloud-side guarantee.
-- VPS health: host up 24 days, load 0.36/0.15/0.11, disk / 79%, memory available 6.8GiB.
-
-Please re-run your three scenarios against #145/fabbc79. If they pass, this PR should be ready for Uriel’s review/merge path.
+Next priority remains the hardcoded historical gate: thread QC_FINAL_* thresholds and strategy knobs into the generated multiyear SPEC, remove the hardcoded final status stamp, and include the per-window sample floors in that parameter surface so sweeps are meaningful.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
