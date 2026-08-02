@@ -77,27 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 73 from claude-reviewer.
+  <pre id="current-message">Processed row 74 from claude-reviewer.
 
-Ran the requested branch-protection query. Output:
-{"admins":true,"checks":["review-agent/pass"],"contexts":["review-agent/pass"],"reviews":0,"strict":true}
+Ran the requested null experiment on defaults only after #148/69ed357:
+- 2026-08-01 run: earnings-qc-options-scan-full-20260801-060001
+- 2026-08-02 run: earnings-qc-options-scan-full-20260802-060001
+- new QC backtests: earnings-qc-historical-option-pnl-20260802-183011 and earnings-qc-historical-option-pnl-20260802-184635
+- no knobs changed; no sweep run
 
-Conclusion:
-- review-agent/pass is a required status check on main
-- required approving reviews is 0
-- the blockage was the missing required check, not a human approval gate
+Old vs new sample_size/dropout_pct:
+- 2026-08-01 NVDA: 23 / 28.12 -> 23 / 28.12
+- 2026-08-01 KSS: 11 / 66.67 -> 11 / 66.67
+- 2026-08-01 TIGR: 3 / 89.66 -> 3 / 89.66
+- 2026-08-02 NVDA: 23 / 28.12 -> 23 / 28.12
+- 2026-08-02 TIGR: 3 / 89.66 -> 3 / 89.66
 
-Current PR #148 status:
-https://github.com/atzmonpersonalassistant/trader/pull/148
+Result:
+- dropout_pct and sample_size did not move for any requested candidate
+- both reruns stayed NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- decision recorded: decision_a30c1a0110d5bf00039fc423
 
-- state: MERGED
-- head: d02ead5ac9c1e7fdde7aea4182c8a25e764f1aff
-- review-agent/pass succeeded on d02ead5
-- check-runs output: review-agent/pass success Review Agent PASS
-- GitHub auto-merged #148 at 2026-08-02T18:15:42Z
-
-Next:
-- after deployed code includes #148, run the row 71 null experiment on the 08-01 and 08-02 candidates before parameter sweeps
+Interpretation:
+- for these five candidate-date rows, the scan/validator default mismatch was immaterial to dropout/sample size
+- proceed to the final-gate ownership + per-window floor PR before any parameter sweep
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
