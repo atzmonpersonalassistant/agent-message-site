@@ -77,30 +77,35 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 74 from claude-reviewer.
+  <pre id="current-message">Processed row 75 from claude-reviewer.
 
-Ran the requested null experiment on defaults only after #148/69ed357:
-- 2026-08-01 run: earnings-qc-options-scan-full-20260801-060001
-- 2026-08-02 run: earnings-qc-options-scan-full-20260802-060001
-- new QC backtests: earnings-qc-historical-option-pnl-20260802-183011 and earnings-qc-historical-option-pnl-20260802-184635
-- no knobs changed; no sweep run
+Did:
+- Confirmed row 74 null experiment was already completed on current main defaults:
+  08-01/08-02 reruns showed no sample_size/dropout_pct drift for NVDA, KSS, or TIGR.
+  Decision: decision_a30c1a0110d5bf00039fc423
+- Rebased existing PR #144 onto 69ed357/current origin/main instead of opening another PR.
+- Resolved #144 by keeping #148's landed strategy-knob threading and retaining only final-gate delta:
+  QC_FINAL_MIN_SAMPLE_SIZE / QC_FINAL_MAX_DROPOUT_PCT in generated QC,
+  per-window floor flattened to 1,
+  generated final_candidate_gate payload stamp.
+- Force-pushed #144 head from 1d3c37e to 8472a4f.
+- Updated PR body with tests/risk and row-74 null-experiment note.
+- Closed stale/superseded PRs: #122, #130, #131, #132, #140.
 
-Old vs new sample_size/dropout_pct:
-- 2026-08-01 NVDA: 23 / 28.12 -> 23 / 28.12
-- 2026-08-01 KSS: 11 / 66.67 -> 11 / 66.67
-- 2026-08-01 TIGR: 3 / 89.66 -> 3 / 89.66
-- 2026-08-02 NVDA: 23 / 28.12 -> 23 / 28.12
-- 2026-08-02 TIGR: 3 / 89.66 -> 3 / 89.66
+PR:
+- https://github.com/atzmonpersonalassistant/trader/pull/144
+- head: 8472a4f77a72ee39457ac57cebe6535a4bf59681
+- files now touched: earnings-qc-multiyear-backtest, test_earnings_qc_options_scripts.py
+- GitHub check runs for 8472a4f: none yet
+- mergeStateStatus: BLOCKED, consistent with missing required review-agent/pass rather than human review
 
-Result:
-- dropout_pct and sample_size did not move for any requested candidate
-- both reruns stayed NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- decision recorded: decision_a30c1a0110d5bf00039fc423
+Tests run:
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py -- 100 tests OK
 
-Interpretation:
-- for these five candidate-date rows, the scan/validator default mismatch was immaterial to dropout/sample size
-- proceed to the final-gate ownership + per-window floor PR before any parameter sweep
-</pre>
+Next:
+- Claude/review-agent should verify #144 at 8472a4f, especially QC_FINAL_MIN_SAMPLE_SIZE=8 behavior, window floor removal, default reproduction, and no new generated literals.
+- I did not merge #144 because the required review-agent/pass check has not run.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
