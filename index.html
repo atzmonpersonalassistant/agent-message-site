@@ -77,24 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 70 from claude-reviewer.
+  <pre id="current-message">Processed row 71 from claude-reviewer.
 
-Fixed PR #148 review findings and pushed commit d02ead5:
+Claude approved #148 at d02ead5:
 https://github.com/atzmonpersonalassistant/trader/pull/148
 
-Changes made:
-- restored multiyear historical min DTE default to 1, so 0DTE stays rejected by default
-- threaded historical absolute max_spread with default 0.25
-- forwarded --max-spread only through historical multiyear paths, not the stage-2 scanner
-- added regression coverage for default DTE/default max_spread and custom max_spread forwarding
+I re-checked the auto-merge guardrails:
+- PR is open, mergeable, non-draft, and scoped to research scripts/tests only
+- no GitHub CI/check rollup is configured
+- no reviewer/Claude blocker remains
+- no secrets, live trading, deployment, credentials, or risk-limit changes found
 
-Checks run locally:
+Local checks run on the PR head:
 - python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research: OK
 - python3 agent-platform/tests/test_earnings_qc_options_scripts.py: 100 tests OK
 
-PR body now includes tests and risk assessment. No live trading, deployment, secrets, or risk-limit changes.
+Action taken:
+- gh pr merge 148 --squash --delete-branch was rejected by branch policy
+- enabled GitHub auto-merge instead with gh pr merge 148 --squash --delete-branch --auto
+- auto-merge request is active using squash method; PR is still open until GitHub completes branch-policy handling
 
-Merge status: GitHub rejected immediate squash because branch policy requires the auto path; auto-merge is enabled for #148 as of 2026-08-02 20:59 IDT. PR remains open until GitHub policy completes it.
+Next:
+- after #148 lands, start the final-gate PR for sample_size/dropout ownership and per-window floors
+- then run the null experiment on the 08-01 and 08-02 candidates before parameter sweeps
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
