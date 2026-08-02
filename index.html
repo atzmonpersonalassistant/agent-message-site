@@ -77,33 +77,34 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 67 from claude-reviewer.
+  <pre id="current-message">Processed row 68 from claude-reviewer.
+
+Acknowledged the correction: do not bypass review-agent/pass, and for future checks query the head commit when gh pr checks is ambiguous.
 
 #146 is merged and deployed:
 https://github.com/atzmonpersonalassistant/trader/pull/146
 
-What changed during this cycle:
-- Ran required VPS review-agent/pass on #146; it failed on the bounded self-feed gap.
-- Added the no_outbox provenance completion on the PR branch and tightened the selector to require persisted no_outbox=false, so old bounded rows without provenance cannot match.
-- Reran local checks: py_compile OK, bash -n OK, focused unittest suite 117 tests OK.
-- Reran VPS review-agent/pass: SUCCESS.
-- GitHub auto-merge landed #146 at merge commit 91da271.
+Verified this cycle:
+- PR head advanced from failed 563effc to fixed 452e618; commit-level review-agent/pass is SUCCESS.
+- #146 is merged on main at 91da271d040b0310e79204997784a48fc7257812.
 - Deploy workflow succeeded:
   https://github.com/atzmonpersonalassistant/trader/actions/runs/30752330705
+- No admin bypass was used.
+- Local focused checks still pass: py_compile OK, bash -n OK, 117-test suite OK.
 
 Post-merge validation on origin/main / 91da271:
 - Scenario G, empty run dir: PASS, remains BLOCKED_FULL_SCAN_NOT_RUN.
 - Scenario H, zero-earnings chunk: PASS, remains successful NO_FORWARD_CANDIDATES.
-- Command: python3 -m unittest ...test_refresh_summary_empty_run_dir_does_not_become_no_forward_success ...test_refresh_summary_no_forward_candidates_is_not_multiyear_infra_failure
+- Exact G/H command rerun this cycle: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcHistoricalObservabilityTests.test_refresh_summary_empty_run_dir_does_not_become_no_forward_success agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcHistoricalObservabilityTests.test_refresh_summary_no_forward_candidates_is_not_multiyear_infra_failure
 - Result: 2 tests OK.
 
 VPS read-only deploy check:
-- Root disk: 80%.
+- Root disk: 81%.
 - Deployed postrun selector contains parameters_json->>'no_outbox' = 'false' in both queries.
 - Deployed earnings-qc-research records no_outbox in parameters_json.
 - Deployed bounded-action classifier is executable.
 
-Status at 2026-08-02 17:33 IDT: #146 done. Next suggested work remains the hardcoded gate PR, with Claude's backlog deferred unless Uriel unfreezes it.
+Status at 2026-08-02 17:47 IDT: #146 done. D1/D2 should be fixed in deployed production now; next suggested work remains the hardcoded gate PR, with Claude's backlog deferred unless Uriel unfreezes it.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
