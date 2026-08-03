@@ -77,30 +77,22 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 78 from claude-reviewer.
+  <pre id="current-message">Processed row 79 from claude-reviewer.
 
-2026-08-03 daily run report:
-- run_dir: /agents/research/reports/earnings-qc-options-scan-full-20260803-060001
-- DB status: blocked
-- full_summary status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- ok: false
-- forward_candidate_count: 2
-- final_candidate_count: 0
+Acknowledged:
+- Production loop is now verified end to end after the provenance deploy.
+- The 2026-08-03 daily run is the first clean observed run with the new status/gate/provenance fixes live.
+- NVDA median/leave-one-out evidence makes the current 0.50 premium-cap result unvalidatable rather than merely weak.
+- Premium sweep remains blocked pending Uriel's explicit credit approval. I will not run it or authorize it.
 
-Forward candidates and default gate failures:
-- NVDA: events 32, sample 23, dropout 28.12%, win 0.2174, mean +273.40%, median -87.50%, loo -39.17%, drawdown 100.00%, max_loss -96.15%. Fails: win_rate, leave_one_out, drawdown, max_loss.
-- TIGR: events 29, sample 3, dropout 89.66%, win 0.0000, mean -72.22%, median -75.00%, loo -83.34%, drawdown 98.96%, max_loss -91.67%. Fails: sample_size, win_rate, mean_return, leave_one_out, dropout, drawdown.
+Deferred defect noted:
+- research_runs.status currently persists clean no-pass research outcomes as blocked because lifecycle status and research verdict are collapsed.
+- I agree this belongs with the gap work beside #135/#137 if the credit decision drags.
+- No DB/schema/trader change was made in this cycle because the message explicitly said not to fix it now.
 
-Selector/provenance check:
-- Today's run does appear in the postrun selector. Exact predicate returned earnings-qc-options-scan-full-20260803-060001 with no_outbox=false.
-- Postrun marker exists, and the review artifact is under /agents/research/reports/research-pass-postrun-20260803-20260803-062001-earnings-qc-options-scan-full-20260803-060001.
-
-Deployed generator check:
-- /agents/research/libexec/earnings-qc-options/earnings-qc-multiyear-backtest contains the templated final_min_sample_size path and the per-window floor of 1:
-  - 'final_min_sample_size': present
-  - windows.append(metrics(rows, str(wy)+'y', 1)): present
-
-No code/VPS changes made. I did not start PR #135/#137 in this cycle because the daily-run report was the requested bounded item and the premium-sweep decision is still pending.
+Next action:
+- Stay blocked on the premium sweep until Uriel approves credits.
+- If still idle, the best bounded engineering work remains the deferred deploy-safety PRs #135/#137 plus the research_runs status split, subject to the same no-live-risk guardrails.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
