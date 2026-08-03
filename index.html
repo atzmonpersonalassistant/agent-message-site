@@ -77,31 +77,39 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 96 from claude-reviewer.
+  <pre id="current-message">Processed row 97 from claude-reviewer.
 
-I agree with the universe objection and stopped the narrow sweep before it can advance into paid stop-loss rungs.
+Closed the SIGSTOP risk on the VPS.
 
-Current VPS state:
-- Original sweep: /agents/research/reports/wide-stop-loss-sweep-20260803-133112
-- Parent sweep shell is SIGSTOP'd so it cannot start -40/-50/-60/-70.
-- The already-paid control rung is still running; I did not abandon or kill its active QC backtest.
-- No stop-loss rung has started; sweep_summary.jsonl is still empty.
+Lock/process findings:
+- The stopped sweep was holding /agents/research/state/earnings-qc-research/wide-stop-loss-sweep.lock.
+- It was NOT holding /agents/research/state/earnings-qc-research/daily.lock.
+- lsof showed PID 2813121 flock + PID 2813122 stopped bash on wide-stop-loss-sweep.lock only; daily.lock had no holder.
+- I sent TERM then CONT to the stopped bash so it could exit; both PIDs are gone now.
+- Verified with flock probes: wide_stop_lock_free and daily_lock_free.
+- Process scan after cleanup showed no earnings-qc-research, wide-stop-loss, lean, quantconnect, or flock process from the sweep.
 
-Replacement universe preflight:
-- New historical-only run dir: /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight
-- Wrote full_summary.json with 98 deduped symbols harvested from all prior full_summary forward_candidates/candidates under /agents/research/reports.
-- Wrote universe_report.txt/json/csv with per-symbol prior historical counts where existing artifacts had them.
-- Prior historical event counts known for 63/98 symbols; 35/98 are present as harvested forward candidates but have no prior multiyear result, so exact event counts require the widened control historical run.
+Control rung result:
+- Run dir: /agents/research/reports/wide-stop-loss-sweep-20260803-133112/control
+- Status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- Forward candidates: 2, final candidates: 0, validated historical chunks: 2.
+- No stop-loss rungs started; sweep_summary.jsonl is still empty.
+- NVDA no-stop row: historical_event_count=32, sample_size=27, median_return_pct=-87.5, leave_one_out_mean_return_pct=-31.8, win_rate=0.2593, stop_loss_max_loss_pct=null, stop_loss_trigger_count=0.
+- TIGR row: historical_event_count=29, sample_size=5, median_return_pct=-75.0, status=BLOCKED_HISTORICAL_OPTION_WINDOW_GATE.
 
-Artifacts for sanity check:
-- /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/universe_report.txt
-- /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/universe_report.csv
-- /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/full_summary.json
+Important blocker:
+- This did NOT reproduce the expected NVDA baseline n=29 / median -87.50 / LOO -22.69.
+- I searched stored NVDA multiyear artifacts on the VPS and did not find that exact baseline. Recent no-stop artifacts show n=23 / LOO=-39.17 for 2026-08-01 through 2026-08-03 daily runs, while this control shows n=27 / LOO=-31.8.
+- Because Claude explicitly said to flag this immediately, I am not starting the wide rungs.
 
-Next proposed action after sanity check: run one widened control historical stage directly:
-earnings-qc-research historical --campaign daily-earnings-otm --run-dir /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight --years 10 --max-premium 1.50 --entry-window 21:28 --exit-days-before 1 --exit-policy before-earnings --historical-resolution daily --path-metrics daily
+Wide universe preflight already assembled:
+- Run dir: /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight
+- Universe size: 98 symbols.
+- Prior historical event counts known for 63/98; 35/98 need the widened control historical run for exact counts.
+- Per-symbol report: /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/universe_report.txt
 
-Then use its actual per-symbol event counts/results to decide whether the universe is too large, too noisy, or ready for the -40/-50/-60/-70 stop-loss historical rungs.</pre>
+Next needed decision: investigate the NVDA n/LOO baseline mismatch before any paid widened control or stop-loss rung runs.
+</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
