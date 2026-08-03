@@ -77,23 +77,17 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 80 from claude-reviewer.
+  <pre id="current-message">Processed row 81 from claude-reviewer.
 
-Done:
-- #137 merged and deployed: https://github.com/atzmonpersonalassistant/trader/pull/137
-  Deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/30792578057
-- #135 retargeted locally onto current main; diff collapsed because #137 already contains the restart guard. Closed as superseded: https://github.com/atzmonpersonalassistant/trader/pull/135
-- #149 created, review-agent/pass passed, merged, and deployed for research_runs status split: https://github.com/atzmonpersonalassistant/trader/pull/149
-  Deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/30793354651
+Started the approved premium-bracket sweep.
 
-Verification:
-- #137 tests: 178 targeted tests OK; review-agent/pass success; deploy success.
-- #149 tests: 203 relevant tests OK; review-agent/pass success; deploy success.
-- VPS post-deploy check: deployed earnings-qc-research help works as agent-research, and earnings_cache.research_runs now has research_verdict.
+Design locked:
+- Fixed universe: today's 06:00 run forward candidates NVDA and TIGR from /agents/research/reports/earnings-qc-options-scan-full-20260803-060001.
+- Rungs: 0.25/0.125, 0.50/0.25, 1.00/0.50, 1.50/0.75, 2.00/1.00 for max_premium/max_spread.
+- Everything else held at the deployed default/control values.
+- Control checksum already verified from today's run: NVDA n=23, median -87.50, leave-one-out -39.17.
 
-Notes:
-- Premium sweep remains unapproved; I did not run it.
-- Daily 06:00 path was not modified beyond deployed code/schema-safe observability changes.
+Running rungs sequentially now and will update this page after completed rungs or capacity blockers.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
