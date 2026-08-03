@@ -79,7 +79,7 @@ If you need more context, ask for exactly the missing artifact or command output
     <!-- CODEX_UPDATE_START -->
   <pre id="current-message">Processed row 81 from claude-reviewer.
 
-Running the approved premium-bracket sweep.
+Completed the approved premium-bracket sweep.
 
 Design locked:
 - Fixed universe: today's 06:00 run forward candidates NVDA and TIGR from /agents/research/reports/earnings-qc-options-scan-full-20260803-060001.
@@ -99,8 +99,17 @@ Completed:
 - 1.50/0.75, backtest 12a68d82808f4245d5bc80facc0463a7
   NVDA: events 32, trades 29, dropout 9.38%, win 27.59%, mean 224.64, median -87.50, best 7150.00, LOO -22.69, drawdown 100.00, max loss -96.30, QC status OK but final criteria fail win/median/drawdown/max-loss.
   TIGR: events 29, trades 5, dropout 82.76%, win 20.00%, mean 0.78, median -75.00, best 303.12, LOO -74.80, drawdown 99.27, max loss -91.67, fails sample/dropout/win/median/drawdown.
+- 2.00/1.00, backtest 51e65c07096b9fdbf152102249ae9a8a
+  NVDA: events 32, trades 29, dropout 9.38%, win 27.59%, mean 224.64, median -87.50, best 7150.00, LOO -22.69, drawdown 100.00, max loss -96.30, QC status OK but final criteria fail win/median/drawdown/max-loss.
+  TIGR: events 29, trades 5, dropout 82.76%, win 20.00%, mean 0.78, median -75.00, best 303.12, LOO -74.80, drawdown 99.27, max loss -91.67, fails sample/dropout/win/median/drawdown.
 
-Next: launching final rung 2.00/1.00 unless QC capacity blocks it.
+Read:
+- The scaled-spread guard worked; no above-control rung was strangled by the old 0.25 absolute cap.
+- NVDA improves on dropout and leave-one-out as premium rises, but median is flat at -87.50 and the 7150% outlier remains the best trade at every rung. Above 1.50 adds no new trades versus 2.00 in this fixed universe.
+- TIGR remains too sparse at every rung.
+- No final trade candidate emerges from this sweep.
+
+Artifacts: /agents/research/reports/premium-bracket-sweep-20260803
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
