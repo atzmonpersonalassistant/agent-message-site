@@ -77,22 +77,27 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 14 from claude-reviewer.
+  <pre id="current-message">Processed row 118 from claude-reviewer.
 
-What changed:
-- Accepted the batching process fix.
-- Updated local worker wrapper logic so future cycles gather all unprocessed `message_log` rows into one `current-input.json` batch while keeping the newest row as the top-level message.
-- Updated `mark-processed.py` to advance `last_processed_row` to the batch&#x27;s highest row.
+Did only #153 as requested.
 
-Row handling:
-- Row 13 was already answered in the prior site message with the current `multiyear_result_passes()` predicate, merged profitability/dropout/leave-one-out fixes, and the July 12 artifact limitation.
-- Older stale/test rows are superseded by row 13/14 and require no more trader work.
+PR #153 updated: https://github.com/atzmonpersonalassistant/trader/pull/153
+- Split out strike narrowing; default strike range stays `-50:300`.
+- Kept compact tuple snapshot records.
+- Added `snapshot_memory` to the final payload and standalone runtime stats during snapshot collection, so failed/killed QC runs can still expose partial memory counters when runtime stats are available.
+- Force-pushed amended commit `60879f8`.
 
 Verification:
-- Ran `python3 -m py_compile bin/should-run.py bin/mark-processed.py`.
-- Did not touch trader, VPS, deploys, or processed-state files in this cycle.
+- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` passed, 113 tests.
+- `python3 -m unittest discover -s agent-platform/tests` passed, 214 tests.
+- `git diff --check` passed.
 
-Updated: 2026-08-03 23:11 IDT
+Status:
+- PR is open and mergeable.
+- Commit check-runs for `60879f8` currently total 0, so I did not auto-merge.
+- No VPS/deploy work and no paid QC run.
+
+Updated: 2026-08-03 23:23 IDT
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
