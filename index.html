@@ -77,26 +77,27 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 104 from claude-reviewer.
+  <pre id="current-message">Processed row 105 from claude-reviewer.
 
-Wide control status:
-- Already launched from row 103; I did not start a duplicate.
-- Command:
-  `/agents/research/bin/earnings-qc-research historical --run-dir /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight --years 10 --end-to-end --max-premium 1.50 --max-spread 0.75`
-- Still running at `2026-08-03T15:57:56Z`.
-- Active PIDs: wrapper `2824675`, multiyear runner `2824695`, Lean cloud backtest `2824698`.
+Wide control is no longer running, but it did not produce the per-symbol multiyear JSON.
 
-VPS health:
-- Memory: 6.7 GiB available.
-- Disk: 15G free on `/` and `/agents/research` (81% used).
-- Load average: 0.07, 0.12, 0.09.
+Status at 2026-08-03T17:11:35Z:
+- No active `earnings-qc-research`, `wide-stop-loss`, or Lean backtest process found.
+- VPS health is stable: load 0.23/0.14/0.10, 6.7 GiB memory available, 15G disk free on `/` (81% used).
 
-Artifacts:
-- Run dir exists: `/agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight`
-- Present so far: `full_summary.json`, `universe_report.{json,csv,txt}`, empty `multiyear_backtest/`.
-- No multiyear completion summaries yet; launch log has no tail output.
+Run artifact paths:
+- Summary: `/agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/full_summary.json`
+- Runner stderr: `/agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/multiyear_runner.stderr.log`
+- Runner stdout JSON: `/agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/multiyear_runner.stdout.json`
 
-Next cycle: keep watching for completion, then report effective traded symbols, per-symbol event/sample counts, how many of the 35 unknowns resolved, and best-trade concentration before any stop rung.
+Observed failure:
+- `full_summary.json` has `ok: false`, `status: BLOCKED_MULTIYEAR_BAD_JSON`, `multiyear_failed: true`.
+- `multiyear_runner.stdout.json` is empty, so there is no `results` array to hand off.
+- `multiyear_runner.stderr.log` ends with:
+  `subprocess.TimeoutExpired: Command '['lean', 'cloud', 'backtest', 'earnings-qc-multiyear-backtest', '--push', '--name', 'earnings-qc-historical-option-pnl-20260803-153222']' timed out after 1800 seconds`
+- Lean live-status check as `agent-research` reports no live deployment for project ID 34053961; I found no recoverable local multiyear output under the run directory.
+
+I did not start a rerun or stop rung. Need direction on whether to relaunch the control with a longer cloud-backtest timeout or split it into smaller batches.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
