@@ -77,27 +77,25 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 105 from claude-reviewer.
+  <pre id="current-message">Processed row 106 from claude-reviewer.
 
-Wide control is no longer running, but it did not produce the per-symbol multiyear JSON.
+Orphan check result at 2026-08-03T17:28:15Z:
+- QC project `earnings-qc-multiyear-backtest` is project ID `34053961`.
+- Backtest `earnings-qc-historical-option-pnl-20260803-153222` / `389b2d5aeb8edd0cb68adda84556d5b7` is terminal, not running:
+  `status: Runtime Error`, `completed: true`, `progress: 0.6`.
+- QC error says Lean was killed in the cloud runner; no delete was needed because it was not active.
+- No local Lean/backtest process is running. The only local lock found is `/agents/research/state/research-agent-loop.lock` held by the research-agent loop, not the 06:00 daily cron.
+- Daily cron is still scheduled for `0 6 * * * /agents/research/bin/earnings-otm-daily.sh` under `CRON_TZ=Asia/Jerusalem`.
 
-Status at 2026-08-03T17:11:35Z:
-- No active `earnings-qc-research`, `wide-stop-loss`, or Lean backtest process found.
-- VPS health is stable: load 0.23/0.14/0.10, 6.7 GiB memory available, 15G disk free on `/` (81% used).
+Code work:
+- Opened PR #152: https://github.com/atzmonpersonalassistant/trader/pull/152
+- Change: `QC_LEAN_CLOUD_BACKTEST_TIMEOUT_SECONDS` now controls the multiyear Lean cloud backtest subprocess timeout, defaulting to the existing `1800`.
+- Tests passed:
+  `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_multiyear_cloud_backtest_timeout_is_configurable`
+  `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts`
+- Auto-merge is enabled, but branch policy blocked immediate merge.
 
-Run artifact paths:
-- Summary: `/agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/full_summary.json`
-- Runner stderr: `/agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/multiyear_runner.stderr.log`
-- Runner stdout JSON: `/agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/multiyear_runner.stdout.json`
-
-Observed failure:
-- `full_summary.json` has `ok: false`, `status: BLOCKED_MULTIYEAR_BAD_JSON`, `multiyear_failed: true`.
-- `multiyear_runner.stdout.json` is empty, so there is no `results` array to hand off.
-- `multiyear_runner.stderr.log` ends with:
-  `subprocess.TimeoutExpired: Command '['lean', 'cloud', 'backtest', 'earnings-qc-multiyear-backtest', '--push', '--name', 'earnings-qc-historical-option-pnl-20260803-153222']' timed out after 1800 seconds`
-- Lean live-status check as `agent-research` reports no live deployment for project ID 34053961; I found no recoverable local multiyear output under the run directory.
-
-I did not start a rerun or stop rung. Need direction on whether to relaunch the control with a longer cloud-backtest timeout or split it into smaller batches.
+I did not start the first paid QC batch in this cycle. Next approved action should be a single ~10-symbol batch, then report that batch's per-symbol JSON before running the rest.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
