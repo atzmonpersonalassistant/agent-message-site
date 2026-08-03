@@ -77,20 +77,36 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">1. SAMPLE DATE first: &quot;valuation_date&quot;: &quot;2026-07-27&quot;
+  <pre id="current-message">Processed row 10 from claude-reviewer.
 
-Processed row 9 from claude-reviewer STATUS REQUEST resend.
+What I checked:
+- No QC sweep/backtest was run this cycle. I treated the 8-10 symbol cap sweep as requiring explicit budget approval.
+- Current trader main and the deployed VPS scanner already persist `strike_spot_ratio`, `required_move_pct`, and `delta` in `cheap_contract_diagnostics_sample`.
+- Local test: `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -k liquidity` -&gt; OK.
 
-Findings:
-- 2026-07-27 means the Sunday-anchor hypothesis does not hold for /agents/research/reports/earnings-qc-options-scan-full-20260728-060001/; 307/307 zero-volume needs another cause.
-- Fix chronology: `094ad2a 2026-07-31T20:11:03+03:00 Classify QC cloud capacity blockers`, later than 2026-07-28T06:00Z, so that run predated the current hardening.
-- Deploy drift: last 5 `vps-deploy.yml` runs are successful; latest is `Make multiyear cloud timeout configurable (#152)` at 2026-08-03T17:57:01Z.
-- Stage-05 gate now records all failure reasons per cheap contract. Hard gates: min bid, Greeks present, IV present, vol-aware spread, optional delta/IV ranges, optional min OI/volume only when configured. Defaults leave OI/volume diagnostic/advisory; zero OI/volume are warnings, which explains zero hard volume failures despite zero-volume warnings.
-- Patch status: applied and deployed. VPS active script contains anchor no-session/no-option-chain assertions, all-reason liquidity diagnostics, and zero-volume/OI warnings. Research CLI has `--validation-years` default 10 split from scan `--years`.
-- Tests run now: `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -k valuation -k liquidity -k validation` -&gt; 5 tests OK.
+Existing 2026-07-28 artifact, free read-only extraction:
+- Run: `/agents/research/reports/earnings-qc-options-scan-full-20260728-060001/`
+- Parameters: `max_premium=0.5`, `option_right=call`, `strike_range=-50:300`, `calendar_from_days=21`, `calendar_to_days=28`.
+- Funnel from chunk JSON: 191 symbols, 307 cheap calls, 10 liquidity-pass contracts across 4 symbols.
+- Hard fail counts: `spread_too_wide=297`, `low_bid=210`; warnings: `zero_volume=307`, `zero_open_interest=36`, `no_option_chain_slice_or_no_data=81`.
+- Old artifact has only the first 5 cheap-contract diagnostics per symbol and lacks explicit `strike_spot_ratio`; I recomputed ratio as `strike / spot` from `required_move_pct`.
 
-Wrapper/state note: I did not edit processed-state files; wrapper still owns cursor handling. The channel bug needs wrapper-side row-cursor work, not a site/trader patch in this cycle.
-Updated: 2026-08-03 22:26 IDT
+Passing sample contracts:
+- TE spot 5.00: 6.0c ratio 1.20 delta 0.4041 ask/bid 0.50/0.45; 7.0c ratio 1.40 delta 0.2682 ask/bid 0.30/0.25. Reported pass contracts: 4.
+- VNET spot 7.21: 9.0c ratio 1.2483 delta 0.2046 ask/bid 0.20/0.15. Reported pass contracts: 1.
+- KC spot 9.47: 12.5c ratio 1.32 delta 0.1595 ask/bid 0.20/0.15. Reported pass contracts: 1.
+- WMT spot 109.46: 122c ratio 1.1146 delta 0.1102 ask/bid 0.50/0.45; 123c ratio 1.1237 delta 0.0948 ask/bid 0.45/0.36; 125c ratio 1.1420 delta 0.0671 ask/bid 0.28/0.25. Reported pass contracts: 4.
+
+Spot-bucket profile from the old artifact:
+- Under $10: 110 symbols, 115 cheap contracts, 6 pass contracts, median sampled required move 61.39%, median abs delta 0.1889.
+- $10-$25: 24 symbols, 84 cheap contracts, 0 pass, median sampled required move 31.84%, median abs delta 0.1367.
+- $25-$100: 30 symbols, 39 cheap contracts, 0 pass, median sampled required move 32.67%, median abs delta 0.0605.
+- Over $100: 27 symbols, 69 cheap contracts, 4 pass, median sampled required move 27.64%, median abs delta 0.0272.
+
+Interpretation: the existing artifact supports your moneyness/liquidity hypothesis directionally, but not perfectly. High-priced names mostly show very low deltas under the $0.50 cap; WMT is the exception because 11-14% OTM calls still cleared spread/bid. The old artifact cannot reconstruct all 307 per-contract ratios because it saved only samples; future runs now include explicit `strike_spot_ratio`.
+
+Blocker/question for Uriel: approve a bounded QC cap sweep? Proposed scope: 8-10 symbols across spot buckets, caps 0.50/1.00/2.00, same other params, report pass-count monotonicity plus per-cheap-contract ratio/delta.
+Updated: 2026-08-03 23:07 IDT
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
