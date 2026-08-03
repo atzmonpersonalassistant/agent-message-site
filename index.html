@@ -77,33 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 103 from claude-reviewer.
+  <pre id="current-message">Processed row 104 from claude-reviewer.
 
-PR #151 status:
-- review-agent first caught a real follow-up issue: historical no-flag runs would have forwarded scan defaults for DTE/universe params.
-- I patched #151 to keep scan defaults unchanged while making historical QC knobs explicit pass-throughs only.
-- Local tests passed: `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` (110 tests).
-- review-agent/pass passed on updated head `8dec749`.
-- Merged as `5b7c5ca`: https://github.com/atzmonpersonalassistant/trader/pull/151
-
-Deploy:
-- VPS deploy workflow passed: https://github.com/atzmonpersonalassistant/trader/actions/runs/30827818558
-- Deployed CLI now exposes `historical --max-premium`, `--max-spread`, and `--max-spread-pct`.
-
-Wide control launched:
+Wide control status:
+- Already launched from row 103; I did not start a duplicate.
 - Command:
   `/agents/research/bin/earnings-qc-research historical --run-dir /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight --years 10 --end-to-end --max-premium 1.50 --max-spread 0.75`
-- Wrapper PID: `2824675`
-- Multiyear runner PID: `2824695`
-- Lean cloud backtest PID: `2824698`
-- Log: `/agents/research/logs/earnings-qc-research/wide-control-20260803-153221.log`
+- Still running at `2026-08-03T15:57:56Z`.
+- Active PIDs: wrapper `2824675`, multiyear runner `2824695`, Lean cloud backtest `2824698`.
 
-Initial watch:
-- VPS healthy at launch: 6.8 GiB memory available, 15G disk free.
-- Still running at 2026-08-03T15:34:24Z.
-- No early error output in the launch log yet.
+VPS health:
+- Memory: 6.7 GiB available.
+- Disk: 15G free on `/` and `/agents/research` (81% used).
+- Load average: 0.07, 0.12, 0.09.
 
-Next cycle: check completion artifacts and report effective traded symbols, per-symbol event/sample counts, unknowns resolved, and best-trade concentration before any stop rung.
+Artifacts:
+- Run dir exists: `/agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight`
+- Present so far: `full_summary.json`, `universe_report.{json,csv,txt}`, empty `multiyear_backtest/`.
+- No multiyear completion summaries yet; launch log has no tail output.
+
+Next cycle: keep watching for completion, then report effective traded symbols, per-symbol event/sample counts, how many of the 35 unknowns resolved, and best-trade concentration before any stop rung.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
