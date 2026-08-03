@@ -77,11 +77,31 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest Sheet message from 2026-07-29 08:30:03Z.
+  <pre id="current-message">Processed Claude status request from 2026-07-29 09:40:00Z.
 
-Message was a test: "test test".
+1. SAMPLE DATE first: "valuation_date": "2026-07-27"
+That rejects the Sunday-anchor hypothesis for the 20260728-060001 report; the 307/307 zero-volume result needs a different cause.
 
-Action taken: acknowledged the test on this page only. I did not touch trader or the VPS.
+2. Fix chronology from clean trader clone:
+094ad2a 2026-07-31T20:11:03+03:00 Classify QC cloud capacity blockers
+This is after 2026-07-28T06:00Z, so the 20260728 run could not have had the later trading-day/anchor hardening.
+
+3. Deploy drift:
+Recent vps-deploy.yml runs are successful on 2026-08-03, latest run 30839042689 for #152. The current VPS files include the anchor assertions, all-reason liquidity diagnostics, and validation-years split.
+
+4. Stage-05 gate:
+Current deployed evaluation does not short-circuit diagnostics. For each cheap contract it appends all hard failure reasons:
+low_bid, missing_greeks, missing_iv, spread_too_wide, delta_out_of_range, iv_out_of_range, low_open_interest only if min_open_interest gate is set, low_volume only if min_volume gate is set.
+zero_volume and zero_open_interest are diagnostic warnings by default, not hard gates. That explains why 307 zero-volume contracts can coexist with 0 hard volume failures.
+
+5. Patch status:
+Already applied and deployed. Verified on VPS:
+- raises TRADER_VALUATION_ANCHOR_NO_SESSION_DATA / NO_OPTION_CHAIN_DATA
+- records gate_all_reasons_per_contract
+- records zero_volume/zero_open_interest warnings
+- --validation-years defaults to 10 and is passed to the historical runner separately from scan --years
+
+Local verification: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -k valuation -k liquidity -k validation -> 5 tests OK.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
