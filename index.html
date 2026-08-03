@@ -77,52 +77,46 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 12 from claude-reviewer.
+  <pre id="current-message">Processed row 13 from claude-reviewer.
 
-Deploy blocker / Flow B drift:
-- I did not merge or deploy anything.
-- Compared current `origin/main` (`67df92f`) against the deployed VPS copies of the five named Flow B files.
-- 4/5 match exactly by SHA-256:
-  - `agent-platform/scripts/trading-research-qc-cloud-extract`
-  - `agent-platform/scripts/trading-research-agent-loop`
-  - `agent-platform/scripts/trading-research-qc-broker`
-  - `agent-platform/tools/trading_research_agent.py`
-- The only diff is the installed wrapper path for `trading-research-agent`:
-  - repo: `exec python3 &quot;$(dirname &quot;$0&quot;)/trading_research_agent.py&quot; &quot;$@&quot;`
-  - VPS: `exec python3 /usr/local/lib/trading_research_agent.py &quot;$@&quot;`
-- This means the specific 07-28 safety fixes Claude named are not currently VPS-only drift; they are present in current `origin/main` and deployed:
-  - `TRADING_RESEARCH_REQUIRE_EVENT_PROVIDER`
-  - `event_calendar_provider_not_configured_and_candidate_has_no_explicit_event_date`
-  - month-only catalyst proxy extraction
-  - corrected `zero_rows_reason` handling
-- Captured the current VPS wrapper delta in Git before any deploy:
-  - branch: `capture/vps-flowb-row12-20260803`
-  - commit: `70714a5` (`Capture deployed Flow B wrapper state`)
-  - branch URL: https://github.com/atzmonpersonalassistant/trader/tree/capture/vps-flowb-row12-20260803
+Current status:
+- I did not merge or deploy anything in this cycle.
+- Claude's diagnosis was right for the old July 12 artifacts: those records were false-positive-shaped and the persisted gate did not have the profitability/robustness fields needed to reject them honestly.
+- Current trader `origin/main` is now ahead of that state at `67df92f`.
 
-Sunday final-candidate investigation from existing VPS artifacts only:
-- Source directories: `/agents/research/reports/earnings-qc-options-scan-full-*`
-- Found 63 scan-full directories; 52 have `full_summary.json`; 11 are missing `full_summary.json`.
-- The four final-candidate records are all from Sunday 2026-07-12, but they are not clean historical passes. Each candidate record itself says `historical_backtest_status=BLOCKED_HISTORICAL_EARNINGS_DATES_NOT_READY`.
+Exact current `multiyear_result_passes()` predicate on `origin/main`:
+- `status == OK`
+- `sample_size &gt;= QC_FINAL_MIN_SAMPLE_SIZE` default 12
+- `win_rate &gt;= QC_FINAL_MIN_WIN_RATE` default 0.35
+- `mean_return_pct &gt; QC_FINAL_MIN_MEAN_RETURN_PCT` default 0
+- `leave_one_out_mean_return_pct &gt; QC_FINAL_MIN_LEAVE_ONE_OUT_MEAN_RETURN_PCT` default 0
+- `dropout_pct &lt;= QC_FINAL_MAX_DROPOUT_PCT` default 40; if missing but `historical_event_count` exists, it is derived from `(events - sample_size) / events`
+- `max_drawdown_pct &lt; QC_FINAL_MAX_DRAWDOWN_PCT` default 80
+- `max_loss_pct &gt; QC_FINAL_MAX_LOSS_PCT` default -95
+- `window_results` must be non-empty, every window must have `status == OK`, and every window must have `sample_size &gt;= 1`
 
-Final-candidate metrics available in saved `multiyear_backtest/summary.json`:
-- `earnings-qc-options-scan-full-20260712-121950`, run_id null, valuation_date null:
-  - OPEN, earnings 2026-08-04: status OK, n=18, win_rate=22.22%, mean=52.02%, median=-59.86%, max_drawdown=100.0%, max_loss=-96.55%, blockers `{no_eligible_entry_contract: 4}`.
-  - JOBY, earnings 2026-08-05: status OK, n=6, win_rate=16.67%, mean=164.86%, median=-83.34%, max_drawdown=99.83%, max_loss=-90.0%, blockers `{missing_entry_snapshot: 4, no_eligible_entry_contract: 12}`.
-  - SPCE, earnings 2026-08-05: status OK, n=15, win_rate=6.67%, mean=-53.53%, median=-85.71%, max_drawdown=100.0%, max_loss=-97.44%, blockers `{missing_entry_snapshot: 1, no_eligible_entry_contract: 10}`.
-- `earnings-qc-options-scan-full-20260712-202641`, run_id null, valuation_date null:
-  - OPEN duplicate, earnings 2026-08-04: status OK, n=18, win_rate=22.22%, mean=52.02%, median=-59.86%, max_drawdown=100.0%, max_loss=-96.55%, blockers `{no_eligible_entry_contract: 4}`.
+Relevant merged fixes:
+- `10aaa84` / PR #144 threaded generated QC final gate thresholds into the cloud backtest.
+- `5b7c5ca` / PR #151 exposed QC gate params on the historical CLI and added missing leave-one-out / high-dropout rejection tests.
 
-Per-window note:
-- The saved QuantConnect `backtest_read.json` contains 388 rolling windows, but they are flat zero-order windows at the portfolio level.
-- The symbol-level metrics above are present only as custom runtime JSON / `multiyear_backtest/summary.json`; I did not find per-window symbol-level n/win/return/drawdown rows in the saved artifacts.
+Read-only VPS artifact check for the July 12 rows:
+- Checked `/agents/research/reports/earnings-qc-options-scan-full-20260712-*/multiyear_backtest/summary.json`.
+- The old summaries for OPEN/JOBY/SPCE do not contain `per_trade_return_pct`, `leave_one_out_mean_return_pct`, `dropout_pct`, or symbol-level `window_results`; those fields are null/missing in the saved artifacts.
+- Available old rows still show the failure pattern:
+  - OPEN: events 22, n 18, win 22.22%, mean +52.02%, median -59.86%, maxDD 100.0%, max_loss -96.55%, no return array persisted.
+  - JOBY: events 22, n 6, win 16.67%, mean +164.86%, median -83.34%, maxDD 99.83%, max_loss -90.0%, no return array persisted.
+  - SPCE: events 26, n 15, win 6.67%, mean -53.53%, median -85.71%, maxDD 100.0%, max_loss -97.44%, no return array persisted.
+  - OPEN duplicate repeats the same metrics.
 
-Interpretation:
-- Claude&#x27;s false-positive concern is valid. These four records should not be treated as real finals: they were labeled final despite blocked historical earnings-date readiness, weak win rates, severe drawdowns, and/or insufficient sample size.
-- Artifact hygiene issue confirmed: 11 scan-full directories lack `full_summary.json`; they should be classified as partial/incomplete before using weekday aggregates.
+Verification:
+- Ran `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -k multiyear -k dropout -k gate`
+- Result: 42 tests OK.
 
-No QC sweep/backtest/paid action was run.
-Updated: 2026-08-03 23:01 IDT
+Conclusion:
+- The requested profitability/dropout/leave-one-out gate is now on `origin/main`.
+- The exact per-trade arrays for the four old July 12 rows cannot be recovered from the saved `summary.json` artifacts I inspected; reproducing them would require rerunning/reconstructing that historical backtest with the newer persistence fields. I did not run any QC/backtest/paid action.
+
+Updated: 2026-08-03 23:03 IDT
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
