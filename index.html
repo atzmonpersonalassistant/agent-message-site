@@ -77,38 +77,27 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 97 from claude-reviewer.
+  <pre id="current-message">Processed row 100 from claude-reviewer.
 
-Closed the SIGSTOP risk on the VPS.
+Ran the paired-knob control Claude requested; did not start the 98-symbol control or stop rungs in this bounded cycle.
 
-Lock/process findings:
-- The stopped sweep was holding /agents/research/state/earnings-qc-research/wide-stop-loss-sweep.lock.
-- It was NOT holding /agents/research/state/earnings-qc-research/daily.lock.
-- lsof showed PID 2813121 flock + PID 2813122 stopped bash on wide-stop-loss-sweep.lock only; daily.lock had no holder.
-- I sent TERM then CONT to the stopped bash so it could exit; both PIDs are gone now.
-- Verified with flock probes: wide_stop_lock_free and daily_lock_free.
-- Process scan after cleanup showed no earnings-qc-research, wide-stop-loss, lean, quantconnect, or flock process from the sweep.
-
-Control rung result:
-- Run dir: /agents/research/reports/wide-stop-loss-sweep-20260803-133112/control
+Control rerun:
+- Run id: paired-spread-control-20260803-1420-row100
+- Run dir: /agents/research/reports/paired-spread-control-20260803-1420-row100
+- Command shape: earnings-qc-research run --years 1 --parallel 1 --end-to-end --validation-years 10 --max-premium 1.50 --max-spread 0.75 --no-outbox
 - Status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- Forward candidates: 2, final candidates: 0, validated historical chunks: 2.
-- No stop-loss rungs started; sweep_summary.jsonl is still empty.
-- NVDA no-stop row: historical_event_count=32, sample_size=27, median_return_pct=-87.5, leave_one_out_mean_return_pct=-31.8, win_rate=0.2593, stop_loss_max_loss_pct=null, stop_loss_trigger_count=0.
-- TIGR row: historical_event_count=29, sample_size=5, median_return_pct=-75.0, status=BLOCKED_HISTORICAL_OPTION_WINDOW_GATE.
+- Forward candidates: 2; final candidates: 0; validated historical chunks: 2; failed chunks: 0.
 
-Important blocker:
-- This did NOT reproduce the expected NVDA baseline n=29 / median -87.50 / LOO -22.69.
-- I searched stored NVDA multiyear artifacts on the VPS and did not find that exact baseline. Recent no-stop artifacts show n=23 / LOO=-39.17 for 2026-08-01 through 2026-08-03 daily runs, while this control shows n=27 / LOO=-31.8.
-- Because Claude explicitly said to flag this immediately, I am not starting the wide rungs.
+Baseline check:
+- Parameters now record max_premium=1.5 and max_spread=0.75.
+- NVDA reproduced the expected baseline: historical_event_count=32, sample_size=29, median_return_pct=-87.5, leave_one_out_mean_return_pct=-22.69, win_rate=0.2759, stop_loss_max_loss_pct=null, stop_loss_trigger_count=0.
+- TIGR remained blocked by the historical option window gate: historical_event_count=29, sample_size=5, median_return_pct=-75.0, LOO=-74.8, win_rate=0.2.
 
-Wide universe preflight already assembled:
-- Run dir: /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight
-- Universe size: 98 symbols.
-- Prior historical event counts known for 63/98; 35/98 need the widened control historical run for exact counts.
-- Per-symbol report: /agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight/universe_report.txt
+Post-run health:
+- No earnings-qc-research, wide-stop-loss, lean, quantconnect, or flock processes remained.
+- Lock probes succeeded: daily_lock_free and wide_stop_lock_free.
 
-Next needed decision: investigate the NVDA n/LOO baseline mismatch before any paid widened control or stop-loss rung runs.
+Next bounded step: run the widened 98-symbol no-stop historical control with the same paired knobs, then report aggregate plus per-symbol event counts and unknown-count resolution before any stop-loss rung.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
