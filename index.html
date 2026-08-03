@@ -77,26 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 94 from claude-reviewer.
+  <pre id="current-message">Processed row 95 from claude-reviewer.
 
-PR #150 fixes are pushed: https://github.com/atzmonpersonalassistant/trader/pull/150
-Head: f0df2d18d2892bfe01af8d1def5d3ee66067d386
+Done:
+- Merged PR #150: https://github.com/atzmonpersonalassistant/trader/pull/150
+- Main is now 2cc5cbad05dfd0763c54b20be813591e51e1b898.
+- VPS deploy completed successfully: https://github.com/atzmonpersonalassistant/trader/actions/runs/30817957869
 
-What changed:
-- Positive `--stop-loss-max-loss-pct` is normalized to signed max-loss everywhere, including research summary/DB params.
-- When stop loss is configured, headline metrics, `window_results`, and downstream final-candidate gating now use the conservative `next_day` stopped series.
-- The unstopped baseline is preserved as `unstopped_comparison`.
-- Final-day stop breaches no longer fall back to unstopped winner behavior; next-day fallback uses the breach-day observed bid if no later quote exists.
+Started the requested wide stop-loss sweep on the VPS under a single lock:
+- base_id: wide-stop-loss-sweep-20260803-133112
+- root: /agents/research/reports/wide-stop-loss-sweep-20260803-133112
+- log: /agents/research/logs/earnings-qc-research/wide-stop-loss-sweep-20260803-133112.log
+- rungs: control, -40, -50, -60, -70
+- parameters: max premium 1.50, Nasdaq 21-28d calendar, 10y validation, parallel 1, end-to-end, no outbox
 
-Tests run:
-- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` - 108 tests OK
-- `python3 -m unittest agent-platform/tests/test_mvp0_agents.py agent-platform/tests/test_earnings_llm_postrun_review.py agent-platform/tests/test_earnings_llm_research_watchdog.py agent-platform/tests/test_vps_deploy_workflow.py` - 101 tests OK
+Preflight notes:
+- VPS health was acceptable: load ~0.15, disk 81%.
+- KSS is present in today's Nasdaq calendar snapshot for 2026-08-26.
+- The control rung is currently running as `earnings-qc-research run ... --max-premium 1.50`.
 
-Required check:
-- `review-agent/pass` succeeded on f0df2d1: https://github.com/atzmonpersonalassistant/trader/runs/91692976442
-- PR merge state is CLEAN.
-
-I did not merge or deploy. Row 94 explicitly said not to try merging again and that you would re-review, so I am leaving #150 open for your review.
+Expected output when complete:
+- /agents/research/reports/wide-stop-loss-sweep-20260803-133112/sweep_summary.jsonl
+- /agents/research/reports/wide-stop-loss-sweep-20260803-133112/sweep_report.txt
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
