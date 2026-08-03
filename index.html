@@ -77,36 +77,48 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 10 from claude-reviewer.
+  <pre id="current-message">Processed row 11 from claude-reviewer.
 
-What I checked:
-- No QC sweep/backtest was run this cycle. I treated the 8-10 symbol cap sweep as requiring explicit budget approval.
-- Current trader main and the deployed VPS scanner already persist `strike_spot_ratio`, `required_move_pct`, and `delta` in `cheap_contract_diagnostics_sample`.
-- Local test: `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -k liquidity` -&gt; OK.
+PR #119 status:
+- Follow-up check shows PR #119 is already MERGED: https://github.com/atzmonpersonalassistant/trader/pull/119
+- I did not admin-override or change branch protection.
+- I attempted `gh pr update-branch 119` before noticing the PR was closed/merged; GitHub refused with: `GraphQL: head sha didn't match the current head ref. (updatePullRequestBranch)`.
 
-Existing 2026-07-28 artifact, free read-only extraction:
-- Run: `/agents/research/reports/earnings-qc-options-scan-full-20260728-060001/`
-- Parameters: `max_premium=0.5`, `option_right=call`, `strike_range=-50:300`, `calendar_from_days=21`, `calendar_to_days=28`.
-- Funnel from chunk JSON: 191 symbols, 307 cheap calls, 10 liquidity-pass contracts across 4 symbols.
-- Hard fail counts: `spread_too_wide=297`, `low_bid=210`; warnings: `zero_volume=307`, `zero_open_interest=36`, `no_option_chain_slice_or_no_data=81`.
-- Old artifact has only the first 5 cheap-contract diagnostics per symbol and lacks explicit `strike_spot_ratio`; I recomputed ratio as `strike / spot` from `required_move_pct`.
+Raw requested outputs:
 
-Passing sample contracts:
-- TE spot 5.00: 6.0c ratio 1.20 delta 0.4041 ask/bid 0.50/0.45; 7.0c ratio 1.40 delta 0.2682 ask/bid 0.30/0.25. Reported pass contracts: 4.
-- VNET spot 7.21: 9.0c ratio 1.2483 delta 0.2046 ask/bid 0.20/0.15. Reported pass contracts: 1.
-- KC spot 9.47: 12.5c ratio 1.32 delta 0.1595 ask/bid 0.20/0.15. Reported pass contracts: 1.
-- WMT spot 109.46: 122c ratio 1.1146 delta 0.1102 ask/bid 0.50/0.45; 123c ratio 1.1237 delta 0.0948 ask/bid 0.45/0.36; 125c ratio 1.1420 delta 0.0671 ask/bid 0.28/0.25. Reported pass contracts: 4.
+`gh pr view 119 --json mergeStateStatus,mergeable,reviewDecision,isDraft,baseRefName,headRefName,statusCheckRollup`
+{"baseRefName":"main","headRefName":"fix/earnings-qc-anchor-validation-years","isDraft":false,"mergeStateStatus":"UNKNOWN","mergeable":"UNKNOWN","reviewDecision":"","statusCheckRollup":[{"__typename":"CheckRun","completedAt":"2026-07-29T12:17:55Z","conclusion":"SUCCESS","detailsUrl":"https://github.com/atzmonpersonalassistant/trader","name":"review-agent/pass","startedAt":"2026-07-29T12:17:55Z","status":"COMPLETED","workflowName":""}]}
 
-Spot-bucket profile from the old artifact:
-- Under $10: 110 symbols, 115 cheap contracts, 6 pass contracts, median sampled required move 61.39%, median abs delta 0.1889.
-- $10-$25: 24 symbols, 84 cheap contracts, 0 pass, median sampled required move 31.84%, median abs delta 0.1367.
-- $25-$100: 30 symbols, 39 cheap contracts, 0 pass, median sampled required move 32.67%, median abs delta 0.0605.
-- Over $100: 27 symbols, 69 cheap contracts, 4 pass, median sampled required move 27.64%, median abs delta 0.0272.
+`gh pr checks 119`
+review-agent/pass	pass	0	https://github.com/atzmonpersonalassistant/trader
 
-Interpretation: the existing artifact supports your moneyness/liquidity hypothesis directionally, but not perfectly. High-priced names mostly show very low deltas under the $0.50 cap; WMT is the exception because 11-14% OTM calls still cleared spread/bid. The old artifact cannot reconstruct all 307 per-contract ratios because it saved only samples; future runs now include explicit `strike_spot_ratio`.
+`gh api repos/atzmonpersonalassistant/trader/branches/main/protection`
+{"required_status_checks":{"strict":true,"contexts":["review-agent/pass"],"checks":[{"context":"review-agent/pass","app_id":3988836}]},"required_pull_request_reviews":{"dismiss_stale_reviews":true,"require_code_owner_reviews":false,"require_last_push_approval":false,"required_approving_review_count":0},"enforce_admins":{"enabled":true},"required_conversation_resolution":{"enabled":false},"required_linear_history":{"enabled":false},"allow_force_pushes":{"enabled":false},"allow_deletions":{"enabled":false},"block_creations":{"enabled":false}}
 
-Blocker/question for Uriel: approve a bounded QC cap sweep? Proposed scope: 8-10 symbols across spot buckets, caps 0.50/1.00/2.00, same other params, report pass-count monotonicity plus per-cheap-contract ratio/delta.
-Updated: 2026-08-03 23:07 IDT
+Decisive interpretation:
+- Not (a): the required check name is `review-agent/pass`, and it did report PASS.
+- Not (b): required approving review count is 0.
+- (c) was plausible from strict=true plus stale branch, but no longer actionable because PR #119 is merged.
+- (d): enforce_admins=true is enabled, but it did not prevent the eventual merge.
+
+Historical weekday grouping from existing VPS artifacts only:
+- Source: `/agents/research/reports/earnings-qc-options-scan-full-*/full_summary.json`
+- Historical-gate-ran subset: 8 runs from 2026-07-26 through 2026-08-03.
+- Monday: 2 runs, 317 scanned, 8 forward candidates, 6 validated chunks, 0 finals, 0 blocked, 2 no-pass.
+- Tuesday: 1 run, 191 scanned, 4 forward, 4 validated chunks, 0 finals, 1 blocked insufficient evidence.
+- Wednesday: 1 run, 172 scanned, 4 forward, 2 validated chunks, 0 finals, 1 blocked insufficient evidence.
+- Thursday: 0 historical-gate-ran full summaries found.
+- Friday: 1 run, 155 scanned, 0 forward, 0 validated chunks, 0 finals.
+- Saturday: 1 run, 124 scanned, 3 forward, 2 validated chunks, 0 finals, 1 no-pass.
+- Sunday: 2 runs, 309 scanned, 7 forward, 5 validated chunks, 0 finals, 0 blocked, 2 no-pass.
+
+Flow B tracking check:
+- These are tracked in repo HEAD: `agent-platform/scripts/trading-research-qc-cloud-extract`, `agent-platform/scripts/trading-research-agent-loop`, `agent-platform/scripts/trading-research-qc-broker`, `agent-platform/tools/trading-research-agent`, and `agent-platform/tools/trading_research_agent.py`.
+- Recent relevant tracked history includes #127 Restore research Flow B safety guards, #117 Fix research historical observability and QC extract, and #116 Add QC Cloud option-chain extract broker.
+- This does not prove the VPS installed copies match repo HEAD; it proves the named scripts are managed in the repo and deployable, not purely hand-installed.
+
+No QC sweep/backtest or paid action was run.
+Updated: 2026-08-03 22:43 IDT
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
