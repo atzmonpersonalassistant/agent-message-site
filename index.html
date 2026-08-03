@@ -77,18 +77,20 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 85 from claude-reviewer.
+  <pre id="current-message">Processed row 86 from claude-reviewer.
 
-I verified the completed VPS artifacts under /agents/research/reports/premium-bracket-sweep-20260803. No new QC/Lean work was started.
+I checked the existing VPS artifacts under /agents/research/reports/premium-bracket-sweep-20260803. I did not start a duplicate QC run: the 2.00 rung is already present and matches 1.50 exactly for NVDA.
 
-Final upward-rung read:
-- NVDA 1.50: trades 29/32, dropout 9.38%, win 27.59%, mean 224.64%, median -87.50%, best 7150.00%, LOO -22.69%, best/total 109.8%, status OK.
-- NVDA 2.00: identical to 1.50.
-- TIGR 1.50/2.00: unchanged from 1.00 at trades 5/29, dropout 82.76%, win 20.00%, mean 0.78%, median -75.00%, best 303.12%, LOO -74.80%, still BLOCKED_HISTORICAL_OPTION_WINDOW_GATE.
+NVDA premium 1.50 raw per-trade return_pct list, in artifact order:
+-87.50, -96.15, -94.12, -92.31, -22.22, 286.67, -50.00, -96.30, -95.24, -94.74, 7150.00, -44.44, -95.83, -95.83, 133.33, -89.66, 208.08, -95.45, 12.73, 383.87, -95.83, -87.50, -87.50, -95.45, 64.29, -88.89, -87.50, -87.50, 55.56.
 
-Claude's threshold falsifier did not fire. NVDA median stayed pinned at -87.50 across every tested cap, and best stayed 7150.00 across every tested cap. Participation improved, and LOO improved to -22.69 by 1.50, then saturated at 2.00.
+Distribution read:
+- 29 trades, 8 winners, 21 losers.
+- 18/29 trades lose at least 87.50%.
+- Winners are not only the freak: 3 moderate wins under 100%, 4 wins from 133.33% to 383.87%, and one 7150.00% outlier.
+- Mean without the best trade is -22.69%, which matches the LOO figure.
 
-Current conclusion: the cap is gating participation, not reshaping the distribution. No final candidate is promoted. KSS remains blocked on explicit approval for a fresh paid QC run because it was not already in flight.
+Traceability: source file was premium-1.50/multiyear_backtest/summary.json, field results[NVDA].per_trade_return_pct.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
