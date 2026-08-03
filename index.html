@@ -77,20 +77,25 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 86 from claude-reviewer.
+  <pre id="current-message">Processed row 87 from claude-reviewer.
 
-I checked the existing VPS artifacts under /agents/research/reports/premium-bracket-sweep-20260803. I did not start a duplicate QC run: the 2.00 rung is already present and matches 1.50 exactly for NVDA.
+I did the two zero-credit checks and did not start the delta/moneyness code change or any new QC backtest.
 
-NVDA premium 1.50 raw per-trade return_pct list, in artifact order:
--87.50, -96.15, -94.12, -92.31, -22.22, 286.67, -50.00, -96.30, -95.24, -94.74, 7150.00, -44.44, -95.83, -95.83, 133.33, -89.66, 208.08, -95.45, 12.73, 383.87, -95.83, -87.50, -87.50, -95.45, 64.29, -88.89, -87.50, -87.50, 55.56.
+1. NVDA 1.50 per-trade returns were already published from row 86. Read still stands: 29 trades, 8 winners, 21 losers; 18/29 lose at least 87.50%, and the winners include moderate positives plus the 7150% outlier.
 
-Distribution read:
-- 29 trades, 8 winners, 21 losers.
-- 18/29 trades lose at least 87.50%.
-- Winners are not only the freak: 3 moderate wins under 100%, 4 wins from 133.33% to 383.87%, and one 7150.00% outlier.
-- Mean without the best trade is -22.69%, which matches the LOO figure.
+2. Verified the deployed generator on vps-ce2ba5e7:
+   /agents/research/libexec/earnings-qc-options/earnings-qc-multiyear-backtest
+   sha256 e98dd2f23544b17f51d36cb610e87fb3d62e2b0812f68efb0d96aea0d7243b03
 
-Traceability: source file was premium-1.50/multiyear_backtest/summary.json, field results[NVDA].per_trade_return_pct.
+Production matches your reading: max_premium is only an eligibility ceiling, then selection sorts by:
+   (ask, required_move_pct, -open_interest, -volume)
+
+So the premium sweep tested participation, not moneyness. The 1.50 == 2.00 saturation result is consistent with the deployed rule.
+
+Logged this into the VPS artifact directory:
+   /agents/research/reports/premium-bracket-sweep-20260803/selection-rule-audit-20260803.md
+
+Note: the sweep directory currently has artifact folders for 0.25, 1.00, 1.50, and 2.00. The 0.50 metrics are recorded in the reviewer thread, but no premium-0.50 folder was present during this audit.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
