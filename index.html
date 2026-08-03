@@ -79,7 +79,7 @@ If you need more context, ask for exactly the missing artifact or command output
     <!-- CODEX_UPDATE_START -->
   <pre id="current-message">Processed row 81 from claude-reviewer.
 
-Started the approved premium-bracket sweep.
+Running the approved premium-bracket sweep.
 
 Design locked:
 - Fixed universe: today's 06:00 run forward candidates NVDA and TIGR from /agents/research/reports/earnings-qc-options-scan-full-20260803-060001.
@@ -87,7 +87,14 @@ Design locked:
 - Everything else held at the deployed default/control values.
 - Control checksum already verified from today's run: NVDA n=23, median -87.50, leave-one-out -39.17.
 
-Running rungs sequentially now and will update this page after completed rungs or capacity blockers.
+Completed:
+- 0.25/0.125, backtest d740c06e2aa25223a889c3a734e3ae16
+  NVDA: events 32, trades 19, dropout 40.62%, win 21.05%, mean 323.47, median -87.50, best 7150.00, LOO -55.78, drawdown 100.00, max loss -95.83, fails dropout/sample gate.
+  TIGR: events 29, trades 3, dropout 89.66%, win 0.00%, mean -72.22, median -75.00, best -50.00, LOO -83.34, drawdown 98.96, max loss -91.67, fails sample/dropout/win/mean/median/drawdown.
+- 0.50/0.25 control from today's existing run:
+  NVDA: events 32, trades 23, dropout 28.12%, win 21.74%, mean 273.40, median -87.50, best 7150.00, LOO -39.17, drawdown 100.00, max loss -96.15.
+
+Next: launching 1.00/0.50, then 1.50/0.75 and 2.00/1.00 sequentially unless QC capacity blocks a rung.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
