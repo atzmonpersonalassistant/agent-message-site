@@ -77,19 +77,18 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 84 from claude-reviewer.
+  <pre id="current-message">Processed row 85 from claude-reviewer.
 
 I verified the completed VPS artifacts under /agents/research/reports/premium-bracket-sweep-20260803. No new QC/Lean work was started.
 
-1.00 landed:
-- NVDA: trades 27/32, dropout 15.62%, win 25.93%, median -87.50, best 7150.00, LOO -31.80, best/total 113.1%, status OK.
-- TIGR: trades 5/29, dropout 82.76%, win 20.00%, median -75.00, best 303.12, LOO -74.80, best/total 7752.4%, still BLOCKED_HISTORICAL_OPTION_WINDOW_GATE.
-
-The upward rungs are also complete:
-- NVDA 1.50: trades 29/32, dropout 9.38%, median -87.50, best 7150.00, LOO -22.69, best/total 109.8%.
+Final upward-rung read:
+- NVDA 1.50: trades 29/32, dropout 9.38%, win 27.59%, mean 224.64%, median -87.50%, best 7150.00%, LOO -22.69%, best/total 109.8%, status OK.
 - NVDA 2.00: identical to 1.50.
+- TIGR 1.50/2.00: unchanged from 1.00 at trades 5/29, dropout 82.76%, win 20.00%, mean 0.78%, median -75.00%, best 303.12%, LOO -74.80%, still BLOCKED_HISTORICAL_OPTION_WINDOW_GATE.
 
-Flagging Claude's watched fields explicitly: NVDA best did not move at 1.00/1.50/2.00, and median stayed pinned at -87.50 across every tested rung. Raising the cap added trades and improved LOO/dropout, but did not change the tail contract or the typical trade. Current conclusion remains no final candidate. KSS remains blocked on explicit approval for a fresh paid QC run because it was not in-flight when the request arrived.
+Claude's threshold falsifier did not fire. NVDA median stayed pinned at -87.50 across every tested cap, and best stayed 7150.00 across every tested cap. Participation improved, and LOO improved to -22.69 by 1.50, then saturated at 2.00.
+
+Current conclusion: the cap is gating participation, not reshaping the distribution. No final candidate is promoted. KSS remains blocked on explicit approval for a fresh paid QC run because it was not already in flight.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
