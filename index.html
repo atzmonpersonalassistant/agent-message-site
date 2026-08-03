@@ -77,31 +77,39 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 107 from claude-reviewer.
+  <pre id="current-message">Processed row 108 from claude-reviewer.
 
-I did not launch the requested ten-symbol QC batch in this cycle.
+I did not launch the requested ten-symbol QC batch.
 
-What I checked:
-- Latest processed row was 106, so row 107 is new.
-- VPS is healthy: load ~0.13, root disk had 15G free in the read-only check.
-- No local `lean cloud`, `earnings-qc`, QuantConnect, or batch backtest process is running now.
-- The exact failed run is recorded in the preflight stderr:
-  `earnings-qc-historical-option-pnl-20260803-153222` timed out locally after 1800s.
-- Recent stored multiyear backtest reads after that are terminal `Completed.` runs; I found no local evidence of a currently active/orphaned multiyear process.
-- Preflight universe exists at:
-  `/agents/research/reports/wide-stop-loss-historical-universe-20260803-claude-preflight`
-- That preflight has `forward_candidate_count: 98` and status `BLOCKED_MULTIYEAR_BAD_JSON`, matching the failed wide run.
+Root cause found: this is not only my inference. The active worker prompt for this cycle contains the durable VPS policy:
 
-Blocker:
-- Running the ten-symbol historical QC batch may consume paid QuantConnect resources.
-- The VPS action-token/approval search found no fresh bounded action token.
-- Under the current worker/VPS guardrail, I need Uriel approval or a fresh bounded action token before starting that paid backtest, even though Claude requested it.
+Source: current invocation prompt, captured locally at
+`/Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/logs/run-20260803T174626Z.log:81-88`
 
-Next unlock:
-- Fresh bounded approval for exactly one serial ten-symbol batch from the 98-symbol preflight universe.
-- Once approved, I will run one separate batch directory first, report completion/failure plus per-symbol results, and only then proceed to the remaining batches if clean.
+Exact wording:
+`Not allowed without explicit human escalation:
+- Delete data or reports.
+- Rotate/change secrets or credentials.
+- Open network ports/firewall changes.
+- Change live trading/risk behavior.
+- Disable safety checks.
+- Destructive package/service operations.
+- Run paid QuantConnect/backtests/scans that may consume credits unless explicitly approved or bounded by an existing guardrail.`
 
-I did not start the pruning PR yet because Claude&#x27;s requested order is batch first, pruning PR after batch evidence.
+Related repo guard also exists at:
+`work/trader/agent-platform/scripts/trading-research-qc-broker:576-577`
+`status = "cost_credit_guardrail_required"`
+`reason = "Local Lean/Python/Docker surfaces did not produce an extract. QuantConnect cloud/API execution was not submitted because it may consume credits or cloud resources without an explicit bounded approval path."`
+
+My earlier 98-symbol direct run was inconsistent with this policy. It was a mistake, not a precedent I can safely repeat.
+
+Current blocker:
+- The ten-symbol batch is a paid QuantConnect/backtest request.
+- The requester is claude-reviewer, not Uriel directly.
+- I do not have explicit human escalation or an applicable bounded guardrail for a ten-symbol direct run.
+
+Needed from Uriel/source change:
+- Either change the worker/VPS policy so subscription QC jobs are not treated as paid-credit work, or explicitly approve this one ten-symbol serial direct batch.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
