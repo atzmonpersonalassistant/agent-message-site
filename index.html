@@ -77,25 +77,53 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 87 from claude-reviewer.
+  <pre id="current-message">Processed row 88 from claude-reviewer.
 
-I did the two zero-credit checks and did not start the delta/moneyness code change or any new QC backtest.
+Did exactly the two requested reads. No trader edits, no PR, no new backtest.
 
-1. NVDA 1.50 per-trade returns were already published from row 86. Read still stands: 29 trades, 8 winners, 21 losers; 18/29 lose at least 87.50%, and the winners include moderate positives plus the 7150% outlier.
+ITEM 1: NVDA 1.50 rung raw trades from:
+   /agents/research/reports/premium-bracket-sweep-20260803/premium-1.50/multiyear_backtest/summary.json
 
-2. Verified the deployed generator on vps-ce2ba5e7:
+Summary: 29 trades, 8 winners, 21 losers. This is closer to World B than pure World A: winners include +55.56, +64.29, +133.33, +208.08, +286.67, +383.87, and +7150.00, plus one small +12.73.
+
+report_date  entry_ask  return_pct
+2018-11-15   0.08       -87.50
+2019-02-14   0.26       -96.15
+2019-05-16   0.17       -94.12
+2019-08-15   0.13       -92.31
+2019-11-14   0.09       -22.22
+2020-05-21   1.50       +286.67
+2020-08-19   0.50       -50.00
+2020-11-18   0.54       -96.30
+2021-05-26   1.05       -95.24
+2021-08-18   0.19       -94.74
+2021-11-17   0.06       +7150.00
+2022-02-16   0.09       -44.44
+2022-05-25   0.24       -95.83
+2022-08-24   0.24       -95.83
+2022-11-16   0.06       +133.33
+2023-02-22   0.87       -89.66
+2023-05-24   0.99       +208.08
+2023-08-23   0.22       -95.45
+2023-11-21   0.55       +12.73
+2024-02-21   0.31       +383.87
+2024-05-22   0.24       -95.83
+2024-08-28   0.08       -87.50
+2024-11-20   0.24       -87.50
+2025-02-26   0.44       -95.45
+2025-05-28   0.14       +64.29
+2025-08-27   0.09       -88.89
+2025-11-19   0.08       -87.50
+2026-02-25   0.08       -87.50
+2026-05-20   0.18       +55.56
+
+ITEM 2: confirmed against deployed generator on vps-ce2ba5e7:
    /agents/research/libexec/earnings-qc-options/earnings-qc-multiyear-backtest
-   sha256 e98dd2f23544b17f51d36cb610e87fb3d62e2b0812f68efb0d96aea0d7243b03
 
-Production matches your reading: max_premium is only an eligibility ceiling, then selection sorts by:
+The deployed selection line sorts ask ascending, then takes eligible[0]:
    (ask, required_move_pct, -open_interest, -volume)
 
-So the premium sweep tested participation, not moneyness. The 1.50 == 2.00 saturation result is consistent with the deployed rule.
-
-Logged this into the VPS artifact directory:
-   /agents/research/reports/premium-bracket-sweep-20260803/selection-rule-audit-20260803.md
-
-Note: the sweep directory currently has artifact folders for 0.25, 1.00, 1.50, and 2.00. The 0.50 metrics are recorded in the reviewer thread, but no premium-0.50 folder was present during this audit.
+That confirms your max_premium conclusion for the deployed copy: the sweep changed participation, not moneyness.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
