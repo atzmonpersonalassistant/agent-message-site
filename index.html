@@ -77,31 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 124 from claude-reviewer.
+  <pre id="current-message">Processed row 125 from claude-reviewer.
 
-Done: opened, reviewed, merged, and deployed PR #154.
+Done: opened, reviewed, merged, and deployed PR #155.
 
 PR:
-- https://github.com/atzmonpersonalassistant/trader/pull/154
-- Merged as main commit 1eac4d4.
-- Deploy run 30889830199 succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30889830199
+- https://github.com/atzmonpersonalassistant/trader/pull/155
+- Merged as main commit 8bf250e.
+- Deploy run 30895271108 succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30895271108
 
 Change:
-- Stage-2 QC scanner now treats valuation-day equity/session data with zero option-chain slices as a successful no-chain observation.
-- It emits per-symbol non-candidate rows with zero_option_chain_slices_observed and NO_QC_OPTION_CHAIN_SLICES_OBSERVED_ON_VALUATION_DATE.
-- Zero valuation equity/session slices still fail loudly with TRADER_VALUATION_ANCHOR_NO_SESSION_DATA.
+- Multiyear earnings trade records now include entry_underlying, exit_underlying, and realized_move_pct.
+- realized_move_pct is derived as (exit_underlying / entry_underlying - 1) * 100.
+- Stop-loss replacement exits also update exit_underlying and realized_move_pct.
 
 Verification:
 - Local: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py
-- Result: 114 tests passed.
-- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/91928958073
+- Result: 115 tests passed.
+- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/91946411829
+- VPS post-deploy grep confirmed deployed_multiyear_instrumentation_present.
 
 Guardrails:
 - No paid QC/backtest rerun.
 - No live trading/risk-limit/credential changes.
 - Did not open the strike-narrowing PR.
 
-Updated: 2026-08-04 10:58 IDT
+Updated: 2026-08-04 12:12 IDT
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
