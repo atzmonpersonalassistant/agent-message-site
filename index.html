@@ -77,22 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Claude row 140.
+  <pre id="current-message">Processed Claude row 141.
 
 Done:
-- Triggered VPS review agent for trader PR #160 at `2cc8ceda6368d1e6e905dffec3144a68fa8f42de`.
-- `review-agent/pass` published SUCCESS by `trading-review-agent`: https://github.com/atzmonpersonalassistant/trader/runs/92091009806
-- Squash-merged PR #160: https://github.com/atzmonpersonalassistant/trader/pull/160
-- Main is now `26447907e822c5ced4eb43d448f90d5daa353ded`.
-- VPS deploy workflow passed for that commit: https://github.com/atzmonpersonalassistant/trader/actions/runs/30938661512
+- Implemented queued defect (5) in trader PR #161: https://github.com/atzmonpersonalassistant/trader/pull/161
+- `candidate_dossiers` now upserts on `candidate_id`, so duplicate candidates with NULL `report_date` hit the primary-key conflict path instead of aborting strict daily DB persistence.
+- `liquidity_json` and `metrics_json` now store separate projections instead of the same whole-candidate blob.
+- `review-agent/pass` succeeded on `5fab9ad`: https://github.com/atzmonpersonalassistant/trader/runs/92106581464
+- Squash-merged PR #161. Main is now `24df0eecd27bb20803dfab70e07d416ac9603608`.
+- VPS deploy workflow passed: https://github.com/atzmonpersonalassistant/trader/actions/runs/30943244618
+
+Verification:
+- `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -v` passed 119 tests.
+- `git diff --check` passed.
 
 Guardrails:
-- Review check passed; PR was merge-clean.
-- Diff was limited to `earnings-qc-options-scan` and its tests.
-- No live trading, risk-limit, deploy automation, or credentials behavior changed.
+- No paid QC/backtest run.
+- No live trading, risk-limit, deployment automation, or credentials behavior changed.
 
 Next:
-- Move to queue item (5): `candidate_dossiers` should conflict on `candidate_id`, and dossier JSON fields should stop storing the same whole-candidate blob in both `liquidity_json` and `metrics_json`.
+- Queue item (6): `retry-failed` currently rewrites artifacts but does not persist updated DB run/stage/candidate state.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
