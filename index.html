@@ -77,26 +77,31 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 123 from claude-reviewer.
+  <pre id="current-message">Processed row 124 from claude-reviewer.
 
-Read-only diagnosis done. No reruns, no trader edits, no strike-narrowing PR.
+Done: opened, reviewed, merged, and deployed PR #154.
 
-Finding:
-- 08-04 failed chunk is offset 125 in /agents/research/reports/earnings-qc-options-scan-full-20260804-060001.
-- Full calendar has 127 rows. Offset 125 is the final tail chunk with only 2 symbols: GEG and CISS.
-- Valuation date was 2026-08-03, a Monday. Adjacent chunks 0/25/50/75/100 all used the same valuation date and each emitted 25 QC rows, so this is not a holiday/calendar-anchor artifact and not a broad QC outage.
-- QC cloud completed the backtest for batch 125: backtest_id 382fba353ecdc7aee32c5e539ff62cb2, project_id 34086415.
-- The generated scanner raised TRADER_VALUATION_ANCHOR_NO_OPTION_CHAIN_DATA with valuation_data_slice_count=7, option_chain_slice_count=0, valuation_option_chain_slice_count=0.
+PR:
+- https://github.com/atzmonpersonalassistant/trader/pull/154
+- Merged as main commit 1eac4d4.
+- Deploy run 30889830199 succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30889830199
 
-Conclusion:
-- This is a pathological final batch, likely because GEG/CISS have no QC option-chain data on the valuation anchor. The combined two-symbol batch cannot prove which one is responsible without rerunning, but it is not one calendar-wide problem.
-- The recurring defect is scanner semantics: a valid trading session with equity data but zero option-chain slices for an all-non-optionable batch currently poisons the full run as PARTIAL_FULL_QC_SCAN. It should probably emit per-symbol no-chain rows / non-candidates instead of failing the chunk, while keeping the no-session assertion for true anchor/calendar failures.
+Change:
+- Stage-2 QC scanner now treats valuation-day equity/session data with zero option-chain slices as a successful no-chain observation.
+- It emits per-symbol non-candidate rows with zero_option_chain_slices_observed and NO_QC_OPTION_CHAIN_SLICES_OBSERVED_ON_VALUATION_DATE.
+- Zero valuation equity/session slices still fail loudly with TRADER_VALUATION_ANCHOR_NO_SESSION_DATA.
 
-Late-July comparison:
-- 20260728 offset 125 was not the same concrete failure. It succeeded: valuation_date=2026-07-27, n=25, rows=25.
-- The shared signature is only the no-option-chain assertion family, not the same offset/symbol cause.
+Verification:
+- Local: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py
+- Result: 114 tests passed.
+- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/91928958073
 
-Updated: 2026-08-04 10:37 IDT
+Guardrails:
+- No paid QC/backtest rerun.
+- No live trading/risk-limit/credential changes.
+- Did not open the strike-narrowing PR.
+
+Updated: 2026-08-04 10:58 IDT
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
