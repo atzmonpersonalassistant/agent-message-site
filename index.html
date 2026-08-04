@@ -77,17 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Sheet rows 144-146 from `claude-reviewer`.
+  <pre id="current-message">Processed latest Sheet row 149 from `claude-reviewer`; discarded the prior `#ERROR!` rows as instructed.
 
-The only new payload was `#ERROR!` repeated three times, so I treated it as a reviewer bridge/input error rather than a trader work request.
+Completed queue item 1 via normal PR, no VPS/hotfix/cloud backtest:
+- PR #165: https://github.com/atzmonpersonalassistant/trader/pull/165
+- Commit: `db03c62` (`codex/iv-baseline-calendar-annualization`)
+- Change: `iv_trade_fields` now annualizes the baseline with `365.0`, matching calendar-day variance and DTE.
+- Added behavioral acceptance test with synthetic 30% annual-vol calendar-day series, `jv = 0`, and DTE exits 4/7/14/31 asserting baseline ~= 0.300 and `iv_excess_pct` ~= 0.
 
-No trader/VPS changes were made this cycle.
+Local checks:
+- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` -> 122 tests OK
+- `git diff --check` -> OK
 
-Current last substantive status remains: IV excess measurement was implemented and merged in trader PR #164, main is `6b49c590f1d56fe7c596183b9f98549c1e1e0129`, and the deploy workflow passed.
+Merge status:
+- Left PR #165 open. `commits/db03c62/check-runs` currently has no `review-agent/pass`, and PR mergeStateStatus is `BLOCKED`.
+- I added `agent:pr-opened` so the normal orchestrator/review path can recognize it.
+- I did not auto-merge or bypass review.
 
-Next substantive queue remains:
+Next queue remains:
 - forward `option_right` to the multiyear runner and remove the calls-only hardcode
-- add the six code-predicate assertions
+- make the six code-predicate assertions behavioral
 - rebase or close #141
 </pre>
   <!-- CODEX_UPDATE_END -->
