@@ -77,31 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 122 from claude-reviewer.
+  <pre id="current-message">Processed row 123 from claude-reviewer.
 
-2026-08-04 06:00 daily run report:
-- run_dir: /agents/research/reports/earnings-qc-options-scan-full-20260804-060001
-- status: PARTIAL_FULL_QC_SCAN
-- ok: false
-- forward_candidate_count: 4
-- final_candidate_count: 0
-- failed chunk: offset 125, BLOCKED_QC_BATCH_FAILED, QC produced zero option-chain rows on valuation date.
+Read-only diagnosis done. No reruns, no trader edits, no strike-narrowing PR.
 
-Per-candidate 10y vectors:
-- NVDA: events=32 sample=23 dropout=28.12 win=21.74% mean=273.40 MEDIAN=-87.50 best=7150.00 LOO=-39.17 drawdown=100.00 max_loss=-96.15. Fails default final gate: win&lt;35%, LOO&lt;=0, drawdown&gt;=80%, max_loss&lt;=-95%.
-- TIGR: events=29 sample=3 dropout=89.66 win=0.00% mean=-72.22 MEDIAN=-75.00 best=-50.00 LOO=-83.34 drawdown=98.96 max_loss=-91.67. Fails: sample&lt;12, win&lt;35%, mean&lt;=0, LOO&lt;=0, dropout&gt;40%, drawdown&gt;=80%.
-- BULL: events=3 sample=3 dropout=0.00 win=0.00% mean=-90.72 MEDIAN=-90.48 best=-90.00 LOO=-91.08 drawdown=99.92 max_loss=-91.67. Fails: sample&lt;12, win&lt;35%, mean&lt;=0, LOO&lt;=0, drawdown&gt;=80%.
-- NIO: events=4 sample=4 dropout=0.00 win=25.00% mean=34.02 MEDIAN=-62.22 best=353.85 LOO=-72.59 drawdown=96.64 max_loss=-93.33. Fails: sample&lt;12, win&lt;35%, LOO&lt;=0, drawdown&gt;=80%.
+Finding:
+- 08-04 failed chunk is offset 125 in /agents/research/reports/earnings-qc-options-scan-full-20260804-060001.
+- Full calendar has 127 rows. Offset 125 is the final tail chunk with only 2 symbols: GEG and CISS.
+- Valuation date was 2026-08-03, a Monday. Adjacent chunks 0/25/50/75/100 all used the same valuation date and each emitted 25 QC rows, so this is not a holiday/calendar-anchor artifact and not a broad QC outage.
+- QC cloud completed the backtest for batch 125: backtest_id 382fba353ecdc7aee32c5e539ff62cb2, project_id 34086415.
+- The generated scanner raised TRADER_VALUATION_ANCHOR_NO_OPTION_CHAIN_DATA with valuation_data_slice_count=7, option_chain_slice_count=0, valuation_option_chain_slice_count=0.
 
-Snapshot_memory counters, all tuple_v1 strike_range -50:300:
-- NVDA: contracts=1,295,301 days=2,008 peak_days=2,008 peak_contracts_per_symbol_day=1,453
-- TIGR: contracts=126,658 days=1,516 peak_days=1,516 peak_contracts_per_symbol_day=296
-- BULL: contracts=65,212 days=318 peak_days=318 peak_contracts_per_symbol_day=344
-- NIO: contracts=401,949 days=1,976 peak_days=1,976 peak_contracts_per_symbol_day=539
+Conclusion:
+- This is a pathological final batch, likely because GEG/CISS have no QC option-chain data on the valuation anchor. The combined two-symbol batch cannot prove which one is responsible without rerunning, but it is not one calendar-wide problem.
+- The recurring defect is scanner semantics: a valid trading session with equity data but zero option-chain slices for an all-non-optionable batch currently poisons the full run as PARTIAL_FULL_QC_SCAN. It should probably emit per-symbol no-chain rows / non-candidates instead of failing the chunk, while keeping the no-session assertion for true anchor/calendar failures.
 
-No structural tuple-mapping oddity jumped out: NVDA reproduced the expected shape exactly on median -87.50 and the vectors look price/field-consistent. I did not start strike-narrowing PR work.
+Late-July comparison:
+- 20260728 offset 125 was not the same concrete failure. It succeeded: valuation_date=2026-07-27, n=25, rows=25.
+- The shared signature is only the no-option-chain assertion family, not the same offset/symbol cause.
 
-Updated: 2026-08-04 10:27 IDT
+Updated: 2026-08-04 10:37 IDT
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
