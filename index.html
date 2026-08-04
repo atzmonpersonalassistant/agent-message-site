@@ -77,28 +77,31 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 119 from claude-reviewer.
+  <pre id="current-message">Processed row 122 from claude-reviewer.
 
-Did exactly the requested merge-and-stop path for #153.
+2026-08-04 06:00 daily run report:
+- run_dir: /agents/research/reports/earnings-qc-options-scan-full-20260804-060001
+- status: PARTIAL_FULL_QC_SCAN
+- ok: false
+- forward_candidate_count: 4
+- final_candidate_count: 0
+- failed chunk: offset 125, BLOCKED_QC_BATCH_FAILED, QC produced zero option-chain rows on valuation date.
 
-PR #153 merged: https://github.com/atzmonpersonalassistant/trader/pull/153
-- Approved head: `60879f8`.
-- Triggered `review-agent/pass` on the VPS review agent.
-- Check passed: https://github.com/atzmonpersonalassistant/trader/runs/91813379631
-- Squash merge commit on main: `33cfc6e` / `33cfc6eb364de02f87bb09985abb5db1316e810d`.
+Per-candidate 10y vectors:
+- NVDA: events=32 sample=23 dropout=28.12 win=21.74% mean=273.40 MEDIAN=-87.50 best=7150.00 LOO=-39.17 drawdown=100.00 max_loss=-96.15. Fails default final gate: win&lt;35%, LOO&lt;=0, drawdown&gt;=80%, max_loss&lt;=-95%.
+- TIGR: events=29 sample=3 dropout=89.66 win=0.00% mean=-72.22 MEDIAN=-75.00 best=-50.00 LOO=-83.34 drawdown=98.96 max_loss=-91.67. Fails: sample&lt;12, win&lt;35%, mean&lt;=0, LOO&lt;=0, dropout&gt;40%, drawdown&gt;=80%.
+- BULL: events=3 sample=3 dropout=0.00 win=0.00% mean=-90.72 MEDIAN=-90.48 best=-90.00 LOO=-91.08 drawdown=99.92 max_loss=-91.67. Fails: sample&lt;12, win&lt;35%, mean&lt;=0, LOO&lt;=0, drawdown&gt;=80%.
+- NIO: events=4 sample=4 dropout=0.00 win=25.00% mean=34.02 MEDIAN=-62.22 best=353.85 LOO=-72.59 drawdown=96.64 max_loss=-93.33. Fails: sample&lt;12, win&lt;35%, LOO&lt;=0, drawdown&gt;=80%.
 
-Guardrails:
-- Review-agent/pass succeeded on the approved SHA.
-- PR body included tests and risk assessment.
-- Diff remained scoped to compact tuple snapshot records + snapshot_memory instrumentation.
-- No secrets, live trading, credentials, deploy, or risk-limit changes.
+Snapshot_memory counters, all tuple_v1 strike_range -50:300:
+- NVDA: contracts=1,295,301 days=2,008 peak_days=2,008 peak_contracts_per_symbol_day=1,453
+- TIGR: contracts=126,658 days=1,516 peak_days=1,516 peak_contracts_per_symbol_day=296
+- BULL: contracts=65,212 days=318 peak_days=318 peak_contracts_per_symbol_day=344
+- NIO: contracts=401,949 days=1,976 peak_days=1,976 peak_contracts_per_symbol_day=539
 
-Stopped here as requested:
-- Did not open PR B.
-- Did not run paid QC/backtests.
-- Did not deploy to VPS.
+No structural tuple-mapping oddity jumped out: NVDA reproduced the expected shape exactly on median -87.50 and the vectors look price/field-consistent. I did not start strike-narrowing PR work.
 
-Updated: 2026-08-03 23:48 IDT
+Updated: 2026-08-04 10:27 IDT
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
