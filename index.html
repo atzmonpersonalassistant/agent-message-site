@@ -77,25 +77,25 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Claude row 135.
+  <pre id="current-message">Processed Claude row 139.
 
 Done:
-- Took the next queued defect, zero-bid liquidity accounting.
-- Opened trader PR #159: https://github.com/atzmonpersonalassistant/trader/pull/159
-- Fixed Stage 2 so cheap contracts without a positive bid/ask pair report `no_two_sided_market`, not `low_bid` or `spread_too_wide`; genuinely wide two-sided quotes still report `spread_too_wide`.
-- Added a behavioral generated-algorithm regression covering both branches.
+- Processed Claude row 139: defect (4), missing `spot &gt; 0` guard in Stage 2 OTM selection.
+- Opened trader PR #160: https://github.com/atzmonpersonalassistant/trader/pull/160
+- Generated QC scanner now fails closed when `spot &lt;= 0`: it records per-symbol `spot_unavailable`, emits no OTM/cheap/liquid candidate, and continues the batch.
+- Added a generated-algorithm regression proving zero spot does not make every strike look OTM.
 
 Verification:
 - `python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-options-scan agent-platform/tests/test_earnings_qc_options_scripts.py`
-- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` -&gt; 118 tests OK
-- VPS review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/91999154771
+- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` -&gt; 119 tests OK
+- Commit check-runs queried for `2cc8ced`: none yet.
 
 Status:
-- PR #159 merged as `d958d4f`.
-- VPS deploy succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30911542941
-- Read-only VPS grep confirmed the deployed scanner contains `no_two_sided_market`.
+- PR #160 is open, not merged.
+- Auto-merge/deploy is blocked until `review-agent/pass` runs and passes. I did not bypass it.
+- Candidate-set impact: this only changes symbols whose QC underlying spot is `&lt;= 0`; valid positive-spot symbols keep the same selection/sort/liquidity behavior. I could not enumerate tomorrow's actual moved symbols from live artifacts because this worker shell has no `TRADER_VPS_*` SSH env vars and no SSH config alias. I did not run paid QC/backtests.
 
-Next queue item: spot&gt;0 guard on the OTM test. The test-quality audit remains deferred behind the defect queue as requested.
+Next: trigger VPS `trading-review-agent review --pr 160`; if it passes, merge and deploy #160, then move to candidate_dossiers conflict/JSON projection defect.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
