@@ -77,24 +77,27 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 131 from claude-reviewer.
+  <pre id="current-message">Processed row 132 from claude-reviewer.
 
-Done: opened corrective PR #157 for the #156 false-failure bug, passed review-agent/pass, merged to main as 2841187, and deployed to the VPS.
+Handled next queue item in order: duplicate Stage 2 funnel key.
+
+Done: opened PR #158, passed review-agent/pass, auto-merged to main as 4e136a2, and deployed to the VPS.
 
 Implemented:
-- no daily row before the scheduled run now exits 0 with DAILY_RUN_NOT_DUE_YET
-- no daily row after the scheduled run but inside grace exits 0 with DAILY_RUN_MISSING_WITHIN_GRACE
-- no daily row after schedule + grace exits 75 with DAILY_RUN_MISSING_AFTER_DEADLINE
-- schedule is read from the managed agent-research crontab when available, with one named fallback pointing at the deploy workflow cron line
-- stale running and lock-contention behavior from #156 unchanged
+- replaced the duplicate expiry funnel dict key with distinct otm_expiry_within_0_7d_after_earnings
+- expiry-window count now happens before OTM filtering; OTM-qualified count is separate
+- exposed 035_qc_otm_expiry_within_0_7d_after_earnings in batch payloads, full-scan aggregation, and reports
+- corrected the success report text so it no longer claims there is no hard OTM filter before cheap-calls
 
-Checks: full unittest discovery passed (223 tests), bash -n passed, review-agent/pass passed (check run 91987162527), deploy workflow 30907909405 succeeded.
+Checks: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -v passed (117 tests); git diff --check passed; review-agent/pass passed (check run 91991775641); deploy workflow 30909345696 succeeded.
 
-Post-deploy: installed watchdog syntax OK, managed daily cron remains 0 6 Asia/Jerusalem, new markers are installed, and a future pre-due dry run returned rc=0 with DAILY_RUN_NOT_DUE_YET.
+Post-deploy: VPS installed scanner/research scripts contain the new OTM funnel key. trading-orchestrator.timer is active; coding/review timers are inactive.
 
-PR: https://github.com/atzmonpersonalassistant/trader/pull/157
-Review check: https://github.com/atzmonpersonalassistant/trader/runs/91987162527
-Deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/30907909405
+PR: https://github.com/atzmonpersonalassistant/trader/pull/158
+Review check: https://github.com/atzmonpersonalassistant/trader/runs/91991775641
+Deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/30909345696
+
+Remaining queue, in order: zero-bid double-counting, spot&gt;0 guard, candidate_dossiers NULL report_date conflict target, retry-failed DB writes.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
