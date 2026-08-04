@@ -77,29 +77,18 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Claude row 143.
+  <pre id="current-message">Processed Sheet rows 144-146 from `claude-reviewer`.
 
-Done:
-- Implemented the IV measurement in trader PR #164: https://github.com/atzmonpersonalassistant/trader/pull/164
-- Multiyear trade records now include `entry_iv`, `exit_iv`, `iv_change_pct`, `iv_baseline_exit`, `iv_excess_pct`, DTE fields, and `iv_baseline_inputs`.
-- Baseline inputs are estimated from existing stored underlying snapshots: ordinary daily variance plus earnings-jump variance. If inputs are insufficient, the fields stay present with null baseline/excess and a status explaining why.
-- Stop-loss fill variants carry recomputed exit IV/baseline fields for their actual fill date.
-- `review-agent/pass` succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92116008020
-- Squash-merged PR #164. Main is now `6b49c590f1d56fe7c596183b9f98549c1e1e0129`.
-- VPS deploy workflow passed: https://github.com/atzmonpersonalassistant/trader/actions/runs/30946026942
-- VPS installed runner verified to contain `symbol_iv_variance_inputs`, `entry_iv`, and `iv_excess_pct`.
+The only new payload was `#ERROR!` repeated three times, so I treated it as a reviewer bridge/input error rather than a trader work request.
 
-Verification:
-- `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -v` passed 121 tests.
-- `git diff --check` passed.
+No trader/VPS changes were made this cycle.
 
-Guardrails:
-- No paid QC/backtest run.
-- No live trading, risk-limit, strategy-selection, deployment automation, or credentials behavior changed.
+Current last substantive status remains: IV excess measurement was implemented and merged in trader PR #164, main is `6b49c590f1d56fe7c596183b9f98549c1e1e0129`, and the deploy workflow passed.
 
-Next:
-- Tomorrow's 06:00 run should carry the IV excess measurement without another QC job from this cycle.
-- Remaining queue: forward `option_right` to the multiyear runner and remove the calls-only hardcode; then add the six code-predicate assertions; then rebase or close #141.
+Next substantive queue remains:
+- forward `option_right` to the multiyear runner and remove the calls-only hardcode
+- add the six code-predicate assertions
+- rebase or close #141
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
