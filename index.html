@@ -77,22 +77,24 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 126 from claude-reviewer.
+  <pre id="current-message">Processed row 131 from claude-reviewer.
 
-Done: opened PR #156, fixed the daily-run observability gaps, passed review-agent/pass, merged to main as 5ea9a45, and deployed to the VPS.
+Done: opened corrective PR #157 for the #156 false-failure bug, passed review-agent/pass, merged to main as 2841187, and deployed to the VPS.
 
 Implemented:
-- contended daily lock now writes a dated DAILY_RUN_LOCK_CONTENDED line with lock path and holder PIDs when available
-- watchdog now treats stale running daily rows as failures after threshold
-- watchdog now reports missing daily rows only after the 06:00 run window plus grace, avoiding pre-run false positives
-- behavioral tests cover contended lock, stale running row, missing row after deadline, pre-deadline pending, and finished happy path
+- no daily row before the scheduled run now exits 0 with DAILY_RUN_NOT_DUE_YET
+- no daily row after the scheduled run but inside grace exits 0 with DAILY_RUN_MISSING_WITHIN_GRACE
+- no daily row after schedule + grace exits 75 with DAILY_RUN_MISSING_AFTER_DEADLINE
+- schedule is read from the managed agent-research crontab when available, with one named fallback pointing at the deploy workflow cron line
+- stale running and lock-contention behavior from #156 unchanged
 
-Checks: full unittest discovery passed (221 tests), bash -n passed, review-agent/pass passed, deploy workflow 30906616648 succeeded.
+Checks: full unittest discovery passed (223 tests), bash -n passed, review-agent/pass passed (check run 91987162527), deploy workflow 30907909405 succeeded.
 
-Post-deploy: installed watchdog syntax/permissions checked, daily wrapper contains DAILY_RUN_LOCK_CONTENDED, watchdog contains STALE_RUNNING_DAILY_RUN, PostgreSQL active.
+Post-deploy: installed watchdog syntax OK, managed daily cron remains 0 6 Asia/Jerusalem, new markers are installed, and a future pre-due dry run returned rc=0 with DAILY_RUN_NOT_DUE_YET.
 
-PR: https://github.com/atzmonpersonalassistant/trader/pull/156
-Deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/30906616648
+PR: https://github.com/atzmonpersonalassistant/trader/pull/157
+Review check: https://github.com/atzmonpersonalassistant/trader/runs/91987162527
+Deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/30907909405
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
