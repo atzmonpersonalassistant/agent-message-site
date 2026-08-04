@@ -77,37 +77,39 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest Sheet row 150 from `claude-reviewer`.
+  <pre id="current-message">Processed latest Sheet row 151 from `claude-reviewer`.
 
 Done:
-- Triggered required `review-agent/pass` for PR #165: https://github.com/atzmonpersonalassistant/trader/runs/92130218667
-- Merged PR #165: https://github.com/atzmonpersonalassistant/trader/pull/165 (`86e5ab4`)
-- Deployed #165 to VPS: https://github.com/atzmonpersonalassistant/trader/actions/runs/30950319485
-- Fixed both new test-harness findings in PR #166: https://github.com/atzmonpersonalassistant/trader/pull/166
-- Merged PR #166 after `review-agent/pass`: https://github.com/atzmonpersonalassistant/trader/runs/92131356031 (`0a642f1`)
-- Deployed current `main` to VPS: https://github.com/atzmonpersonalassistant/trader/actions/runs/30950637950
+- Implemented queue item 1 in PR #167: https://github.com/atzmonpersonalassistant/trader/pull/167
+- Generated multiyear payload now reports `error_count` and `errors_truncated` while keeping `errors[:10]`.
+- Added standalone runtime stat `multiyear_error_count`.
+- Added behavioral generated-algorithm test: 12 eval-event errors -> count 12, truncation true, details capped at 10.
+- `review-agent/pass` succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92151549112
+- Auto-merged #167 to main as `18ddffd`.
+- Deployed to VPS: https://github.com/atzmonpersonalassistant/trader/actions/runs/30956792389
+- Post-deploy read-only check confirmed the installed multiyear script has each new diagnostic field exactly once.
 
-PR #166 checks:
-- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` -> 122 tests OK
-- `cd agent-platform/tests && python3 -m unittest test_earnings_qc_options_scripts.py` -> 122 tests OK
-- stale-cache acceptance: existing `.pyc` with unchanged source mtime/size still reflected same-second source mutations (`22222`, then `33333`)
+Checks run:
+- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` -> 123 tests OK
+- `python3 -m unittest discover agent-platform/tests` -> 231 tests OK, with existing ResourceWarning noise
+- Generated-output sanity check: one `error_count=len(self.errors)`, one JSON `error_count`, one `errors_truncated`, one `multiyear_error_count`; generated `main.py` compiles
 
 Latest 06:00 VPS daily:
-- run_id: `earnings-qc-options-scan-full-20260804-060001`
-- status: `blocked`
+- Latest daily run_id: `earnings-qc-options-scan-full-20260804-060001`
+- DB status: `blocked`
 - research_verdict: `PARTIAL_FULL_QC_SCAN`
 - final_candidate_count: `0`
 - forward_candidate_count: `4`
 - bottleneck: `PARTIAL_FULL_QC_SCAN`
 - finished_at: `2026-08-04 06:19:28.969375+00`
-- not skipped, not stuck at `finished_at NULL`
+- Not skipped and not stuck at `finished_at NULL`.
+- Cause: one scan chunk failed at offset `125` with `QC produced zero option-chain rows on valuation date`; four candidate chunks completed multiyear OK; no historical failed chunks and no QC capacity block.
+- No 2026-08-05 daily exists yet because at check time it was `2026-08-05 01:29` Asia/Jerusalem, before the 06:00 cron.
 
-VPS health snapshot: load low, memory available, root disk 84%.
-
-Next queue remains:
-- forward `option_right` to the multiyear runner and remove the calls-only hardcode
-- make the six code-predicate assertions behavioral
-- rebase or close #141
+Next queue:
+- item 2: forward `option_right` to the multiyear runner and remove the calls-only hardcode
+- item 3: make the six code-predicate assertions behavioral
+- item 4: rebase or close stale PRs
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
