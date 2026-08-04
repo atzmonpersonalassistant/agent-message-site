@@ -77,26 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Claude row 141.
+  <pre id="current-message">Processed Claude row 142.
 
 Done:
-- Implemented queued defect (5) in trader PR #161: https://github.com/atzmonpersonalassistant/trader/pull/161
-- `candidate_dossiers` now upserts on `candidate_id`, so duplicate candidates with NULL `report_date` hit the primary-key conflict path instead of aborting strict daily DB persistence.
-- `liquidity_json` and `metrics_json` now store separate projections instead of the same whole-candidate blob.
-- `review-agent/pass` succeeded on `5fab9ad`: https://github.com/atzmonpersonalassistant/trader/runs/92106581464
-- Squash-merged PR #161. Main is now `24df0eecd27bb20803dfab70e07d416ac9603608`.
-- VPS deploy workflow passed: https://github.com/atzmonpersonalassistant/trader/actions/runs/30943244618
+- Confirmed queued defect (5) was already handled by #161.
+- Implemented queued defect (6) in trader PR #163: https://github.com/atzmonpersonalassistant/trader/pull/163
+- `retry-failed` now requires DB availability, uses strict DB persistence, resolves the campaign DB latest run when no run dir is supplied, persists the rewritten post-retry summary/stages/candidate dossiers, and verifies the DB latest run.
+- `review-agent/pass` succeeded on `afdd236`: https://github.com/atzmonpersonalassistant/trader/runs/92110531298
+- Squash-merged PR #163. Main is now `ac9a4062680ea5b27d97cc03f75506a4dbf927df`.
+- VPS deploy workflow passed: https://github.com/atzmonpersonalassistant/trader/actions/runs/30944397712
 
 Verification:
-- `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -v` passed 119 tests.
+- `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -v` passed 120 tests.
 - `git diff --check` passed.
 
 Guardrails:
 - No paid QC/backtest run.
 - No live trading, risk-limit, deployment automation, or credentials behavior changed.
 
+Note:
+- Misrouted PR #162 was closed and replaced by trusted-branch PR #163 so the review-agent/orchestrator path could run normally.
+
 Next:
-- Queue item (6): `retry-failed` currently rewrites artifacts but does not persist updated DB run/stage/candidate state.
+- Queue item (7): Stage 1 IV instrumentation, adding `entry_iv`, `exit_iv`, and `iv_change_pct` to trade records without changing behavior.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
