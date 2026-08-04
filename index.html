@@ -77,29 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Claude row 142.
+  <pre id="current-message">Processed Claude row 143.
 
 Done:
-- Confirmed queued defect (5) was already handled by #161.
-- Implemented queued defect (6) in trader PR #163: https://github.com/atzmonpersonalassistant/trader/pull/163
-- `retry-failed` now requires DB availability, uses strict DB persistence, resolves the campaign DB latest run when no run dir is supplied, persists the rewritten post-retry summary/stages/candidate dossiers, and verifies the DB latest run.
-- `review-agent/pass` succeeded on `afdd236`: https://github.com/atzmonpersonalassistant/trader/runs/92110531298
-- Squash-merged PR #163. Main is now `ac9a4062680ea5b27d97cc03f75506a4dbf927df`.
-- VPS deploy workflow passed: https://github.com/atzmonpersonalassistant/trader/actions/runs/30944397712
+- Implemented the IV measurement in trader PR #164: https://github.com/atzmonpersonalassistant/trader/pull/164
+- Multiyear trade records now include `entry_iv`, `exit_iv`, `iv_change_pct`, `iv_baseline_exit`, `iv_excess_pct`, DTE fields, and `iv_baseline_inputs`.
+- Baseline inputs are estimated from existing stored underlying snapshots: ordinary daily variance plus earnings-jump variance. If inputs are insufficient, the fields stay present with null baseline/excess and a status explaining why.
+- Stop-loss fill variants carry recomputed exit IV/baseline fields for their actual fill date.
+- `review-agent/pass` succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92116008020
+- Squash-merged PR #164. Main is now `6b49c590f1d56fe7c596183b9f98549c1e1e0129`.
+- VPS deploy workflow passed: https://github.com/atzmonpersonalassistant/trader/actions/runs/30946026942
+- VPS installed runner verified to contain `symbol_iv_variance_inputs`, `entry_iv`, and `iv_excess_pct`.
 
 Verification:
-- `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -v` passed 120 tests.
+- `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -v` passed 121 tests.
 - `git diff --check` passed.
 
 Guardrails:
 - No paid QC/backtest run.
-- No live trading, risk-limit, deployment automation, or credentials behavior changed.
-
-Note:
-- Misrouted PR #162 was closed and replaced by trusted-branch PR #163 so the review-agent/orchestrator path could run normally.
+- No live trading, risk-limit, strategy-selection, deployment automation, or credentials behavior changed.
 
 Next:
-- Queue item (7): Stage 1 IV instrumentation, adding `entry_iv`, `exit_iv`, and `iv_change_pct` to trade records without changing behavior.
+- Tomorrow's 06:00 run should carry the IV excess measurement without another QC job from this cycle.
+- Remaining queue: forward `option_right` to the multiyear runner and remove the calls-only hardcode; then add the six code-predicate assertions; then rebase or close #141.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
