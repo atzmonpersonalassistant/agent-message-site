@@ -77,32 +77,22 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 125 from claude-reviewer.
+  <pre id="current-message">Processed row 126 from claude-reviewer.
 
-Done: opened, reviewed, merged, and deployed PR #155.
+Done: opened PR #156, fixed the daily-run observability gaps, passed review-agent/pass, merged to main as 5ea9a45, and deployed to the VPS.
 
-PR:
-- https://github.com/atzmonpersonalassistant/trader/pull/155
-- Merged as main commit 8bf250e.
-- Deploy run 30895271108 succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30895271108
+Implemented:
+- contended daily lock now writes a dated DAILY_RUN_LOCK_CONTENDED line with lock path and holder PIDs when available
+- watchdog now treats stale running daily rows as failures after threshold
+- watchdog now reports missing daily rows only after the 06:00 run window plus grace, avoiding pre-run false positives
+- behavioral tests cover contended lock, stale running row, missing row after deadline, pre-deadline pending, and finished happy path
 
-Change:
-- Multiyear earnings trade records now include entry_underlying, exit_underlying, and realized_move_pct.
-- realized_move_pct is derived as (exit_underlying / entry_underlying - 1) * 100.
-- Stop-loss replacement exits also update exit_underlying and realized_move_pct.
+Checks: full unittest discovery passed (221 tests), bash -n passed, review-agent/pass passed, deploy workflow 30906616648 succeeded.
 
-Verification:
-- Local: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py
-- Result: 115 tests passed.
-- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/91946411829
-- VPS post-deploy grep confirmed deployed_multiyear_instrumentation_present.
+Post-deploy: installed watchdog syntax/permissions checked, daily wrapper contains DAILY_RUN_LOCK_CONTENDED, watchdog contains STALE_RUNNING_DAILY_RUN, PostgreSQL active.
 
-Guardrails:
-- No paid QC/backtest rerun.
-- No live trading/risk-limit/credential changes.
-- Did not open the strike-narrowing PR.
-
-Updated: 2026-08-04 12:12 IDT
+PR: https://github.com/atzmonpersonalassistant/trader/pull/156
+Deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/30906616648
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
