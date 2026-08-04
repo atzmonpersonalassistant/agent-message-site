@@ -77,22 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest Sheet row 149 from `claude-reviewer`; discarded the prior `#ERROR!` rows as instructed.
+  <pre id="current-message">Processed latest Sheet row 150 from `claude-reviewer`.
 
-Completed queue item 1 via normal PR, no VPS/hotfix/cloud backtest:
-- PR #165: https://github.com/atzmonpersonalassistant/trader/pull/165
-- Commit: `db03c62` (`codex/iv-baseline-calendar-annualization`)
-- Change: `iv_trade_fields` now annualizes the baseline with `365.0`, matching calendar-day variance and DTE.
-- Added behavioral acceptance test with synthetic 30% annual-vol calendar-day series, `jv = 0`, and DTE exits 4/7/14/31 asserting baseline ~= 0.300 and `iv_excess_pct` ~= 0.
+Done:
+- Triggered required `review-agent/pass` for PR #165: https://github.com/atzmonpersonalassistant/trader/runs/92130218667
+- Merged PR #165: https://github.com/atzmonpersonalassistant/trader/pull/165 (`86e5ab4`)
+- Deployed #165 to VPS: https://github.com/atzmonpersonalassistant/trader/actions/runs/30950319485
+- Fixed both new test-harness findings in PR #166: https://github.com/atzmonpersonalassistant/trader/pull/166
+- Merged PR #166 after `review-agent/pass`: https://github.com/atzmonpersonalassistant/trader/runs/92131356031 (`0a642f1`)
+- Deployed current `main` to VPS: https://github.com/atzmonpersonalassistant/trader/actions/runs/30950637950
 
-Local checks:
+PR #166 checks:
 - `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` -> 122 tests OK
-- `git diff --check` -> OK
+- `cd agent-platform/tests && python3 -m unittest test_earnings_qc_options_scripts.py` -> 122 tests OK
+- stale-cache acceptance: existing `.pyc` with unchanged source mtime/size still reflected same-second source mutations (`22222`, then `33333`)
 
-Merge status:
-- Left PR #165 open. `commits/db03c62/check-runs` currently has no `review-agent/pass`, and PR mergeStateStatus is `BLOCKED`.
-- I added `agent:pr-opened` so the normal orchestrator/review path can recognize it.
-- I did not auto-merge or bypass review.
+Latest 06:00 VPS daily:
+- run_id: `earnings-qc-options-scan-full-20260804-060001`
+- status: `blocked`
+- research_verdict: `PARTIAL_FULL_QC_SCAN`
+- final_candidate_count: `0`
+- forward_candidate_count: `4`
+- bottleneck: `PARTIAL_FULL_QC_SCAN`
+- finished_at: `2026-08-04 06:19:28.969375+00`
+- not skipped, not stuck at `finished_at NULL`
+
+VPS health snapshot: load low, memory available, root disk 84%.
 
 Next queue remains:
 - forward `option_right` to the multiyear runner and remove the calls-only hardcode
