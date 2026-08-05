@@ -77,29 +77,34 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 201.
+  <pre id="current-message">Processed latest reviewer message, row 202.
 
-VPS facts requested:
-- Root volume: 72G total, 62G used, 11G available.
-- Configured QC image: quantconnect/research:latest, current image size 43GB.
-- Pull-then-swap headroom estimate: 62G current used + 43GB replacement image ~= 105G minimum before layer/extraction overhead. Current 72G volume is short by about 33G minimum.
-- Docker currently has the tagged QC image plus nine dangling 43GB images sharing layers; retention is scheduled for 2026-08-06 01:15 UTC = 04:15 Asia/Jerusalem.
+#186 is done:
+- Triggered review-agent/pass for 6f68ffd: PASS from trading-review-agent.
+- Check run: https://github.com/atzmonpersonalassistant/trader/runs/92401316066
+- Merged PR #186: https://github.com/atzmonpersonalassistant/trader/pull/186
+- Merge commit on main: 5089adbfba24a68284f11d760131c2023bfcf6b9
+- Deploy workflow completed successfully: https://github.com/atzmonpersonalassistant/trader/actions/runs/31034029045
 
-Latest daily DB row:
+Retention / disk facts:
+- Before deploy, trader-research-retention.* was not installed on the VPS, so the retention prediction could not have executed from the pre-deploy state.
+- After deploy, trader-research-retention.timer is installed/enabled and next fires Thu 2026-08-06 01:15:00 UTC = 04:15 Asia/Jerusalem.
+- Current root df samples: 2026-08-05 18:16:02 UTC and 18:18:46 UTC both showed 72G total, 62G used, 11G available, 86%.
+- retention.log is empty/not yet written because the timer has not run yet.
+- docker system df after deploy: Images TOTAL 10, ACTIVE 0, SIZE 52.51GB. This still reflects the tagged image plus nine dangling images before retention.
+- I did not wait an hour inside this bounded cycle. Next worker cycle should take the second idle df sample and, after 01:15 UTC, report df plus retention.log.
+
+Latest scheduled daily DB row:
 - run_id earnings-qc-options-scan-full-20260805-060002
 - status completed
 - research_verdict NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward_candidate_count 5; final_candidate_count 0
-- bottleneck blank in DB; equivalent bottleneck from summary/status is NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- bottleneck blank in DB; equivalent bottleneck is the verdict above.
 - started 2026-08-05 06:00:02 UTC; finished 2026-08-05 07:52:48 UTC
-- 2026-08-04 DB row also exists: status blocked, verdict PARTIAL_FULL_QC_SCAN, 4 forward / 0 final, finished 2026-08-04 06:19:28 UTC.
-- The #181 guard's first real 03:00 UTC systemd daily is 2026-08-06, so FINAL_SAMPLE_SIZE_UNSATISFIABLE_FOR_YEARS / per-symbol failed_checks are not observable yet.
+- 2026-08-04 daily row also exists: status blocked, verdict PARTIAL_FULL_QC_SCAN, 4 forward / 0 final, finished 2026-08-04 06:19:28 UTC.
 
-Small PR opened for finding 2:
-- #186 Document retention unit root access: https://github.com/atzmonpersonalassistant/trader/pull/186
-- Change: documents inside the generated retention service that User= is deliberately absent because docker image prune needs root-owned Docker socket access; test pins the comment.
-- Test run: python3 -m unittest agent-platform.tests.test_vps_deploy_workflow -> 8 tests OK. pytest is not installed in this worker shell.
-- Not merged: commits/6f68ffd has no check-runs yet, and the standing rule says not to bypass review-agent/pass.</pre>
+Also observed, separate from scheduled daily:
+- Newest overall research_runs row is manual/wide run iren-wide-20260805-codex: status blocked, verdict BLOCKED_HISTORICAL_OPTION_PNL_GATE, 1 forward / 0 final, finished 2026-08-05 12:20:32 UTC.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
