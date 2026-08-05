@@ -77,39 +77,36 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest Sheet row 152 from `claude-reviewer`.
-
-This was a duplicate/newest-row replay of the row 151 queue item. No new trader edit was needed because queue item 1 is already complete on merged main:
-- PR #167: https://github.com/atzmonpersonalassistant/trader/pull/167
-- Merge commit: `18ddffd67eb6fabe62fd7075e0c056237f821522`
-- `review-agent/pass` succeeded
-- VPS deploy for that commit succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30956792389
+  <pre id="current-message">Processed latest Sheet row 153 from `claude-reviewer`.
 
 Done:
-- Generated multiyear payload now reports `error_count` and `errors_truncated` while keeping `errors[:10]`.
-- Added standalone runtime stat `multiyear_error_count`.
-- Added behavioral generated-algorithm test: 12 eval-event errors -> count 12, truncation true, details capped at 10.
-- `review-agent/pass` succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92151549112
-- Auto-merged #167 to main as `18ddffd`.
-- Deployed to VPS: https://github.com/atzmonpersonalassistant/trader/actions/runs/30956792389
-- Post-deploy read-only check confirmed the installed multiyear script has each new diagnostic field exactly once.
+- Fixed the watchdog/postrun visibility defect in trader PR #168: https://github.com/atzmonpersonalassistant/trader/pull/168
+- Merged to main as `4bdaf8eae55f1ac2d26aeaf3e96c4405ef69a414`.
+- `review-agent/pass` succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92180756817
+- Deployed to VPS via workflow_dispatch: https://github.com/atzmonpersonalassistant/trader/actions/runs/30966319969
+- Post-deploy read-only grep confirmed the installed VPS scripts contain the new handoff writers.
+
+Change:
+- `earnings-llm-research-watchdog` now writes durable handoff task files before exiting on `DAILY_RUN_MISSING_AFTER_DEADLINE` and `STALE_RUNNING_DAILY_RUN`.
+- `earnings-llm-postrun-review` now writes a durable handoff task file on `NO_FINISHED_DAILY_RUN`.
+- Existing stdout/stderr messages and exit codes/no-op behavior are preserved.
 
 Checks run:
-- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` -> 123 tests OK
-- `python3 -m unittest discover agent-platform/tests` -> 231 tests OK, with existing ResourceWarning noise
-- Generated-output sanity check: one `error_count=len(self.errors)`, one JSON `error_count`, one `errors_truncated`, one `multiyear_error_count`; generated `main.py` compiles
+- `python3 -m unittest agent-platform/tests/test_earnings_llm_research_watchdog.py agent-platform/tests/test_earnings_llm_postrun_review.py` -> 30 tests OK
+- `git diff --check` -> OK
+- Acceptance coverage forces all three conditions and asserts a task file appears in `HANDOFF_DIR` naming the condition with date/schedule/grace/threshold context.
 
-Latest 06:00 VPS daily:
-- Latest daily run_id: `earnings-qc-options-scan-full-20260804-060001`
+Latest VPS daily status:
+- Latest completed daily run is still 2026-08-04: `earnings-qc-options-scan-full-20260804-060001`
 - DB status: `blocked`
 - research_verdict: `PARTIAL_FULL_QC_SCAN`
 - final_candidate_count: `0`
 - forward_candidate_count: `4`
 - bottleneck: `PARTIAL_FULL_QC_SCAN`
+- started_at: `2026-08-04 06:00:01.770583+00`
 - finished_at: `2026-08-04 06:19:28.969375+00`
-- Not skipped and not stuck at `finished_at NULL`.
-- Cause: one scan chunk failed at offset `125` with `QC produced zero option-chain rows on valuation date`; four candidate chunks completed multiyear OK; no historical failed chunks and no QC capacity block.
-- No 2026-08-05 daily exists yet because at check time it was `2026-08-05 02:01` Asia/Jerusalem, before the 06:00 cron.
+- run_dir: `/agents/research/reports/earnings-qc-options-scan-full-20260804-060001`
+- 2026-08-05 status at check time: no DB row and no `daily-20260805.log`; VPS time was `2026-08-05T01:22:00+00:00` / 04:22 Asia/Jerusalem, before the 06:00 root cron. The watchdog log correctly said `DAILY_RUN_NOT_DUE_YET`; postrun log naturally said `NO_FINISHED_DAILY_RUN`.
 
 Next queue:
 - item 2: forward `option_right` to the multiyear runner and remove the calls-only hardcode
