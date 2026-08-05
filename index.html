@@ -77,44 +77,43 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed reviewer row 186.
+  <pre id="current-message">Processed latest reviewer message, row 188.
 
 Done:
-- PR #181 merged and deployed: https://github.com/atzmonpersonalassistant/trader/pull/181
-- Deploy run succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/31002353453
-- Added per-symbol final-gate diagnostics in full_summary.json: status/sample/win/mean/LOO/dropout/drawdown/max-loss/window booleans plus failed_checks.
-- Added a persisted warning when min_sample_size &gt; validation_years * 4.
-- Fixed persisted historical stage labeling to use validation_years instead of scan years.
-
-Verification:
-- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92293954577
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py: 129 tests OK
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research: OK
-- git diff --check: OK
-- VPS deployed script contains final_candidate_gate_evaluations and FINAL_SAMPLE_SIZE_UNSATISFIABLE_FOR_YEARS.
+- Revived, fixed, reviewed, and merged PR #134: https://github.com/atzmonpersonalassistant/trader/pull/134
+  - merge commit: 61e26da4cb9bfa4883a6d6be09a4b283d3207de5
+  - review-agent/pass: https://github.com/atzmonpersonalassistant/trader/runs/92299518031
+  - tests: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py, 131 OK
+  - scope: multiyear now accepts/forwards --option-resolution, prefers it over --historical-resolution, and defaults unset resolution to Resolution.DAILY.
+- Closed superseded PR #141 with corrected note: https://github.com/atzmonpersonalassistant/trader/pull/141
+- Revived, reviewed, and merged docs archive PR #139: https://github.com/atzmonpersonalassistant/trader/pull/139
+  - merge commit: 50a2735b7792af94dab2947cf90b96d8fa634e9f
+  - review-agent/pass: https://github.com/atzmonpersonalassistant/trader/runs/92300387614
+  - tests: git diff --check
 
 Most recent daily from VPS:
 - run_id=earnings-qc-options-scan-full-20260805-060002
-- status=completed
+- DB status=completed
 - research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward_candidate_count=5
 - final_candidate_count=0
-- bottleneck: none
+- bottleneck=NULL
 - started_at=2026-08-05 06:00:02.234152+00
 - finished_at=2026-08-05 07:52:48.995971+00
+- artifact status=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- multiyear status=OK_MULTIYEAR_OPTION_PNL_BACKTEST, backtest_id=c30c76dd35b8a67775cb4b0bbba809d3
 
-08-05 symbol evidence:
-- BULL events=3 sample=3 win=0.0 mean=-90.72 loo=-91.08 dropout=0.0 dd=99.92 max_loss=-91.67
-- IREN events=17 sample=5 win=0.6 mean=112.45 loo=58.06 dropout=70.59 dd=80.0 max_loss=-80.0
-- NIO events=4 sample=4 win=0.25 mean=34.02 loo=-72.59 dropout=0.0 dd=96.64 max_loss=-93.33
-- NVDA events=32 sample=23 win=0.2174 mean=273.4 loo=-39.17 dropout=28.12 dd=100.0 max_loss=-96.15
-- TIGR events=29 sample=3 win=0.0 mean=-72.22 loo=-83.34 dropout=89.66 dd=98.96 max_loss=-91.67
+08-05 candidate blockers:
+- NVDA: sample=23, win=0.2174, mean=273.4, loo=-39.17, dropout=28.12, max_drawdown=100.0.
+- IREN: sample=5, win=0.6, mean=112.45, loo=58.06, dropout=70.59, max_drawdown=80.0.
+- TIGR: sample=3, win=0.0, mean=-72.22, loo=-83.34, dropout=89.66, max_drawdown=98.96.
+- BULL: sample=3, win=0.0, mean=-90.72, loo=-91.08, dropout=0.0, max_drawdown=99.92.
+- NIO: sample=4, win=0.25, mean=34.02, loo=-72.59, dropout=0.0, max_drawdown=96.64.
 
-Daily campaign history check: 0 runs with final_candidate_count &gt; 0.
-
-Schedule status: daily is now systemd-timer scheduled at OnCalendar=*-*-* 06:00:00 Asia/Jerusalem; next elapse observed as 2026-08-06 03:00:00 UTC. Agent crontab has only a leftover CRON_TZ line, no daily command.
-
-Next unblocked queue item: assertNotIn cleanup, unless Uriel wants threshold changes for IREN/drawdown first.
+Not done in this bounded cycle:
+- #128, #129, #138 still need sequencing/diff judgment.
+- assertNotIn cleanup and operator-runbook docs remain queued.
+- 2026-08-06 daily prediction cannot be confirmed yet; next daily timer observed at 2026-08-06 03:00:00 UTC.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
