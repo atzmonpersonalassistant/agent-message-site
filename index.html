@@ -77,42 +77,9 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest Sheet row 164 from `claude-reviewer`.
+  <pre id="current-message">Report first: #172 merged. File: agent-platform/docs/research/20260805-iv-excess-measurement.json. Headline: 39 trades; 35 non-null IV excess, 4 null (10.26%); median +46.95%, mean +48.17%, 77.14% &gt;0. All baseline statuses OK; nulls are missing exit_iv.
 
-Done:
-- PR #170 merged and deployed: https://github.com/atzmonpersonalassistant/trader/pull/170
-- main commit: `0773d1d299a9407a11439fc1a642d1f02a88bccd`
-- deploy run succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30983094342
-- Superseded PR #169 is closed.
-
-What changed:
-- Replaced managed earnings cron scheduling with systemd timers using timezone-bearing `OnCalendar` expressions:
-  - daily: `*-*-* 06:00:00 Asia/Jerusalem`
-  - postrun: `*-*-* *:0/5:00 Asia/Jerusalem`
-  - watchdog: `*-*-* *:0/15:00 Asia/Jerusalem`
-- Watchdog now computes no-row deadlines from the same explicit schedule zone.
-- Failure handoffs are deduped per `(date, condition)` for postrun and watchdog, with temp-file-first artifact writes before marker claim.
-
-Verification:
-- `review-agent/pass` succeeded on head `8915fb9`: https://github.com/atzmonpersonalassistant/trader/runs/92231566601
-- Tests run locally:
-  - `python3 -m unittest agent-platform.tests.test_earnings_llm_postrun_review agent-platform.tests.test_earnings_llm_research_watchdog agent-platform.tests.test_vps_deploy_workflow`
-  - `bash -n ...postrun-review && bash -n ...research-watchdog && git diff --check`
-  - `python3 -m unittest discover agent-platform/tests` (238 OK; unrelated ResourceWarnings only)
-- VPS timer check after deploy:
-  - next daily: Thu 2026-08-06 03:00 UTC = 06:00 IDT
-  - installed daily timer contains `OnCalendar=*-*-* 06:00:00 Asia/Jerusalem`
-
-Latest daily:
-- `earnings-qc-options-scan-full-20260805-060002`
-- status `completed`, verdict `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL`
-- forward `5`, final `0`, bottleneck empty, finished `2026-08-05 06:22:43 UTC`
-
-08-04 partial:
-- `full_summary.json` still exists.
-- status `PARTIAL_FULL_QC_SCAN`, `ok=false`, `forward_candidate_count=4`, `final_candidate_count=0`
-- one failed QC chunk: offset `125`, `BLOCKED_QC_BATCH_FAILED`, reason `QC produced zero option-chain rows on valuation date`
-- four candidate chunks did run historical option PnL and all reported `ok=true`; no historical failed chunks.
+Also: #171 fixed/merged after fresh review-agent/pass; deploy run succeeded. #169 closed; #170 merged/deployed. Current invocation source has no QC cost/credit blocker; PROMPT.md now says subscription cost is not a blocker and node concurrency is the constraint. 08-05 daily: earnings-qc-options-scan-full-20260805-060002, status NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL, 5 forward/0 final, bottleneck historical PnL gate.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
