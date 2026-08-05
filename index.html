@@ -77,23 +77,23 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed reviewer row 175.
+  <pre id="current-message">Processed reviewer row 176.
 
 Done:
-- Triggered review-agent/pass for #177. First run failed on narrow timeout id parsing; fixed it.
-- Folded in Gap A: cloud-extract now catches lean cloud push timeout and writes push stdout/stderr before failing clearly.
-- Fixed the prepared-run latent miss found by review-agent: timeout cleanup now parses Project ID and Backtest ID from Lean timeout output when the prepared manifest lacks project_id.
-- Updated PR body risk note to state the existing QC credentials are used only for timed-out backtest delete cleanup.
-- review-agent/pass then passed: https://github.com/atzmonpersonalassistant/trader/runs/92259178356
-- Auto-merged #177: https://github.com/atzmonpersonalassistant/trader/pull/177
-- Deployed merge commit 8757fb8 successfully: https://github.com/atzmonpersonalassistant/trader/actions/runs/30991761055
-- Post-deploy grep confirmed installed scripts contain the timeout-output parsing and cloud push timeout handler.
+- Fixed Gap B in trader PR #178: https://github.com/atzmonpersonalassistant/trader/pull/178
+- Chose the derived-wrapper option: broker now computes QC_CLOUD_EXTRACT_WRAPPER_TIMEOUT_SECONDS = QC_CLOUD_EXTRACT_BACKTEST_TIMEOUT + QC_CLOUD_EXTRACT_WRAPPER_MARGIN_SECONDS, defaulting to 900 + 300 = 1200.
+- Both broker cloud-extract call sites now use the derived timeout, so raising QC_CLOUD_EXTRACT_BACKTEST_TIMEOUT above 1200 also raises the outer wrapper instead of silently preempting cloud-extract cleanup.
+- Added startup validation for positive integer timeout/margin and an assertion that wrapper timeout is strictly greater than backtest timeout.
+- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92262329101
+- Auto-merged #178 as main d9e51f1.
+- Deployed successfully: https://github.com/atzmonpersonalassistant/trader/actions/runs/30992751753
+- Post-deploy VPS grep confirmed installed broker has the derived timeout at both cloud-extract call sites.
 
-Checks run locally:
-- python3 -m py_compile agent-platform/scripts/trading-research-qc-cloud-extract agent-platform/scripts/trading-research-qc-run
-- git diff --check
-- python3 -m unittest agent-platform.tests.test_mvp0_agents.MVP0AgentTests.test_qc_cloud_extract_timeout_deletes_submitted_backtest agent-platform.tests.test_mvp0_agents.MVP0AgentTests.test_research_qc_run_is_manifest_guarded
+Checks run:
+- bash -n agent-platform/scripts/trading-research-qc-broker
+- python3 -m unittest agent-platform.tests.test_mvp0_agents.MVP0AgentTests.test_research_loop_uses_runner_without_raw_qc_secret_access
 - python3 -m unittest agent-platform.tests.test_mvp0_agents
+- git diff --check
 
 Most recent daily:
 - run_id=earnings-qc-options-scan-full-20260805-060002
@@ -101,11 +101,10 @@ Most recent daily:
 - research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward_candidate_count=5
 - final_candidate_count=0
-- bottleneck blank/null
+- bottleneck/error blank
 - started_at=2026-08-05 06:00:02.234152+00; finished_at=2026-08-05 07:52:48.995971+00
 
-Remaining blocker from your note:
-- Gap B is not fixed by #177: broker outer timeout can still preempt cloud-extract if QC_CLOUD_EXTRACT_BACKTEST_TIMEOUT is raised to >=1200. This should be the next PR, before option_right.
+Next queue item I see: option_right forwarding to the multiyear runner, preserving calls-only results exactly.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
