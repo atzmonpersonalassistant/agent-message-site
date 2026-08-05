@@ -77,29 +77,35 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed reviewer row 174.
+  <pre id="current-message">Processed reviewer row 175.
 
 Done:
-- Implemented the orphaned-cloud-backtest cleanup fix on branch codex/abort-timed-out-qc-backtests.
-- Opened PR #177: https://github.com/atzmonpersonalassistant/trader/pull/177
-- Change deletes a submitted QC cloud backtest via POST /backtests/delete when the local Lean wait times out and a backtest id was emitted.
-- Covered both timeout paths: trading-research-qc-cloud-extract and trading-research-qc-run prepared submissions.
+- Triggered review-agent/pass for #177. First run failed on narrow timeout id parsing; fixed it.
+- Folded in Gap A: cloud-extract now catches lean cloud push timeout and writes push stdout/stderr before failing clearly.
+- Fixed the prepared-run latent miss found by review-agent: timeout cleanup now parses Project ID and Backtest ID from Lean timeout output when the prepared manifest lacks project_id.
+- Updated PR body risk note to state the existing QC credentials are used only for timed-out backtest delete cleanup.
+- review-agent/pass then passed: https://github.com/atzmonpersonalassistant/trader/runs/92259178356
+- Auto-merged #177: https://github.com/atzmonpersonalassistant/trader/pull/177
+- Deployed merge commit 8757fb8 successfully: https://github.com/atzmonpersonalassistant/trader/actions/runs/30991761055
+- Post-deploy grep confirmed installed scripts contain the timeout-output parsing and cloud push timeout handler.
 
-Checks run:
+Checks run locally:
 - python3 -m py_compile agent-platform/scripts/trading-research-qc-cloud-extract agent-platform/scripts/trading-research-qc-run
 - git diff --check
+- python3 -m unittest agent-platform.tests.test_mvp0_agents.MVP0AgentTests.test_qc_cloud_extract_timeout_deletes_submitted_backtest agent-platform.tests.test_mvp0_agents.MVP0AgentTests.test_research_qc_run_is_manifest_guarded
 - python3 -m unittest agent-platform.tests.test_mvp0_agents
 
-Status:
-- PR #177 is open and labelled agent:pr-opened.
-- No review-agent/pass check-run exists yet on a7cffec652b41a8064621b0944fd376d430f1c3f, so I did not auto-merge.
-- I did not deploy or change the VPS.
+Most recent daily:
+- run_id=earnings-qc-options-scan-full-20260805-060002
+- status=completed
+- research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- forward_candidate_count=5
+- final_candidate_count=0
+- bottleneck blank/null
+- started_at=2026-08-05 06:00:02.234152+00; finished_at=2026-08-05 07:52:48.995971+00
 
-Daily-run data previously verified:
-- 2026-08-05 run_id=earnings-qc-options-scan-full-20260805-060002; status=completed; verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; final=0; forward=5; bottleneck/error blank; finished_at=2026-08-05 07:52:48.995971+00.
-- 2026-08-04 run_id=earnings-qc-options-scan-full-20260804-060001; status=blocked; verdict=PARTIAL_FULL_QC_SCAN; final=0; forward=4; finished_at=2026-08-04 06:19:28.969375+00.
-
-Next after #177 review/checks: timer deploy assertion Finding 1, then option_right forwarding.
+Remaining blocker from your note:
+- Gap B is not fixed by #177: broker outer timeout can still preempt cloud-extract if QC_CLOUD_EXTRACT_BACKTEST_TIMEOUT is raised to >=1200. This should be the next PR, before option_right.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
