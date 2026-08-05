@@ -77,36 +77,36 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 191.
+  <pre id="current-message">Processed latest reviewer message, rows 192-194.
 
 Done:
-- Fixed ITEM 1 as PR #183: https://github.com/atzmonpersonalassistant/trader/pull/183
-  - commit: 4b816587437c35039ada44bb52afca192b479818
-  - changed multiyear_json, trader.stage2_json, and trader.qc_extract_json emit keys to %04d.
-  - added 150-fragment sorted-reassembly regressions for multiyear and stage2, plus extractor key coverage.
-  - tests: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (134 tests OK)
+- Triggered review-agent/pass for #183 on 4b81658. It passed:
+  https://github.com/atzmonpersonalassistant/trader/runs/92318750001
+- Merged #183:
+  https://github.com/atzmonpersonalassistant/trader/pull/183
+  main commit: 5b2c1765cfded05e406b584f4c7b3e44e29cd219
+- Deployed #183 to VPS. Deploy green:
+  https://github.com/atzmonpersonalassistant/trader/actions/runs/31009841354
+- Added the daily-bar stop-loss caveat to generated multiyear artifacts as #184:
+  https://github.com/atzmonpersonalassistant/trader/pull/184
+  Field: stop_loss_fill_model_limitation
+  Text: Daily-bar stop-loss variants observe and fill from daily snapshots, not true intraday stop prices, which can flatter stopped variants.
+- #184 passed review-agent/pass, merged, and deployed:
+  review: https://github.com/atzmonpersonalassistant/trader/runs/92320447474
+  deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/31010328973
+  main commit: cf2f5c171004c8dbabf04c7c728784b99c958e50
 
-Merge status:
-- Left #183 open. GitHub reports mergeStateStatus=BLOCKED and commit 4b81658 currently has no check runs/statusCheckRollup.
-- I did not bypass review-agent/pass.
+Verification:
+- tests: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (134 tests OK)
+- VPS grep confirms deployed multiyear_json_%04d and the stop_loss_fill_model_limitation caveat are installed.
 
-Daily/VPS readout for 2026-08-05:
-- run_id=earnings-qc-options-scan-full-20260805-060002
-- DB status=completed
-- research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- started_at=2026-08-05 06:00:02 UTC; finished_at=2026-08-05 07:52:48 UTC
-- forward_candidate_count=5; final_candidate_count=0
-- stages: calendar 124 passed; qc_chain_scan 98 passed; liquidity_greeks 5 passed; historical_option_pnl_years_1 0 passed / 5 failed; aggregate_report blocked on NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; historical_option_pnl_years_10 completed with same blocker.
-- full_summary.json has no final_candidate_gate_evaluations and no FINAL_SAMPLE_SIZE_UNSATISFIABLE_FOR_YEARS marker.
-- Current timers are systemd timers; next daily observed at 2026-08-06 03:00:00 UTC = 06:00 Asia/Jerusalem.
-
-Position on hourly historical:
-- I agree with NO for now. Hourly would change historical comparability and likely needs symbol/chunk batching, persisted partial results, memory-bounded streaming aggregation, strict QC node leasing, and a narrow single-symbol pilot first.
-- The daily-bar stop-loss limitation should be stated in artifacts: daily stop variants observe/fill from daily snapshots, not true intraday stop prices, which can flatter stopped variants.
+Notes:
+- First #184 review dispatch hit a transient GitHub API 503 while reading PR metadata; retry succeeded.
+- Latest daily readout remains the 2026-08-05 VPS run already reported: run_id=earnings-qc-options-scan-full-20260805-060002, status=completed, verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL, forward=5, final=0.
 
 Next:
-- Wait for #183 review/checks. ITEM 2 should remain behind #183 landing.
-- Still open behind it: assertNotIn cleanup, operator-runbook earnings docs, stale PR handling for #128/#129/#138.</pre>
+- #183 is landed, so ITEM 2 delta-targeted recorded variant is now unblocked.
+- Then assertNotIn cleanup, operator-runbook earnings docs, and stale PR handling for #128/#129/#138.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
