@@ -77,41 +77,42 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest Sheet row 158 from `claude-reviewer`.
+  <pre id="current-message">Processed latest Sheet row 164 from `claude-reviewer`.
 
-Report first:
-- The 08-05 daily did run and is now finished.
-- run_id: `earnings-qc-options-scan-full-20260805-060002`
-- status: `completed`
-- research_verdict: `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL`
-- final_candidate_count: `0`
-- forward_candidate_count: `5`
-- bottleneck: empty / none recorded
-- finished_at: `2026-08-05 06:22:43.333425+00`
-- run_dir: `/agents/research/reports/earnings-qc-options-scan-full-20260805-060002`
+Done:
+- PR #170 merged and deployed: https://github.com/atzmonpersonalassistant/trader/pull/170
+- main commit: `0773d1d299a9407a11439fc1a642d1f02a88bccd`
+- deploy run succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30983094342
+- Superseded PR #169 is closed.
 
-Timezone check:
-- The daily wrapper exports `TZ=Asia/Jerusalem`, so its shell `date +%Y%m%d` log filename uses Jerusalem local date.
-- `earnings-qc-research` builds the full run_id/run_dir timestamp with `datetime.datetime.now(datetime.timezone.utc)`, so `20260805-060002` is UTC.
-- Watchdog/postrun compute `DATE` with `TZ=Asia/Jerusalem`; for a 06:00 UTC run this is the same calendar date, but the mismatch would matter around local midnight. The PR below removes the scheduling mismatch rather than widening grace.
+What changed:
+- Replaced managed earnings cron scheduling with systemd timers using timezone-bearing `OnCalendar` expressions:
+  - daily: `*-*-* 06:00:00 Asia/Jerusalem`
+  - postrun: `*-*-* *:0/5:00 Asia/Jerusalem`
+  - watchdog: `*-*-* *:0/15:00 Asia/Jerusalem`
+- Watchdog now computes no-row deadlines from the same explicit schedule zone.
+- Failure handoffs are deduped per `(date, condition)` for postrun and watchdog, with temp-file-first artifact writes before marker claim.
 
-Fix opened:
-- PR: https://github.com/atzmonpersonalassistant/trader/pull/169
-- Commit: `781a296354273d8ea11ca0f75084ea36c1ae3dbd`
-- Choice: systemd timer with `OnCalendar=*-*-* 06:00:00` and `Timezone=Asia/Jerusalem`, because it handles IDT/IST directly.
-- Deploy writes the same schedule to `/agents/research/state/earnings-qc-research/daily-schedule.env`; the watchdog reads that timezone/hour/minute before legacy fallback.
-- Deploy removes legacy `0 6` and `0 9` daily cron lines for `/agents/research/bin/earnings-otm-daily.sh`.
-- I intentionally did not set `Persistent=true`, to avoid a deploy-after-06:00 catch-up run creating a duplicate broad daily scan.
+Verification:
+- `review-agent/pass` succeeded on head `8915fb9`: https://github.com/atzmonpersonalassistant/trader/runs/92231566601
+- Tests run locally:
+  - `python3 -m unittest agent-platform.tests.test_earnings_llm_postrun_review agent-platform.tests.test_earnings_llm_research_watchdog agent-platform.tests.test_vps_deploy_workflow`
+  - `bash -n ...postrun-review && bash -n ...research-watchdog && git diff --check`
+  - `python3 -m unittest discover agent-platform/tests` (238 OK; unrelated ResourceWarnings only)
+- VPS timer check after deploy:
+  - next daily: Thu 2026-08-06 03:00 UTC = 06:00 IDT
+  - installed daily timer contains `OnCalendar=*-*-* 06:00:00 Asia/Jerusalem`
 
-Tests run:
-- `python3 -m unittest agent-platform.tests.test_earnings_llm_research_watchdog agent-platform.tests.test_vps_deploy_workflow`
-- `bash -n agent-platform/scripts/earnings-qc-options/earnings-llm-research-watchdog`
-- `git diff --check`
+Latest daily:
+- `earnings-qc-options-scan-full-20260805-060002`
+- status `completed`, verdict `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL`
+- forward `5`, final `0`, bottleneck empty, finished `2026-08-05 06:22:43 UTC`
 
-Status:
-- PR #169 is open and mergeable but blocked: no commit check-runs are present yet on `781a296`.
-- I did not auto-merge because the standing review-agent/check constraint is not satisfied.
-- No VPS hotfix was applied.
+08-04 partial:
+- `full_summary.json` still exists.
+- status `PARTIAL_FULL_QC_SCAN`, `ok=false`, `forward_candidate_count=4`, `final_candidate_count=0`
+- one failed QC chunk: offset `125`, `BLOCKED_QC_BATCH_FAILED`, reason `QC produced zero option-chain rows on valuation date`
+- four candidate chunks did run historical option PnL and all reported `ok=true`; no historical failed chunks.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
