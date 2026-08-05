@@ -77,56 +77,44 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 221.
-
-Timing answer:
-- The previous cycle processed row 217 only. Current wrapper state showed last_processed row 217 and unprocessed rows 218-221, so #193 was merged before this worker processed your four findings/blocker, not after reading row 221.
-- Treating this as a queue/read mechanics failure. I stopped before PR B.
+  <pre id="current-message">Processed latest reviewer message, row 222.
 
 Done:
-- Opened PR #194, not merged:
+- Triggered review-agent/pass for #194 on the VPS.
+- review-agent/pass succeeded on a543288feed84fef8664956aea3d3a5982c8af41:
+  https://github.com/atzmonpersonalassistant/trader/runs/92449849213
+- Merged #194:
   https://github.com/atzmonpersonalassistant/trader/pull/194
-- Commit: a543288 Surface broker execution in daily handoff.
-- Fixes in #194:
-  - broker surface_attempts now append at actual attempt sites.
-  - broker execution_surface starts as none_attempted; execution_rc is nullable via maybe_int.
-  - earnings-qc-research reads qc_research_artifact_manifest.json and writes qc_broker_execution into full_summary.json.
-  - hebrew_report.md now emits a visible QC broker execution line with surface, cloud_status, execution_rc, and capped redacted cloud_error.
-  - watchdog handoff excerpts include qc_broker_execution.
+- main is now af28950501268d2cabeaa838d41ca03553b1c366.
+- Deploy succeeded:
+  https://github.com/atzmonpersonalassistant/trader/actions/runs/31048531328
 
-Forced-failure proof:
-- Added deterministic test artifact path for a forced cloud failure:
-  python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_daily_summary_surfaces_broker_cloud_failure
-- It writes a synthetic qc_research_artifact_manifest.json + qc_research_execution_diagnostic.json, runs write_summary(), and verifies the daily handoff text contains:
-  cloud_status=qc_cloud_execution_failed
-  cloud_error=Runtime Error: forced cloud failure
-- I have not claimed live VPS proof yet; #194 is open for review/deploy before any real forced cloud failure run.
+Review/test evidence:
+- Review agent deterministic pass + model PASS, no blocking findings.
+- Review output says it ran:
+  bash -n agent-platform/scripts/trading-research-qc-broker agent-platform/scripts/earnings-qc-options/earnings-qc-research agent-platform/scripts/earnings-qc-options/earnings-llm-research-watchdog
+  python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_daily_summary_surfaces_broker_cloud_failure agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_final_gate_warns_when_sample_size_unreachable_for_years
+  python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts agent-platform.tests.test_mvp0_agents
 
-Verification:
-- bash -n agent-platform/scripts/trading-research-qc-broker agent-platform/scripts/earnings-qc-options/earnings-qc-research agent-platform/scripts/earnings-qc-options/earnings-llm-research-watchdog
-- python3 -m unittest agent-platform.tests.test_mvp0_agents
-  Result: 74 tests OK.
-- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts
-  Result: 137 tests OK.
-- GitHub check-runs for a543288: none yet; PR mergeStateStatus is BLOCKED. No auto-merge.
+Post-deploy VPS verification:
+- /agents/research/bin/earnings-qc-research now contains qc_broker_execution reporting and fields cloud_status, execution_surface, surface_attempts.
+- /usr/local/bin/trading-research-qc-broker now has execution_surface=none_attempted, append_surface_attempt calls at the cloud/local/docker attempt sites, maybe_int execution_rc, and manifest surface_attempts persistence.
 
-Latest daily status from VPS:
+Latest daily status from VPS, checked 2026-08-05T21:25:39Z:
 - run_id: earnings-qc-options-scan-full-20260805-060002
-- DB status: completed
-- research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- research_verdict: absent/null in full_summary.json
 - final_candidate_count: 0
 - forward_candidate_count: 5
-- bottleneck: empty/null
-- FINAL_SAMPLE_SIZE_UNSATISFIABLE_FOR_YEARS: did not appear; full_summary final_candidate_gate_warnings is null.
+- bottleneck: absent/null
+- gate_warnings: null
 
 Retention / disk:
-- Checked at 2026-08-05T20:38:11Z.
 - df: /dev/sda1 72G size, 62G used, 11G free, 86%.
 - Full path checked: /agents/research/logs/earnings-qc-research/retention.log
-- Result: RETENTION_LOG_ABSENT because retention has not fired yet.
-- Next retention timer: 2026-08-06 01:15 UTC.
+- Result: absent; it has not fired yet at this check time. Retention is still expected at 2026-08-06 01:15 UTC.
 
-PR B remains blocked. I did not remove docker, clear the image, or run docker cleanup.</pre>
+PR B remains blocked until the 03:00 UTC daily handoff contains a real qc_broker_execution line from a live run. I did not open PR B, remove docker, clear the image, or run docker cleanup.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
