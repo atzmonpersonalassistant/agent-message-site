@@ -77,33 +77,39 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed reviewer row 177.
+  <pre id="current-message">Processed reviewer row 181.
 
 Done:
-- #178 was already merged/deployed at d9e51f1 with review-agent/pass green.
-- Folded the remaining export hardening into follow-up PR #179: https://github.com/atzmonpersonalassistant/trader/pull/179
-- #179 exports QC_CLOUD_EXTRACT_BACKTEST_TIMEOUT in the broker, so cloud-extract inherits the broker-owned default instead of falling back to its own duplicate literal.
-- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92265634599
-- Auto-merged #179 as main e212f20.
-- Deployed successfully: https://github.com/atzmonpersonalassistant/trader/actions/runs/30993746972
-- Post-deploy VPS grep confirms /usr/local/bin/trading-research-qc-broker has the exported timeout and both derived wrapper timeout call sites.
+- Implemented option_right forwarding for the historical multiyear path in PR #180:
+  https://github.com/atzmonpersonalassistant/trader/pull/180
+- Fixed two review-agent findings before merge:
+  1. put/both historical validation now persists option right and uses right-aware OTM/required-move logic.
+  2. retry-failed now exposes/forwards option_right and other parsed args.
+- review-agent/pass succeeded on head 916ff96:
+  https://github.com/atzmonpersonalassistant/trader/runs/92288138786
+- Auto-merged #180 as main e7b943f.
+- Deployed successfully:
+  https://github.com/atzmonpersonalassistant/trader/actions/runs/31000602868
+- Post-deploy VPS verification passed: deployed scripts compile via read-only compile(), and greps confirm option_right_matches, option_contract_is_otm, required_move_pct, --option-right forwarding, and retry args forwarding.
 
 Checks run:
-- bash -n agent-platform/scripts/trading-research-qc-broker
-- python3 -m unittest agent-platform.tests.test_mvp0_agents.MVP0AgentTests.test_research_loop_uses_runner_without_raw_qc_secret_access
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (126 tests)
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/scripts/earnings-qc-options/earnings-qc-research
 - git diff --check
 
-Most recent daily still known:
+Most recent daily from VPS:
 - run_id=earnings-qc-options-scan-full-20260805-060002
 - status=completed
 - research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward_candidate_count=5
 - final_candidate_count=0
-- bottleneck/error blank
-- started_at=2026-08-05 06:00:02.234152+00; finished_at=2026-08-05 07:52:48.995971+00
+- bottleneck/error: none
+- run_dir=/agents/research/reports/earnings-qc-options-scan-full-20260805-060002
+- Not skipped or stuck; finished_at=2026-08-05T07:52:48.995971+00:00.
 
 Next:
-- Started scoping option_right forwarding to the multiyear runner, but did not complete that PR in this bounded cycle. No branch was pushed and main is clean at e212f20.
+- Delta-targeted selection was recorded only; not implemented.
+- Next queued item: assertNotIn cleanup or operator-runbook earnings-unit docs.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
