@@ -77,35 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 200.
+  <pre id="current-message">Processed latest reviewer message, row 201.
 
-Landed #185 as requested:
-- PR body now explicitly states the limitation: this timer manages research artifacts and dangling/unused Docker images only. It does NOT reclaim the tagged 43G quantconnect/research:latest image.
-- Triggered review-agent/pass on fc90f418. It passed: https://github.com/atzmonpersonalassistant/trader/runs/92395694335
-- Auto-merged #185 after guardrails passed: aabb0bf Add research retention timer (#185)
-- Deployed main via workflow run 31032338284, green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31032338284
+VPS facts requested:
+- Root volume: 72G total, 62G used, 11G available.
+- Configured QC image: quantconnect/research:latest, current image size 43GB.
+- Pull-then-swap headroom estimate: 62G current used + 43GB replacement image ~= 105G minimum before layer/extraction overhead. Current 72G volume is short by about 33G minimum.
+- Docker currently has the tagged QC image plus nine dangling 43GB images sharing layers; retention is scheduled for 2026-08-06 01:15 UTC = 04:15 Asia/Jerusalem.
 
-Post-deploy VPS verification:
-- trader-research-retention.timer is enabled and active.
-- Next retention run: 2026-08-06 01:15:00 UTC = 04:15 Asia/Jerusalem.
-- Timer command is the scoped policy from #185: earnings-qc-research cleanup --older-than-days 14 --keep-last 20, then docker image prune -f --filter until=168h.
-- I did not delete anything by hand.
-
-Disk/image recommendation:
-- I think (a) is the right answer before any routine QC/LEAN image update: grow/attach storage first.
-- Current root is 72G with 12G free; the tagged QC image alone is about 43G.
-- A replacement pull needs the new image before the old tagged image can be removed, so it is short by at least ~31G just to fit. That is too tight; target roughly +100G so one current image, one replacement image, logs, reports, and extraction/layer overhead can coexist.
-- (b) pull-then-swap is the operational procedure, but it depends on (a) or a temporary volume. (c) pinning is acceptable only if we explicitly accept downtime/manual intervention for image updates. I do not see a better no-spend option.
-- Cost for Uriel to verify in OVH Manager: OVH public pages say VPS additional disks are available from 5-100G, and public block-storage pricing examples today are roughly $0.045/GB-month classic or $0.096/GB-month high speed, i.e. about $4.50-$9.60/month for 100G. Treat that as an estimate until checked against this exact account/product.
-
-Latest daily readout:
+Latest daily DB row:
 - run_id earnings-qc-options-scan-full-20260805-060002
 - status completed
 - research_verdict NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward_candidate_count 5; final_candidate_count 0
-- bottleneck/error blank in DB
+- bottleneck blank in DB; equivalent bottleneck from summary/status is NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - started 2026-08-05 06:00:02 UTC; finished 2026-08-05 07:52:48 UTC
-- The #181 guard's first real daily test is still 2026-08-06 03:00 UTC, so FINAL_SAMPLE_SIZE_UNSATISFIABLE_FOR_YEARS / per-symbol failed_checks cannot be assessed from the 08-05 run.</pre>
+- 2026-08-04 DB row also exists: status blocked, verdict PARTIAL_FULL_QC_SCAN, 4 forward / 0 final, finished 2026-08-04 06:19:28 UTC.
+- The #181 guard's first real 03:00 UTC systemd daily is 2026-08-06, so FINAL_SAMPLE_SIZE_UNSATISFIABLE_FOR_YEARS / per-symbol failed_checks are not observable yet.
+
+Small PR opened for finding 2:
+- #186 Document retention unit root access: https://github.com/atzmonpersonalassistant/trader/pull/186
+- Change: documents inside the generated retention service that User= is deliberately absent because docker image prune needs root-owned Docker socket access; test pins the comment.
+- Test run: python3 -m unittest agent-platform.tests.test_vps_deploy_workflow -> 8 tests OK. pytest is not installed in this worker shell.
+- Not merged: commits/6f68ffd has no check-runs yet, and the standing rule says not to bypass review-agent/pass.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
