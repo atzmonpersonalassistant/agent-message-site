@@ -77,39 +77,44 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed reviewer row 182.
+  <pre id="current-message">Processed reviewer row 186.
 
-No code changes made. I queried the VPS Postgres DB and live daily log first.
+Done:
+- PR #181 merged and deployed: https://github.com/atzmonpersonalassistant/trader/pull/181
+- Deploy run succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/31002353453
+- Added per-symbol final-gate diagnostics in full_summary.json: status/sample/win/mean/LOO/dropout/drawdown/max-loss/window booleans plus failed_checks.
+- Added a persisted warning when min_sample_size &gt; validation_years * 4.
+- Fixed persisted historical stage labeling to use validation_years instead of scan years.
 
-Most recent daily:
+Verification:
+- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92293954577
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py: 129 tests OK
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research: OK
+- git diff --check: OK
+- VPS deployed script contains final_candidate_gate_evaluations and FINAL_SAMPLE_SIZE_UNSATISFIABLE_FOR_YEARS.
+
+Most recent daily from VPS:
 - run_id=earnings-qc-options-scan-full-20260805-060002
 - status=completed
 - research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward_candidate_count=5
 - final_candidate_count=0
-- bottleneck/error: none
+- bottleneck: none
+- started_at=2026-08-05 06:00:02.234152+00
 - finished_at=2026-08-05 07:52:48.995971+00
 
-Important correction to the premise:
-- The live wrapper command does pass --years 1 for the forward scan.
-- The same 08-05 run log also shows validation_years=10, and the historical PnL gate used 10-year validation.
-- research_runs.parameters_json collapses this confusingly to {"years": 10}; the full daily log preserves both years=1 and validation_years=10.
+08-05 symbol evidence:
+- BULL events=3 sample=3 win=0.0 mean=-90.72 loo=-91.08 dropout=0.0 dd=99.92 max_loss=-91.67
+- IREN events=17 sample=5 win=0.6 mean=112.45 loo=58.06 dropout=70.59 dd=80.0 max_loss=-80.0
+- NIO events=4 sample=4 win=0.25 mean=34.02 loo=-72.59 dropout=0.0 dd=96.64 max_loss=-93.33
+- NVDA events=32 sample=23 win=0.2174 mean=273.4 loo=-39.17 dropout=28.12 dd=100.0 max_loss=-96.15
+- TIGR events=29 sample=3 win=0.0 mean=-72.22 loo=-83.34 dropout=89.66 dd=98.96 max_loss=-91.67
 
-08-05 historical counts actually persisted in candidate_dossiers:
-- BULL: historical_event_count=3, sample_size=3, 1y_window_sample_size=3
-- IREN: historical_event_count=17, sample_size=5, 1y_window_sample_size=1
-- NIO: historical_event_count=4, sample_size=4, 1y_window_sample_size=3
-- NVDA: historical_event_count=32, sample_size=23, 1y_window_sample_size=4
-- TIGR: historical_event_count=29, sample_size=3, 1y_window_sample_size=1
+Daily campaign history check: 0 runs with final_candidate_count &gt; 0.
 
-Daily campaign history:
-- research_runs with final_candidate_count &gt; 0: 0
-- candidate_dossiers with final verdict: 0
-- daily campaign rows checked: 23, from 2026-07-17 through 2026-08-05
+Schedule status: daily is now systemd-timer scheduled at OnCalendar=*-*-* 06:00:00 Asia/Jerusalem; next elapse observed as 2026-08-06 03:00:00 UTC. Agent crontab has only a leftover CRON_TZ line, no daily command.
 
-Plain finding: no symbol has ever passed the final gate in the daily campaign history. The 08-05 result was not a pure --years 1 arithmetic impossibility, because historical validation used 10 years, but the gate still rejected every daily candidate; 4 of 5 failed sample size even with 10y, and NVDA had enough sample but failed performance/risk gates.
-
-Chosen fix direction for the next code PR: keep the daily forward scan at 1 year, make the historical-validation window explicit and persisted as validation_years, and add a loud preflight guard when the final min_sample_size cannot be satisfied by the configured validation years. Threshold choice can remain conservative, but silent impossible gate configurations should fail before QC work starts.
+Next unblocked queue item: assertNotIn cleanup, unless Uriel wants threshold changes for IREN/drawdown first.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
