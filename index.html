@@ -77,48 +77,41 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest Sheet row 155 from `claude-reviewer`.
+  <pre id="current-message">Processed latest Sheet row 156 from `claude-reviewer`.
 
-Read-only VPS re-check at `2026-08-05T04:33:52Z` / `2026-08-05T07:33:52+0300`.
+Read-only VPS diagnosis only, checked at `2026-08-05T05:33-05:40Z` / `08:33-08:40 Asia/Jerusalem`. I made no VPS or trader changes because you asked for findings before changes.
 
-08-05 daily:
-- No DB row exists for `earnings-qc-options-scan-full-20260805%`.
-- Latest daily row is still `earnings-qc-options-scan-full-20260804-060001`.
-- Handoff matches do exist for 08-05: repeated `research-pass-postrun-*-NO_FINISHED_DAILY_RUN-task.txt`.
-- Latest observed: `/agents/research/handoff/research-pass-postrun-20260805-20260805-043501-NO_FINISHED_DAILY_RUN-task.txt` (07:35 local).
-- Its body says `condition: NO_FINISHED_DAILY_RUN`, `date: 2026-08-05`, `scheduled_at: 06:00`, `grace_seconds: 10800`, `threshold_seconds: 10800`.
-- No matching `research-watchdog-*-DAILY_RUN_MISSING_AFTER_DEADLINE-task.txt` or `research-watchdog-*-STALE_RUNNING_DAILY_RUN-task.txt` appeared in the matched list.
+08-05 missing daily:
+- `agent-research` crontab managed block is present. Daily line is exactly `0 6 * * * /agents/research/bin/earnings-otm-daily.sh` under `CRON_TZ=Asia/Jerusalem`.
+- `/agents/research/logs/earnings-qc-research/daily-20260805.log` does not exist. No `*20260805*` daily log exists. Directory is writable by `agent-research`.
+- Cron service is active. At `2026-08-05 03:00:01Z` / `06:00 local`, cron fired postrun and watchdog, but did NOT fire `earnings-otm-daily.sh`.
+- The `daily.lock` file exists from `2026-08-04 06:00`, but `fuser` shows no holder. This looks like a normal flock path left on disk, not active contention.
+- No `DAILY_RUN_LOCK_CONTENDED` string appeared in today's logs.
+- There is still no DB row for `earnings-qc-options-scan-full-20260805%`.
+
+Key finding:
+- Historical daily rows show the daily has been starting at `06:00 UTC`, not `06:00 Asia/Jerusalem`: latest row `earnings-qc-options-scan-full-20260804-060001` started `2026-08-04 06:00:01.770583+00`.
+- So cron did not "fire and die" at 06:00 local. It appears the installed cron daemon is treating the daily schedule as UTC despite the `CRON_TZ` lines. That means today's daily was likely still scheduled for `2026-08-05 06:00Z` / `09:00 local`, exactly at the watchdog missing-run deadline.
 
 Most recent daily row:
 - run_id: `earnings-qc-options-scan-full-20260804-060001`
 - status: `blocked`
-- research_verdict / bottleneck: `PARTIAL_FULL_QC_SCAN`
+- research_verdict: `PARTIAL_FULL_QC_SCAN`
 - final_candidate_count: `0`
 - forward_candidate_count: `4`
 - started_at / finished_at: `2026-08-04 06:00:01.770583+00` / `2026-08-04 06:19:28.969375+00`
 
-08-04 `full_summary.json`:
-- `ok`: false, `status`: `PARTIAL_FULL_QC_SCAN`
-- Actual deployed chunked expression is line 736: `base_scan_complete and not historical_gate_blocked and not multiyear_failed and not qc_capacity_blocked and not historical_gate_no_pass`.
-- `base_scan_complete` was false: `chunk_count=7`, `qc_symbols_scanned=127`, `calendar_row_count=127`, but `failed_chunks` was non-empty.
-- `failed_chunk_count`: `1`; scanner failed chunk: offset `125`, status `BLOCKED_QC_BATCH_FAILED`, reason `QC produced zero option-chain rows on valuation date`.
-- There was also `chunk-650.stdout.json` with `BLOCKED_QC_BATCH_FAILED`, reason `QC/LEAN batch option-chain diagnostic failed; see qc_stage2_* artifacts`, but the refreshed summary retained one non-historical scanner failed chunk.
-- `multiyear_failed`: false; `qc_capacity_blocked`: false; `historical_gate_blocked`: false; `historical_gate_no_pass`: false.
-- The reviewer’s three-operand shorthand maps here as: `base_scan_ok=false`; `mb.ok` is not present at top level for this chunked end-to-end path, while four candidate chunks had `ok=true` / `OK_MULTIYEAR_OPTION_PNL_BACKTEST`; `final_candidates` is false because count is `0`.
+08-04 owed breakdown:
+- `summary.ok=false`
+- `final_candidates` false: `final_candidate_count=0`
+- `forward_candidate_count=4`
+- `base_scan_ok`/base scan completeness was false because there was one scanner failed chunk.
+- failed chunk: offset `125`, status `BLOCKED_QC_BATCH_FAILED`, reason `QC produced zero option-chain rows on valuation date`.
+- candidate multiyear chunks were OK: offsets `25`, `50`, `75`, `100` all `ok=true`, `OK_MULTIYEAR_OPTION_PNL_BACKTEST`.
+- aggregate funnel: `127 -> 99 -> 36 -> 13 -> 4`
+  (`nasdaq universe`, `option_chain_available`, `expiry_within`, `calls_under_max_premium`, `liquidity/greeks pass`)
 
-Counts and funnel:
-- final_candidate_count: `0`
-- forward_candidate_count: `4` (`NVDA`, `TIGR`, `BULL`, `NIO`)
-- aggregate_funnel:
-  `01_nasdaq_earnings_21_28d_universe=127`
-  `02_qc_option_chain_available=99`
-  `03_qc_expiry_within_0_7d_after_earnings=36`
-  `04_qc_calls_ask_under_max_premium=13`
-  `05_qc_liquidity_greeks_quality_pass=4`
-  `07_multi_year_backtest_status=OK_CHUNKED_MULTIYEAR_OPTION_PNL_BACKTEST`
-- multiyear statuses: offsets `25`, `50`, `75`, `100` all `ok=true`, `status=OK_MULTIYEAR_OPTION_PNL_BACKTEST`.
-
-I did not change trader code or hotfix the VPS. The data points to the residual bucket absorbing a non-historical scanner chunk failure plus zero final candidates; that likely deserves a named status in a PR.
+I stopped here rather than starting the cloud-backtest timeout PR in the same cycle, because the highest-priority instruction was to report this read-only diagnosis before changing anything.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
