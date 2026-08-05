@@ -77,44 +77,43 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 205.
+  <pre id="current-message">Processed latest reviewer message, row 209.
 
 Done:
-- PR #189 merged and deployed: https://github.com/atzmonpersonalassistant/trader/pull/189
-  Adds reporting-only delta_targeted_comparison to multiyear historical results; baseline top-level selection remains ask/required_move_pct/-OI/-volume.
-  review-agent/pass: https://github.com/atzmonpersonalassistant/trader/runs/92414535369
-  deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/31037921548
-- PR #190 merged and deployed: https://github.com/atzmonpersonalassistant/trader/pull/190
-  Fixes DB persistence for enlarged summaries by sending SQL to psql on stdin instead of argv.
-  review-agent/pass: https://github.com/atzmonpersonalassistant/trader/runs/92421965343
-  deploy: https://github.com/atzmonpersonalassistant/trader/actions/runs/31040112245
+- Opened PR #191 to commit the production delta-targeted comparison artifact:
+  https://github.com/atzmonpersonalassistant/trader/pull/191
+- Artifact path in PR:
+  agent-platform/docs/research/20260805-delta-variant-comparison.json
+- Source copied from:
+  /agents/research/reports/earnings-qc-delta-targeted-seven-20260805-1906/full_summary.json
+- Backtest id:
+  ee74db7ec1aaf90cf0dc0bcf0593297a
 
-Tests:
-- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts
-  #189: 136 tests OK; #190: 137 tests OK.
+Verification:
+- python3 -m json.tool agent-platform/docs/research/20260805-delta-variant-comparison.json >/dev/null
+- Secret-pattern scan on artifact: clean.
+- Commit check-runs for 626b920: total=0.
+- PR #191 auto-merge is enabled, but current mergeStateStatus is BLOCKED by branch policy. I did not use admin bypass.
 
-QC run:
-- run dir: /agents/research/reports/earnings-qc-delta-targeted-seven-20260805-1906
-- backtest id: ee74db7ec1aaf90cf0dc0bcf0593297a
-- artifact persisted after #190: summary_bytes 325581
-- status: BLOCKED_HISTORICAL_OPTION_PNL_GATE; ok false; results 7
+Docker execution path:
+- It HAS run in production.
+- journalctl count since 2026-01-01 for actual /usr/local/sbin/trading-research-qc-docker-run executions: 192
+- Most recent execution: 2026-07-28 03:56:06 UTC, as agent-research, in /agents/research/reports/research-pass-20260728-035545.
+- Therefore the 43G image is not proven unused.
 
-Numbers, baseline vs delta-target 0.25:
-- NVDA base n=23 win=21.74% mean=273.40 median=-87.50 best=7150.00 drop=28.12%; delta n=23 win=26.09% mean=296.79 median=-88.00 best=6443.48 drop=28.12% no_delta=8
-- KSS  base n=11 win=18.18% mean=10.32  median=-60.00 best=618.75  drop=66.67%; delta n=11 win=18.18% mean=28.16  median=-34.78 best=615.00  drop=66.67% no_delta=21
-- OPEN base n=12 win=16.67% mean=-53.54 median=-87.34 best=69.05   drop=47.83%; delta n=12 win=25.00% mean=-49.95 median=-87.34 best=69.05   drop=47.83% no_delta=11
-- JOBY base n=3  win=0.00%  mean=-89.26 median=-88.89 best=-88.89  drop=86.96%; delta n=3  win=0.00%  mean=-75.31 median=-88.89 best=-48.15  drop=86.96% no_delta=16
-- SPCE base n=10 win=0.00%  mean=-71.10 median=-91.29 best=0.00    drop=62.96%; delta n=10 win=0.00%  mean=-65.11 median=-75.52 best=0.00    drop=62.96% no_delta=16
-- BULL base n=3  win=0.00%  mean=-90.72 median=-90.48 best=-90.00  drop=0.00%;  delta n=3  win=0.00%  mean=-93.95 median=-93.55 best=-90.48  drop=0.00% no_delta=0
-- NIO  base n=4  win=25.00% mean=34.02  median=-62.22 best=353.85  drop=0.00%;  delta n=4  win=25.00% mean=73.47  median=-68.88 best=526.67  drop=0.00% no_delta=0
+Latest scheduled daily artifact:
+- run_id: earnings-qc-options-scan-full-20260805-060002
+- status/bottleneck: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- research_verdict field in artifact: null
+- final_candidate_count: 0
+- forward_candidate_count: 5
+- run_dir: /agents/research/reports/earnings-qc-options-scan-full-20260805-060002
 
-Blocker / do not interpret yet:
-- Acceptance failed: baseline did NOT reproduce the stated seven-symbol numbers exactly.
-- Exact match only for NVDA. OPEN/JOBY/SPCE have material n/return drift; KSS median also differs; BULL/NIO only differ by rounding.
-- I did not argue the variant result either way because the baseline mismatch means this is not yet a valid comparison.
-
-Next needed:
-- Identify the exact prior source artifact/code/params that produced the stated baseline, then rerun delta_targeted_comparison against that same baseline context.</pre>
+Retention:
+- Current time checked: 2026-08-05T19:43:50Z.
+- 01:15 UTC retention has not fired yet for tonight.
+- df at check: /dev/sda1 72G size, 62G used, 11G free, 86%.
+- /agents/research/logs/earnings-qc-research/retention.log is absent before tonight's timer.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
