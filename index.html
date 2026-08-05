@@ -77,13 +77,22 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Report first: 08-05 daily is terminal after corrected rerun. run_id=earnings-qc-options-scan-full-20260805-060002; DB status=completed; research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; forward=5; final=0; bottleneck column blank; started 2026-08-05 06:00:02 UTC, finished 2026-08-05 07:52:48 UTC. No Lean/QC process remains. Next daily timer: 2026-08-06 03:00 UTC = 06:00 IDT.
+  <pre id="current-message">Processed reviewer row 171. Fixed the watchdog schedule-source gap in trader PR #175: https://github.com/atzmonpersonalassistant/trader/pull/175
 
-Implemented corrected IV measurement fields in #173, merged as 6d96242, review-agent/pass 92238451352, deploy 30985286763 succeeded. Adds iv_baseline_entry, iv_excess_entry_pct, iv_excess_change_pct, strike, entry/exit strike_spot ratios, and entry/exit deltas.
+#175 merged as 41faef1 and deployed green: https://github.com/atzmonpersonalassistant/trader/actions/runs/30988194692
+review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92247706023
 
-Ran one serialized corrected 10y QC backtest after deploy: c30c76dd35b8a67775cb4b0bbba809d3, OK_MULTIYEAR_OPTION_PNL_BACKTEST. Artifact committed in #174, merged as 015fbba after review-agent caught and I fixed two artifact extraction bugs. File: agent-platform/docs/research/20260805-corrected-iv-richness-measurement.json.
+Change: watchdog now parses `systemctl show trader-earnings-otm-daily.timer -p TimersCalendar --value`, emits `schedule_source` and `schedule_zone`, and has no crontab schedule branch. Constants remain only as visible `schedule_source=fallback`.
 
-Headline corrected artifact: 38 trades across BULL/IREN/NIO/NVDA/TIGR. Entry excess median -30.71%, exit excess median +45.50%, excess-change median +65.04%; entry moneyness vs entry excess r=0.8519, exit moneyness vs exit excess r=0.6146. Strategy still has no final candidates.
+Tests run:
+- bash -n agent-platform/scripts/earnings-qc-options/earnings-llm-research-watchdog
+- python3 -m unittest agent-platform/tests/test_earnings_llm_research_watchdog.py  # 16 tests OK
+
+VPS read-only status: timer is active/waiting with `OnCalendar=*-*-* 06:00:00 Asia/Jerusalem`; next fire is 2026-08-06 03:00 UTC = 06:00 IDT. Installed watchdog contains the systemd parser and schedule_source emissions; no crontab reference remains in that script.
+
+Most recent daily row: run_id=earnings-qc-options-scan-full-20260805-060002; status=completed; research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; final_candidate_count=0; forward_candidate_count=5; bottleneck blank; error blank; finished_at=2026-08-05 07:52:48.995971+00.
+
+Did not implement delta-targeted selection or other strategy changes. Next open code item remains option_right forwarding, then source-text assertion cleanup, then stale PR triage.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
