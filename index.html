@@ -77,43 +77,42 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 188.
+  <pre id="current-message">Processed latest reviewer message, rows 189-190.
 
 Done:
-- Revived, fixed, reviewed, and merged PR #134: https://github.com/atzmonpersonalassistant/trader/pull/134
-  - merge commit: 61e26da4cb9bfa4883a6d6be09a4b283d3207de5
-  - review-agent/pass: https://github.com/atzmonpersonalassistant/trader/runs/92299518031
-  - tests: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py, 131 OK
-  - scope: multiyear now accepts/forwards --option-resolution, prefers it over --historical-resolution, and defaults unset resolution to Resolution.DAILY.
-- Closed superseded PR #141 with corrected note: https://github.com/atzmonpersonalassistant/trader/pull/141
-- Revived, reviewed, and merged docs archive PR #139: https://github.com/atzmonpersonalassistant/trader/pull/139
-  - merge commit: 50a2735b7792af94dab2947cf90b96d8fa634e9f
-  - review-agent/pass: https://github.com/atzmonpersonalassistant/trader/runs/92300387614
-  - tests: git diff --check
+- Ran IREN-only 10y historical option-PnL on VPS/QC, serialized with no other QC process active.
+  - run_id=iren-wide-20260805-codex
+  - backtest_id=6359f048e2a635ac8d5214bd218956c3
+  - QC status=Completed.
+  - result: BLOCKED_HISTORICAL_OPTION_PNL_GATE, final_candidate_count=0
+  - metrics: sample_size=6, historical_event_count=17, dropout=64.71, win_rate=0.50, mean=+93.71, leave-one-out=+46.45, max_drawdown=80.00, max_loss=-80.00
+  - per-trade returns: [0.0, 0.0, 100.0, -80.0, 330.0, 212.24]
+  - #181 failed_checks: [status_ok, sample_size_ok, dropout_ok, max_drawdown_ok]
+- Produced gate sensitivity from #174 metrics for max_drawdown_pct_lt {80,85,90,95,100} x max_dropout_pct {40,55,70,80}.
+  - No symbol passes any requested pair. IREN remains blocked by sample_size=6 even when dropout/drawdown are relaxed; NVDA and the others fail non-threshold robustness/return checks.
+- Merged PR #182: https://github.com/atzmonpersonalassistant/trader/pull/182
+  - merge commit: f44fecbb0e259e8201dc1b265833c1b06722dd65
+  - artifacts:
+    - agent-platform/docs/research/20260805-iren-wide.json
+    - agent-platform/docs/research/20260805-gate-sensitivity.json
+  - review-agent/pass: https://github.com/atzmonpersonalassistant/trader/runs/92303955728
+  - tests: jq empty on both JSON artifacts; git diff --check
 
-Most recent daily from VPS:
-- run_id=earnings-qc-options-scan-full-20260805-060002
-- DB status=completed
-- research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- forward_candidate_count=5
-- final_candidate_count=0
-- bottleneck=NULL
-- started_at=2026-08-05 06:00:02.234152+00
-- finished_at=2026-08-05 07:52:48.995971+00
-- artifact status=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- multiyear status=OK_MULTIYEAR_OPTION_PNL_BACKTEST, backtest_id=c30c76dd35b8a67775cb4b0bbba809d3
+Resolution view:
+- I agree with keeping the historical stage at DAILY for now.
+- Hourly historical would invalidate comparability with all existing historical results and is likely infeasible at the current architecture: NVDA daily already measured 1,295,301 contract rows over 10y, and IREN daily alone just measured 210,900 contract rows over 1,068 symbol-days. Hourly across broad windows needs batching/streaming before it is a serious proposal.
+- What I would need to make hourly feasible: symbol/chunk batching with explicit QC node leasing, persisted partial snapshots/results, memory-bounded streaming aggregation instead of retaining full option-chain snapshots, resumable cleanup of abandoned backtests, and a narrow pilot proving one symbol at hourly over 10y stays below memory limits.
+- The artifact caveat is correct: stop-loss variants on daily bars observe/fill at daily snapshots, not true intraday stop prices. That limitation should be recorded in result artifacts wherever stop-loss fill variants are reported.
 
-08-05 candidate blockers:
-- NVDA: sample=23, win=0.2174, mean=273.4, loo=-39.17, dropout=28.12, max_drawdown=100.0.
-- IREN: sample=5, win=0.6, mean=112.45, loo=58.06, dropout=70.59, max_drawdown=80.0.
-- TIGR: sample=3, win=0.0, mean=-72.22, loo=-83.34, dropout=89.66, max_drawdown=98.96.
-- BULL: sample=3, win=0.0, mean=-90.72, loo=-91.08, dropout=0.0, max_drawdown=99.92.
-- NIO: sample=4, win=0.25, mean=34.02, loo=-72.59, dropout=0.0, max_drawdown=96.64.
+VPS status:
+- No active QC/LEAN research process after the run.
+- Next daily timer observed: 2026-08-06 03:00:00 UTC.
 
-Not done in this bounded cycle:
-- #128, #129, #138 still need sequencing/diff judgment.
-- assertNotIn cleanup and operator-runbook docs remain queued.
-- 2026-08-06 daily prediction cannot be confirmed yet; next daily timer observed at 2026-08-06 03:00:00 UTC.
+Still open:
+- assertNotIn cleanup.
+- operator-runbook earnings/daily/watchdog/postrun docs.
+- stale PR diff work for #128, #129, #138.
+- 2026-08-06 daily guard confirmation after that run exists.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
