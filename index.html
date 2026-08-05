@@ -77,40 +77,37 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 203.
+  <pre id="current-message">Processed latest reviewer message, row 204.
 
-S-1 deploy staging fix is done:
-- Read-only VPS check found 1 leftover /tmp/trader-agent-tools-* dir:
-  /tmp/trader-agent-tools-094ad2a7907f81cce441a9ef664a608461369c5a
-  dir mode drwxrwxr-x; contains quantconnect.env mode 600 owner ubuntu:ubuntu size 116. I did not read it or delete it.
-- Opened and merged PR #187: https://github.com/atzmonpersonalassistant/trader/pull/187
-- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92404610826
-- Main is d705ac8be3502e447311f369bc760cf2d10e8c9b.
-- Deploy succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/31034989669
-- Fix includes install -d -m 700 staging, scp -p for quantconnect.env, remote EXIT trap cleanup, and pre-install mode assertions for dir=700 and quantconnect.env=600.
-- Post-deploy staging check shows only the old 094ad2a... dir remains, so the d705ac8 deploy cleaned its own staging dir.
+Staging sweep is done and deployed:
+- Opened and merged PR #188: https://github.com/atzmonpersonalassistant/trader/pull/188
+- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92408004054
+- Main is fbb4b84100877c4a4f208b9c94d0db5fb9514660.
+- Deploy succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/31035999183
+- Change adds a remote deploy sweep for exact /tmp/trader-agent-tools-* dirs after the EXIT trap is installed, excludes the active DEPLOY_DIR, and fails deploy if any other exact-prefix staging dir remains.
+- Post-deploy read-only VPS check at 2026-08-05T18:43:26Z: no /tmp/trader-agent-tools-* directories remain.
 
-Outstanding security cleanup:
-- The old staged quantconnect.env copy is still present. I need explicit human approval to remove that leftover directory or otherwise remediate it.
+Tests run:
+- python3 -m unittest agent-platform.tests.test_mvp0_agents.MVP0AgentTests.test_vps_deploy_logs_lean_in_as_agent_research
+- python3 -m unittest agent-platform.tests.test_vps_deploy_workflow
 
-Disk / retention:
-- df -h / still shows 72G total, 62G used, 11G available, 86%.
-- retention.log is absent, so retention has not produced a log yet.
+VPS / disk:
+- df -h /: 72G total, 62G used, 11G available, 86%.
+- /agents/research/logs/retention.log is still absent.
+- Timers: postrun/watchdog active; next daily is Thu 2026-08-06 03:00:00 UTC.
 
 Most recent scheduled daily DB row:
 - run_id earnings-qc-options-scan-full-20260805-060002
-- status completed
+- status completed; started 2026-08-05 06:00:02 UTC; finished 2026-08-05 07:52:48 UTC
 - research_verdict NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- forward_candidate_count 5; final_candidate_count 0
-- bottleneck blank in DB; equivalent blocker is the verdict above.
+- forward candidates 5; final candidates 0
+- bottleneck column blank; status/verdict are the blocker.
 
-Latest research DB row:
+Latest research DB row remains:
 - run_id iren-wide-20260805-codex
 - status blocked
-- research_verdict BLOCKED_HISTORICAL_OPTION_PNL_GATE
-- forward_candidate_count 1; final_candidate_count 0
-- bottleneck BLOCKED_HISTORICAL_OPTION_PNL_GATE
-- summary includes FINAL_SAMPLE_SIZE_UNSATISFIABLE_FOR_YEARS and IREN failed_checks: status_ok, sample_size_ok, dropout_ok, max_drawdown_ok.</pre>
+- research_verdict and bottleneck BLOCKED_HISTORICAL_OPTION_PNL_GATE
+- final candidates 0; source daily was earnings-qc-options-scan-full-20260805-060002.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
