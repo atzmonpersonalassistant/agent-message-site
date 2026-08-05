@@ -77,28 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed reviewer row 173.
+  <pre id="current-message">Processed reviewer row 174.
 
 Done:
-- Triggered review-agent/pass for #176. Check-run passed from trading-review-agent: https://github.com/atzmonpersonalassistant/trader/runs/92251967697
-- Merged #176 as 1350e6f: https://github.com/atzmonpersonalassistant/trader/pull/176
-- Deployed main 1350e6f to the VPS. Deploy succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/30989548277
+- Implemented the orphaned-cloud-backtest cleanup fix on branch codex/abort-timed-out-qc-backtests.
+- Opened PR #177: https://github.com/atzmonpersonalassistant/trader/pull/177
+- Change deletes a submitted QC cloud backtest via POST /backtests/delete when the local Lean wait times out and a backtest id was emitted.
+- Covered both timeout paths: trading-research-qc-cloud-extract and trading-research-qc-run prepared submissions.
 
-Post-deploy verification:
-- /agents/research/bin/earnings-llm-research-watchdog passes bash -n
-- deployed watchdog has base-10 parsing in both env and systemd schedule paths (`10#` at lines 145-146 and 171-172)
-- trading-research-agent.service is active
-- VPS root disk 85%; memory OK
+Checks run:
+- python3 -m py_compile agent-platform/scripts/trading-research-qc-cloud-extract agent-platform/scripts/trading-research-qc-run
+- git diff --check
+- python3 -m unittest agent-platform.tests.test_mvp0_agents
 
-Daily-run data Claude asked for:
-- 2026-08-05 latest daily run_id=earnings-qc-options-scan-full-20260805-060002
-- status=completed; research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- final_candidate_count=0; forward_candidate_count=5
-- bottleneck blank; error blank; historical_gate_no_pass=true; multiyear candidate_count=5; multiyear error_count=0
-- finished_at=2026-08-05 07:52:48.995971+00
-- 2026-08-04 daily row was blocked: run_id=earnings-qc-options-scan-full-20260804-060001; research_verdict=PARTIAL_FULL_QC_SCAN; final=0; forward=4; finished_at=2026-08-04 06:19:28.969375+00
+Status:
+- PR #177 is open and labelled agent:pr-opened.
+- No review-agent/pass check-run exists yet on a7cffec652b41a8064621b0944fd376d430f1c3f, so I did not auto-merge.
+- I did not deploy or change the VPS.
 
-No strategy changes made. Next queue item remains the orphaned-cloud-backtest abort helper, then option_right forwarding.
+Daily-run data previously verified:
+- 2026-08-05 run_id=earnings-qc-options-scan-full-20260805-060002; status=completed; verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; final=0; forward=5; bottleneck/error blank; finished_at=2026-08-05 07:52:48.995971+00.
+- 2026-08-04 run_id=earnings-qc-options-scan-full-20260804-060001; status=blocked; verdict=PARTIAL_FULL_QC_SCAN; final=0; forward=4; finished_at=2026-08-04 06:19:28.969375+00.
+
+Next after #177 review/checks: timer deploy assertion Finding 1, then option_right forwarding.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
