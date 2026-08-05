@@ -77,30 +77,42 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 198.
+  <pre id="current-message">Processed latest reviewer message, row 199.
 
-Done / verified:
-- #184 is already merged on main as cf2f5c171004c8dbabf04c7c728784b99c958e50.
-- Commit-level check on PR head 3da3070d65c3cc607cb89e337e04865f6cfd5a0b:
-  review-agent/pass SUCCESS at 2026-08-05T13:27:42Z
-  https://github.com/atzmonpersonalassistant/trader/runs/92320447474
-- Deploy for the merge commit is green:
-  https://github.com/atzmonpersonalassistant/trader/actions/runs/31010328973
+Did the requested read-only VPS disk investigation before queue work:
+- df -h /: /dev/sda1 72G size, 61G used, 12G avail, 85%.
+- /agents is 4.8G total. Biggest parts: /agents/research/reports 2.4G, /agents/research/quarantine 1.5G.
+- /var is 51G; /var/lib/containerd is 48G. /var/log is 2.0G.
+- docker system df: Images 51.29G, containers 0, volumes 0, build cache 0. Current tagged quantconnect/research:latest is 43G.
+- cleanup_runs table count is 0: prod cleanup has never recorded a run.
 
-Latest VPS daily readout:
-- run_id: earnings-qc-options-scan-full-20260805-060002
-- lifecycle: completed; full_summary.json written 2026-08-05 07:52:48 UTC
-- status / research verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- forward_candidate_count: 5
-- final_candidate_count: 0
-- bottleneck: historical option-PnL final gate. Multiyear ran successfully over 5 candidates, error_count=0, but no symbol survived the final gate.
-- Note: this run finished before #181 landed, so it legitimately has no per-symbol final_candidate_gate_evaluations / failed_checks yet. Next real test is the 2026-08-06 03:00 UTC daily.
+Report growth/headroom:
+- /agents/research/reports today (2026-08-05): 27 dirs, about 15.8M.
+- Oldest report dir still present: /agents/research/reports/qc-breakout-under-dollar-options-20260610-135729, 296K.
+- Existing full-scan cleanup policy, if run today, would reclaim about 151M from 45 old full-scan dirs.
+- At today's report growth alone, 12G free is hundreds of days of headroom. The real near-term risk is Docker/containerd image growth after future pulls, not daily report writes.
+- I do not think an urgent manual deletion is needed before the next 06:00 Asia/Jerusalem daily: there is 12G free, no active containers, and the next daily should write MB-scale reports. I did not delete anything by hand.
 
-VPS health:
-- host vps-ce2ba5e7 up 27d; load 0.14/0.14/0.11; root disk 61G/72G, 85%.
-- trader-earnings-otm-daily.timer next elapse: 2026-08-06 03:00:00 UTC.
+PR opened:
+- #185 Add managed research retention timer
+  https://github.com/atzmonpersonalassistant/trader/pull/185
+- Branch/head: codex/research-retention-timer, fc90f41821a6d418115d40c62fa561f77f9e7da7
+- Adds trader-research-retention.timer at 04:15 Asia/Jerusalem.
+- Retention action: existing earnings-qc-research cleanup --older-than-days 14 --keep-last 20, plus docker image prune -f --filter until=168h.
+- It deliberately does not run docker system prune, volume prune, manual rm, or any trading/risk change.
 
-I did not build delta-targeting in this cycle because the same row both says to do it and later says DO NOT BUILD delta-targeted selection without Uriel. Treating that as blocked pending Uriel/human direction. Next unambiguous queue item is the assertNotIn behavioural cleanup or operator-runbook earnings docs.</pre>
+Tests:
+- PASS: python3 -m unittest agent-platform/tests/test_vps_deploy_workflow.py
+- Could not run pytest locally: pytest is not installed.
+
+PR status:
+- Open, mergeStateStatus BLOCKED, no check rollup yet. I left it open because it changes prod retention/deploy behavior and review-agent/checks have not passed.
+
+Latest daily readout remains:
+- run_id earnings-qc-options-scan-full-20260805-060002
+- completed; research verdict NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- forward_candidate_count 5; final_candidate_count 0
+- bottleneck: historical option-PnL final gate.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
