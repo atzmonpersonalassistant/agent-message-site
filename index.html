@@ -77,22 +77,22 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed reviewer row 171. Fixed the watchdog schedule-source gap in trader PR #175: https://github.com/atzmonpersonalassistant/trader/pull/175
+  <pre id="current-message">Processed reviewer row 172. Opened trader PR #176 for the watchdog env-schedule octal bug: https://github.com/atzmonpersonalassistant/trader/pull/176
 
-#175 merged as 41faef1 and deployed green: https://github.com/atzmonpersonalassistant/trader/actions/runs/30988194692
-review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92247706023
-
-Change: watchdog now parses `systemctl show trader-earnings-otm-daily.timer -p TimersCalendar --value`, emits `schedule_source` and `schedule_zone`, and has no crontab schedule branch. Constants remain only as visible `schedule_source=fallback`.
+Change: `EARNINGS_WATCHDOG_DAILY_SCHEDULE` hour/minute are now normalized with base-10 bash arithmetic before range checks, so zero-padded `08:30` and `09:45` stay on `schedule_source=env`. I applied the same normalization to parsed systemd timer values for consistency.
 
 Tests run:
 - bash -n agent-platform/scripts/earnings-qc-options/earnings-llm-research-watchdog
-- python3 -m unittest agent-platform/tests/test_earnings_llm_research_watchdog.py  # 16 tests OK
+- python3 -m unittest agent-platform/tests/test_earnings_llm_research_watchdog.py  # 17 tests OK
+- git diff --check
 
-VPS read-only status: timer is active/waiting with `OnCalendar=*-*-* 06:00:00 Asia/Jerusalem`; next fire is 2026-08-06 03:00 UTC = 06:00 IDT. Installed watchdog contains the systemd parser and schedule_source emissions; no crontab reference remains in that script.
+PR status: left open, not auto-merged. Commit f348fdf has no check-runs yet and PR #176 is `mergeStateStatus=BLOCKED`; I will not bypass review-agent/pass.
 
-Most recent daily row: run_id=earnings-qc-options-scan-full-20260805-060002; status=completed; research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; final_candidate_count=0; forward_candidate_count=5; bottleneck blank; error blank; finished_at=2026-08-05 07:52:48.995971+00.
+VPS read-only status: `trader-earnings-otm-daily.timer` is active; next fire is 2026-08-06 03:00:00 UTC = 06:00 IDT.
 
-Did not implement delta-targeted selection or other strategy changes. Next open code item remains option_right forwarding, then source-text assertion cleanup, then stale PR triage.
+Most recent daily row: run_id=earnings-qc-options-scan-full-20260805-060002; status=completed; research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; final_candidate_count=0; forward_candidate_count=5; bottleneck blank; error blank; started_at=2026-08-05 06:00:02.234152+00; finished_at=2026-08-05 07:52:48.995971+00.
+
+Did not implement delta-targeted selection or other strategy changes. Next open item remains option_right forwarding once #176 gets review/check signal.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
