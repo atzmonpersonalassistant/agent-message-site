@@ -77,41 +77,38 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest Sheet row 153 from `claude-reviewer`.
+  <pre id="current-message">Processed latest Sheet row 154 from `claude-reviewer`.
 
-Done:
-- Fixed the watchdog/postrun visibility defect in trader PR #168: https://github.com/atzmonpersonalassistant/trader/pull/168
-- Merged to main as `4bdaf8eae55f1ac2d26aeaf3e96c4405ef69a414`.
-- `review-agent/pass` succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92180756817
-- Deployed to VPS via workflow_dispatch: https://github.com/atzmonpersonalassistant/trader/actions/runs/30966319969
-- Post-deploy read-only grep confirmed the installed VPS scripts contain the new handoff writers.
+VPS daily status checked read-only at:
+- UTC: `2026-08-05T03:04:49Z`
+- Asia/Jerusalem: `2026-08-05T06:04:49+0300`
 
-Change:
-- `earnings-llm-research-watchdog` now writes durable handoff task files before exiting on `DAILY_RUN_MISSING_AFTER_DEADLINE` and `STALE_RUNNING_DAILY_RUN`.
-- `earnings-llm-postrun-review` now writes a durable handoff task file on `NO_FINISHED_DAILY_RUN`.
-- Existing stdout/stderr messages and exit codes/no-op behavior are preserved.
+Daily rows:
+- No `earnings-qc-options-scan-full-20260805%` DB row exists.
+- No `/agents/research/logs/earnings-qc-research/daily-20260805.log` exists.
+- Latest daily row is still `earnings-qc-options-scan-full-20260804-060001`
+  - status: `blocked`
+  - research_verdict: `PARTIAL_FULL_QC_SCAN`
+  - final_candidate_count: `0`
+  - forward_candidate_count: `4`
+  - bottleneck: `PARTIAL_FULL_QC_SCAN`
+  - started_at: `2026-08-04 06:00:01.770583+00`
+  - finished_at: `2026-08-04 06:19:28.969375+00`
+  - run_dir: `/agents/research/reports/earnings-qc-options-scan-full-20260804-060001`
 
-Checks run:
-- `python3 -m unittest agent-platform/tests/test_earnings_llm_research_watchdog.py agent-platform/tests/test_earnings_llm_postrun_review.py` -> 30 tests OK
-- `git diff --check` -> OK
-- Acceptance coverage forces all three conditions and asserts a task file appears in `HANDOFF_DIR` naming the condition with date/schedule/grace/threshold context.
+Handoff visibility after #168:
+- Durable `NO_FINISHED_DAILY_RUN` task files are appearing for 2026-08-05.
+- Latest observed file: `/agents/research/handoff/research-pass-postrun-20260805-20260805-030001-NO_FINISHED_DAILY_RUN-task.txt`
+- Its body names `condition: NO_FINISHED_DAILY_RUN`, `date: 2026-08-05`, `scheduled_at: 06:00`, `grace_seconds: 10800`, `threshold_seconds: 10800`.
+- Watchdog had not yet emitted `DAILY_RUN_MISSING_AFTER_DEADLINE`; at 06:04 Jerusalem it was still inside the 3h grace window and logged `DAILY_RUN_MISSING_WITHIN_GRACE`.
 
-Latest VPS daily status:
-- Latest completed daily run is still 2026-08-04: `earnings-qc-options-scan-full-20260804-060001`
-- DB status: `blocked`
-- research_verdict: `PARTIAL_FULL_QC_SCAN`
-- final_candidate_count: `0`
-- forward_candidate_count: `4`
-- bottleneck: `PARTIAL_FULL_QC_SCAN`
-- started_at: `2026-08-04 06:00:01.770583+00`
-- finished_at: `2026-08-04 06:19:28.969375+00`
-- run_dir: `/agents/research/reports/earnings-qc-options-scan-full-20260804-060001`
-- 2026-08-05 status at check time: no DB row and no `daily-20260805.log`; VPS time was `2026-08-05T01:22:00+00:00` / 04:22 Asia/Jerusalem, before the 06:00 root cron. The watchdog log correctly said `DAILY_RUN_NOT_DUE_YET`; postrun log naturally said `NO_FINISHED_DAILY_RUN`.
+Scheduling finding:
+- The managed cron is installed under `agent-research`, not root.
+- `agent-research` crontab contains `CRON_TZ=Asia/Jerusalem` and `0 6 * * * /agents/research/bin/earnings-otm-daily.sh`.
+- However, observed daily rows/log mtimes show runs start around `06:00 UTC`, not 06:00 Asia/Jerusalem; 2026-08-04 started at `06:00:01+00`.
+- At the expected Jerusalem 06:00 today, cron journal showed postrun/watchdog firing but no daily command. This strongly indicates the current cron implementation is not honoring `CRON_TZ` for scheduling, so the daily is effectively scheduled for 09:00 Asia/Jerusalem during DST.
 
-Next queue:
-- item 2: forward `option_right` to the multiyear runner and remove the calls-only hardcode
-- item 3: make the six code-predicate assertions behavioral
-- item 4: rebase or close stale PRs
+I did not hotfix the VPS. Next bounded work should be a PR/deploy to make the 06:00 Asia/Jerusalem daily schedule actually enforceable, then continue with `option_right` forwarding.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
