@@ -77,45 +77,46 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 212.
+  <pre id="current-message">Processed latest reviewer message, row 217.
 
 Done:
-- #191 passed review-agent/pass and merged normally, no admin bypass:
-  https://github.com/atzmonpersonalassistant/trader/pull/191
-- #191 PR body now includes the reconciliation proof, and the artifact key is clarified as:
-  untraded_event_no_delta_eligible_contract_count
-- #192 opened, passed review-agent/pass, merged normally, and deployed green:
-  https://github.com/atzmonpersonalassistant/trader/pull/192
-  https://github.com/atzmonpersonalassistant/trader/actions/runs/31042415000
-- #192 updates the generator/tests to emit/assert the clarified key and removes the ten vacuous/harmful source-text assertions.
+- Opened, fixed through review, merged, and deployed PR #193:
+  https://github.com/atzmonpersonalassistant/trader/pull/193
+  https://github.com/atzmonpersonalassistant/trader/actions/runs/31043959349
+- #193 persists auth_status, cloud_status, docker_status, execution_surface, execution_rc, plus surface_attempts in qc_research_artifact_manifest.json.
+- review-agent/pass is green on dfe2f23:
+  https://github.com/atzmonpersonalassistant/trader/runs/92434710074
+- Deployed broker verified on VPS at /usr/local/bin/trading-research-qc-broker.
 
 Verification:
-- PR #191 review check: review-agent/pass success, run 92428748715.
-- PR #192 review check: review-agent/pass success, run 92429593206.
-- Tests for #192: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py
-  Result: 136 tests OK.
+- bash -n agent-platform/scripts/trading-research-qc-broker
+- python3 -m unittest agent-platform/tests/test_mvp0_agents.py
+  Result: 74 tests OK.
 
-07-28 docker/cloud diagnostic:
-- Run inspected: /agents/research/reports/research-pass-20260728-035545
-- Requested fields auth_status, cloud_status, execution_surface, execution_rc are not recorded in qc_broker_artifacts.json or qc_option_history_extract.json.
-- Closest recorded rc: exit_code file is 0.
-- qc_broker.log contains QC_BROKER_PREFLIGHT_OK and QC_BROKER_RESEARCH_ARTIFACT_OK; qc_broker.err is empty.
-- Cloud evidence exists: qc_cloud_backtest_stdout started trader-qc-cloud-extract-v2-20260728-035549, and research_summary records qc_cloud_backtest_summary status Runtime Error for backtest 0930d3b2b22f2708e061a7a58aec9e33.
-- I found no deploy/journal evidence near 2026-07-28 03:56 UTC in the 03:00-05:00 UTC window. So this run does not prove a deploy race; the missing status fields leave the cause unresolved.
+Cloud Runtime Error frequency:
+- I found 1 recorded qc_cloud_backtest_summary with Runtime Error in /agents/research/reports: the 2026-07-28 run.
+- That makes it rare in recorded artifacts, not routine; sample is thin, so future manifests will make this measurable.
 
-Latest research status visible from VPS:
-- db_latest_run is the delta-targeted run, not the 03:00 daily:
-  run_id: earnings-qc-delta-targeted-seven-20260805-1906
-  status: blocked
-  research_verdict: BLOCKED_HISTORICAL_OPTION_PNL_GATE
-  final_candidate_count: 0
-  forward_candidate_count: 7 in the run summary; top-level status command currently shows 0.
-  bottleneck: historical_option_pnl_years_10 completed with 7 failed / 0 passed, aggregate_report blocker BLOCKED_HISTORICAL_OPTION_PNL_GATE.
+Latest daily status from VPS:
+- run_id: earnings-qc-options-scan-full-20260805-060002
+- status / research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- final_candidate_count: 0
+- forward_candidate_count: 5
+- bottleneck: no separate bottleneck string; final gate failed after historical option PnL.
+- per-symbol failed_checks: NVDA failed win_rate, leave-one-out, max_drawdown, max_loss; IREN failed status, sample_size, dropout, max_drawdown; TIGR failed status, sample_size, win_rate, mean, leave-one-out, dropout, max_drawdown; BULL failed status, sample_size, win_rate, mean, leave-one-out, max_drawdown; NIO failed status, sample_size, win_rate, leave-one-out, max_drawdown.
 
-Retention:
-- Checked at 2026-08-05T20:05Z.
+Reconciliations:
+- The authoritative daily source is the daily full_summary/status output above: 5 forward / 0 final.
+- The 7-forward count belongs to earnings-qc-delta-targeted-seven-20260805-1906, an experiment artifact, not the 03:00 daily.
+- The installed status command now reports the daily and db_latest_run null; I did not reproduce the earlier top-level 0-forward reading.
+- Operator status should continue excluding experiments from the daily/current pointer; artifact mtime alone is not safe.
+
+Retention / disk:
+- Checked at 2026-08-05T20:14Z.
 - df: /dev/sda1 72G size, 62G used, 11G free, 86%.
-- /agents/research/logs/earnings-qc-research/retention.log is still absent; 01:15 UTC retention has not fired yet.</pre>
+- /agents/research/logs/earnings-qc-research/retention.log is still absent because retention has not fired yet.
+- Next retention: 2026-08-06 01:15 UTC. Next daily: 2026-08-06 03:00 UTC.
+- retention, daily, watchdog, and postrun timers are active.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
