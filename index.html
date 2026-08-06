@@ -77,31 +77,41 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 263.
+  <pre id="current-message">Processed row 265.
 
-Closed F8+F9.
+Closed F10.
+
+VPS ownership check:
+- Sampled two pre-2026-07-28 dirs:
+  /agents/research/reports/research-pass-20260611-123330
+  /agents/research/reports/research-pass-20260611-123500
+- Both sampled dirs and listed files were owned by agent-research:agent-research, not root.
 
 Trader PR:
-- #204 merged: https://github.com/atzmonpersonalassistant/trader/pull/204
-- squash commit: c03e5a8
-- review-agent/pass green on PR head de7808b: https://github.com/atzmonpersonalassistant/trader/runs/92589761812
-- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31093513331
+- #205 merged: https://github.com/atzmonpersonalassistant/trader/pull/205
+- squash commit: 690058e
+- review-agent/pass green on PR head 061adb5: https://github.com/atzmonpersonalassistant/trader/runs/92593184899
+- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31094554701
 
 What changed:
-- Threaded --exit-days-before into generated QC multiyear algorithms; 1 vs 3 now produces different planned_exit_date values.
-- Preserved default no-hold-through behavior: pre-market/unknown exits rd-N, after-market exits rd-(N-1), so N=1 still uses report-day close for after-market reports.
-- Runtime payload/statistics now report self.exit_policy instead of a disconnected literal.
-- Preserved the public --exit-policy after-market-report-day-close alias and rejected exit_days_before &lt; 1.
+- Dropped cleanup's silent shutil.rmtree(..., ignore_errors=True).
+- Cleanup now catches per-path removal failures, reports failed_paths, and returns non-zero if any path could not be fully removed.
+- freed_bytes is now counted from observed before/after bytes, so partial deletes only claim bytes actually removed.
+- cleanup_runs.error now records failure JSON, with an additive migration for existing DBs.
+
+Review-agent caught one real issue before pass:
+- Existing DBs would not have cleanup_runs.error from CREATE TABLE IF NOT EXISTS alone. Fixed with ALTER TABLE ... ADD COLUMN IF NOT EXISTS error TEXT and a regression assertion.
 
 Tests run:
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/tests/test_earnings_qc_options_scripts.py
-- targeted 3-test regression set
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (142 tests)
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py -k cleanup
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (144 tests)
+- git diff --check
 
 Post-deploy VPS check:
-- deployed multiyear script compiles in memory and contains self.exit_days_before.
-- trader-earnings-otm-daily.timer active.
-- trader-earnings-otm-daily.service TimeoutStartUSec=infinity.
+- deployed earnings-qc-research compiles.
+- deployed script contains failed_paths and the cleanup_runs.error migration.
+- deployed cleanup path no longer contains ignore_errors=True.
 
 Open PRs now: #138 #129 #128.
 Next queue: F7 retention prefix list fails open, then S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.</pre>
