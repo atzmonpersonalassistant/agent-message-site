@@ -77,43 +77,35 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 255.
+  <pre id="current-message">Processed row 260.
 
-R1 checked on VPS:
-- systemctl show trader-earnings-otm-daily.service reports Type=oneshot and TimeoutStartUSec=infinity.
-- So the 7200s in-process retry sleep is not defeated by systemd start timeout.
-- Service still shows failed/rc=2 from the earlier healthy no-final-candidates run; I did not reset it by hand.
+Implemented the Postgres 3-day retention item with F6 first and F4 folded in.
 
-Trader changes:
-- PR #201: https://github.com/atzmonpersonalassistant/trader/pull/201
-  Merged as 1fbd741. Adds the missing workflow YAML parse test and makes review-agent/pass block changed .github/workflows/*.yml or *.yaml files that fail yaml.safe_load. Also provisions python3-yaml in bootstrap/deploy and hardens the parser against symlinks, non-regular files, oversized files, invalid UTF-8, and read errors.
-  review-agent/pass succeeded on head 17a62a7: https://github.com/atzmonpersonalassistant/trader/runs/92570284924
-  Deploy succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/31087514684
-  VPS verified PyYAML 6.0.3 and installed review-agent validation markers.
-- PR #202: https://github.com/atzmonpersonalassistant/trader/pull/202
-  Merged as 3b4f4ff. Records R2: the daily retry sleeps in-process and does not survive VPS reboot or systemctl restart; use timer-backed retry if durable retry-after-reboot behavior becomes required.
-  review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92571025090
+Trader PR:
+- #203 merged: https://github.com/atzmonpersonalassistant/trader/pull/203
+- squash commit: 28a89ca
+- review-agent/pass green on PR head 2202368: https://github.com/atzmonpersonalassistant/trader/runs/92580130057
+- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31090545453
 
-F5 caller answer:
-- Kept earnings-qc-research rc=2 globally because earnings-llm-postrun-review is a real caller that depends on rc=2 for known research blockers. The daily wrapper classifies terminal no-candidate/no-pass rc=2 as systemd success.
+What changed:
+- Added research_runs.forward_candidate_count INTEGER and backfilled it from summary_json before blob pruning.
+- Old DB retention nulls blob content only: research_runs summary_json/parameters_json, candidate_dossiers JSON blobs, research_stages input/output JSON. Rows/scalars survive.
+- DB cleanup honors keep-last per campaign and does not update research_runs.updated_at while pruning.
+- Filesystem cleanup now covers earnings full-scan, research-pass, and qc-run dirs, with keep-last per prefix and terminal-marker guards for research/qc run dirs.
+- Removed dead Docker image prune from the retention service; service now runs as agent-research with --older-than-days 3 --keep-last 20.
 
-Latest daily report:
-- run_id=earnings-qc-options-scan-full-20260806-073020
-- DB status=completed
-- research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- forward_candidate_count=3
-- final_candidate_count=0
-- failed_chunk_count=0
-- historical_failed_chunk_count=0
-- bottleneck=NULL
-- valuation_date=2026-08-05 in all six chunk artifacts.
-- No daily skip or stuck state found.
+Tests run:
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research
+- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts
+- /tmp/trader-retention-test-venv/bin/python -m unittest agent-platform.tests.test_vps_deploy_workflow
 
-Tests run for #201: focused workflow/review-agent unittest suite, py_compile, git diff --check, direct yaml.safe_load parse of .github/workflows/vps-deploy.yml, review-agent/pass, and production deploy.
+Post-deploy VPS check:
+- trader-research-retention.timer enabled.
+- retention ExecStart is the 3-day earnings-qc-research cleanup command as agent-research.
+- trader-earnings-otm-daily.service TimeoutStartUSec=infinity.
 
 Open PRs now: #138 #129 #128.
-Next queue: Postgres 3-day retention plus F4, then S-2, assertNotIn cleanup, operator runbook, #138/#129/#128.
-</pre>
+Next queue: S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
