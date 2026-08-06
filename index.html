@@ -77,22 +77,20 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 267.
+  <pre id="current-message">Processed latest row 269.
 
-Closed S-2 by choosing and documenting the source-of-truth rule:
-- QuantConnect credentials are GitHub Actions secret managed and intentionally overwritten on deploy.
-- research/env is server-local runtime config; deploy preserves it because there is no GitHub secret payload for it.
-- Operator rule now documented: if QC is rotated during an incident, rotate the GitHub secret before the next deploy; rotating only the VPS file is temporary.
+Acknowledged: S-2 is closed, and all reviewer findings from today are closed.
 
-Trader PR:
-- #207 merged: https://github.com/atzmonpersonalassistant/trader/pull/207
-- squash commit: 6b82f59
-- review-agent/pass green on PR head 3345d0b: https://github.com/atzmonpersonalassistant/trader/runs/92599557926
-- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31096488236
+Completed queue item: operator-runbook earnings section.
+- PR #208 merged: https://github.com/atzmonpersonalassistant/trader/pull/208
+- squash commit: d2cacc6
+- review-agent/pass green: https://github.com/atzmonpersonalassistant/trader/runs/92603404517
+- Change documents the four managed earnings units: daily scan, postrun review, watchdog, and retention.
+- It also adds runbook commands for timer health, logs, latest daily DB status, and retention reporting using the exact cleanup field `failed_paths`.
 
 Tests run:
-- /tmp/trader-s2-test-venv/bin/python -m pytest agent-platform/tests/test_vps_deploy_workflow.py (14 passed)
-- git diff --check
+- `.venv/bin/python -m unittest agent-platform/tests/test_vps_deploy_workflow.py` (15 passed)
+- review-agent rerun passed after fixing its `failed_paths` finding.
 
 Required daily report:
 - Latest daily run_id: earnings-qc-options-scan-full-20260806-073020
@@ -101,16 +99,17 @@ Required daily report:
 - final/forward: 0 final / 3 forward
 - failed_chunk_count: 0
 - bottleneck: null
-- valuation_date: not persisted in DB row; daily log/artifacts show valuation_date 2026-08-05
-- No daily skipped or stuck; it started 2026-08-06 07:30:20Z and finished 07:41:20Z.
+- valuation_date: 2026-08-06 from summary_json run_date; there is no separate DB valuation_date column.
+- No daily skipped or stuck; started 2026-08-06 07:30:20Z and finished 07:41:20Z.
 
 VPS status:
-- / is 72G size, 13G used, 59G available, 18% used.
-- trader-earnings-otm-daily.timer and trader-research-retention.timer are active.
-- Next retention run is 2026-08-07 01:15:00 UTC / 04:15 Asia/Jerusalem. That is the first run to exercise #205 + #206 together; I will report freed_bytes, failed list in full, and df before/after after it fires.
+- `/` is 72G size, 13G used, 59G available, 18% used.
+- Next retention run: 2026-08-07 01:15:00 UTC / 04:15 Asia/Jerusalem.
+- Next daily scan: 2026-08-07 07:30:00 UTC / 10:30 Asia/Jerusalem.
+- Tomorrow retention report remains pending until that run fires: df before/after, freed_bytes, and failed_paths in full.
 
 Open PRs now: #138 #129 #128.
-Next queue: assertNotIn cleanup, operator-runbook earnings section, then rebase/retest #138/#129/#128.</pre>
+Next queue: assertNotIn cleanup, then rebase/retest #138/#129/#128.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
