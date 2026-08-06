@@ -77,32 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 277. Diagnostic only; no trader code changes, no revert action, no timeout change.
+  <pre id="current-message">Processed latest row 278. Diagnostic only: no trader code changes, no revert, no timeout change.
 
 Deploy incident:
-- I agree with the corrected diagnosis: evidence points to GitHub Actions infrastructure/runner assignment, not #138/#129 code.
-- Run 31123845202: job completed cancelled, runner_name empty, steps [].
-- Run 31124380886: job completed cancelled, runner_name empty, steps [].
-- Manual run 31127481257: job completed cancelled, runner_name empty, steps [].
-- Repo has no self-hosted runners configured via API.
-- GitHub Status API currently reports "Partial System Outage" with a critical "Incident with Actions" in investigating state, updated 2026-08-06T20:34:17Z.
-- Actions billing/quota API is not readable with this token: GitHub returned HTTP 403 "Resource not accessible by personal access token", so I cannot confirm or rule out an account quota/banner from here. Uriel needs the account UI for that specific check.
-- Workflow timing API returned billable: {}, no useful usage signal.
+- I confirm Claude's correction: this still points to GitHub Actions infrastructure/runner assignment, not #138/#129 code.
+- Run 31123845202: job cancelled, runner_name "", runner_group_name "", labels ["ubuntu-latest"], steps [].
+- Run 31124380886: job cancelled, runner_name "", runner_group_name "", labels ["ubuntu-latest"], steps [].
+- Manual run 31127481257: job cancelled, runner_name "", runner_group_name "", labels ["ubuntu-latest"], steps [].
+- Timing API for 31127481257: run_duration_ms 905000, billable UBUNTU total_ms 0.
+- Repo self-hosted runner API: total_count 0.
+- GitHub Status API currently says Partial System Outage; critical "Incident with Actions" is investigating, updated 2026-08-06T21:30:42Z.
+- Billing/quota API is blocked for this token: HTTP 403 "Resource not accessible by personal access token". I cannot see any account UI banner from here; Uriel must check that in GitHub.
 
 VPS health:
-- Host reachable at 2026-08-06 21:16:47Z.
-- Load average 0.26 / 0.15 / 0.10.
+- Host reachable at 2026-08-06 21:35:36Z.
+- Load average 0.06 / 0.10 / 0.09.
 - / has 59G free, 18% used.
 - PostgreSQL active.
 
 Required daily report:
 - run_id: earnings-qc-options-scan-full-20260806-073020
-- status: completed
+- DB status: completed
 - research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final/forward: 0 final / 3 forward
-- failed_chunk_count: 0
-- bottleneck: blank in research_runs
-- valuation_date: 2026-08-06
+- failed_chunk_count: 0 from full_summary.json
+- bottleneck: blank/null in research_runs
+- valuation_date: 2026-08-05 in chunk stdout artifacts
 - started/finished: 2026-08-06 07:30:20Z / 2026-08-06 07:41:20Z
 - No daily skipped or stuck.
 
@@ -110,11 +110,12 @@ Retention:
 - The first scheduled retention run carrying both #205 and #206 has not fired yet.
 - Next trader-research-retention.timer fire: 2026-08-07 01:15:00Z = 2026-08-07 04:15 Asia/Jerusalem.
 - Current df before that run: / has 59G free, 18% used.
+- No new freed_bytes/failed-list report exists yet for the #205/#206 retention run.
 
 Standing:
-- Production remains stranded on deployed 6b82f598 (#207); main remains cd70f72 until Actions recovers.
+- Production remains stranded on deployed 6b82f598 (#207); main is cd70f72 until Actions recovers.
 - #211 remains unmerged and should not be merged under the corrected diagnosis.
-- #128 remains open; I did not check event-provider-ready because deploy is still not healthy.</pre>
+- #128 remains open; I did not check event-provider-ready because deploy is still unhealthy.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
