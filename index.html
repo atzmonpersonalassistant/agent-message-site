@@ -77,34 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 235.
+  <pre id="current-message">Processed row 236.
 
-Postgres confirmation:
-- `psql -d trader_research -c 'select 1'` returned 1.
-- `earnings_cache.research_runs` row count is 30.
-- `/` remains 72G total, 13G used, 59G free.
+F2 today:
+- The resident `trading-research-agent.service` was active but only sleeping with an empty queue.
+- I stopped it at 2026-08-06T06:49:51Z before the 07:30Z daily; it remains inactive, so it could not submit QC work during today&apos;s daily window.
 
-Current-broker proof after #197/#198:
-- default `trading-research-agent-loop` is already resident and sleeping on the VPS lock, so I did not start a concurrent loop.
-- ran the same deployed broker path on a fresh proof run dir using the prior candidate artifact:
-  `/agents/research/reports/research-pass-20260806-064137-current-broker-proof`
-- manifest fields: auth_status=authenticated, cloud_status=extract_written, docker_status=removed, execution_surface=qc_cloud_backtest, execution_rc=0
-- surface_attempts=[{surface: qc_cloud_backtest, status: extract_written, exit_code: 0}]
-- broker log ended with QC_BROKER_PREFLIGHT_OK and QC_BROKER_RESEARCH_ARTIFACT_OK; stderr was empty.
+07:30Z daily validation:
+- Timer fired at 2026-08-06T07:30:19Z; service entered `activating` at 07:30:25Z.
+- New run: `/agents/research/reports/earnings-qc-options-scan-full-20260806-073020`
+- Postgres: run_id=earnings-qc-options-scan-full-20260806-073020, status=completed, research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL.
+- Counts: forward_candidate_count=3, final_candidate_count=0, failed_chunk_count=0, historical_failed_chunk_count=0.
+- bottleneck=NULL; df still 59G free.
+- valuation_date is not rolled up into Postgres/full_summary, but every chunk artifact I checked reports valuation_date=2026-08-05.
+- systemd service is `failed` only because `earnings-qc-research` exits rc=2 for terminal no-candidate/no-pass. The research run itself is healthy.
 
-Latest daily status from Postgres:
-- run_id=earnings-qc-options-scan-full-20260806-053411
-- status=completed
-- research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- forward_candidate_count=3, final_candidate_count=0, failed_chunk_count=0
-- bottleneck field is empty; verdict carries the bottleneck.
-- finished_at=2026-08-06 05:44:36.994723+00
+Retry PR decision before coding:
+- I agree F1 should be fixed by making daily lock contention exit non-zero. &quot;Did not run&quot; must be visible to systemd and operators.
+- But raw `OnFailure=` is not enough: today proves a healthy terminal no-candidate run also exits rc=2, so blindly retrying every failure would retry the wrong thing.
+- Design I will build next: daily wrapper records/classifies the last attempt; lock contention is non-zero and retryable, data-availability class is retryable, terminal no-candidate/no-pass is not retryable, code exceptions are not retried. Retry path backs off before rerun instead of piling onto an active holder, and records attempt_count/per-attempt reasons in the handoff.
+- Longer-term F2 fix belongs in the same area: enforce shared exclusion / daily blackout for `trading-research-agent-loop`, not just today&apos;s manual stop.
 
-Retention log at full path exists:
-- `/agents/research/logs/earnings-qc-research/retention.log`
-- latest tail shows cleanup ok=true, keep_last=20, older_than_days=14, freed_bytes=146429146, then Docker image prune reclaimed 458.3MB.
-
-I did not start the daily-level retry PR in this same bounded cycle; the proof gap is closed and the next scheduled daily is close. Next queue: daily-level retry, then Postgres 3-day retention with immortal summary-row carve-out, S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.
+No PR was started in this cycle because you asked for the decision first and the scheduled daily result was due. Next queue: daily-level retry with F1/F2 shaped as above, then Postgres 3-day retention with immortal summary-row carve-out, S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
