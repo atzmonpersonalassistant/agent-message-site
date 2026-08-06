@@ -77,44 +77,45 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 265.
+  <pre id="current-message">Processed row 266.
 
-Closed F10.
-
-VPS ownership check:
-- Sampled two pre-2026-07-28 dirs:
-  /agents/research/reports/research-pass-20260611-123330
-  /agents/research/reports/research-pass-20260611-123500
-- Both sampled dirs and listed files were owned by agent-research:agent-research, not root.
+Closed F7.
 
 Trader PR:
-- #205 merged: https://github.com/atzmonpersonalassistant/trader/pull/205
-- squash commit: 690058e
-- review-agent/pass green on PR head 061adb5: https://github.com/atzmonpersonalassistant/trader/runs/92593184899
-- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31094554701
+- #206 merged: https://github.com/atzmonpersonalassistant/trader/pull/206
+- squash commit: ad57be6
+- review-agent/pass green on PR head 9a0d2bc: https://github.com/atzmonpersonalassistant/trader/runs/92596355781
+- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31095508016
 
 What changed:
-- Dropped cleanup's silent shutil.rmtree(..., ignore_errors=True).
-- Cleanup now catches per-path removal failures, reports failed_paths, and returns non-zero if any path could not be fully removed.
-- freed_bytes is now counted from observed before/after bytes, so partial deletes only claim bytes actually removed.
-- cleanup_runs.error now records failure JSON, with an additive migration for existing DBs.
+- Replaced the parallel cleanup glob/guard prefix lists with one report-dir policy registry.
+- Known research-pass and qc-run cleanup guards remain fail-closed on missing/unparseable terminal evidence.
+- Unknown report dirs now have an explicit fallback policy: age plus per-policy keep-last, no terminal marker requirement.
+- Removed the redundant global keep-last slice; retention protection is grouped only by cleanup policy.
 
-Review-agent caught one real issue before pass:
-- Existing DBs would not have cleanup_runs.error from CREATE TABLE IF NOT EXISTS alone. Fixed with ALTER TABLE ... ADD COLUMN IF NOT EXISTS error TEXT and a regression assertion.
+Behavioral evidence:
+- Added tests for earnings-qc-delta-targeted-seven-* and the shared unknown-policy gate.
+- Deployed dry-run with --older-than-days 0 --keep-last 0 now includes /agents/research/reports/earnings-qc-delta-targeted-seven-20260805-1906.
+- Normal deployed dry-run with --older-than-days 3 --keep-last 20 did not delete it because it is only from 2026-08-05 19:30 and not age-eligible yet.
 
 Tests run:
 - python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research
 - python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py -k cleanup
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (144 tests)
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (146 tests)
 - git diff --check
 
-Post-deploy VPS check:
-- deployed earnings-qc-research compiles.
-- deployed script contains failed_paths and the cleanup_runs.error migration.
-- deployed cleanup path no longer contains ignore_errors=True.
+Required daily report:
+- Latest daily run_id: earnings-qc-options-scan-full-20260806-073020
+- DB status: completed
+- research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- final/forward: 0 final / 3 forward
+- failed_chunk_count: 0; historical_failed_chunk_count: 0
+- bottleneck: null
+- valuation_date used: 2026-08-05 in chunk stdout artifacts
+- No daily skipped or stuck; it started 2026-08-06 07:30:20Z and finished 07:41:20Z.
 
 Open PRs now: #138 #129 #128.
-Next queue: F7 retention prefix list fails open, then S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.</pre>
+Next queue: S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
