@@ -77,19 +77,25 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 243. Built the approved daily-level retry.
+  <pre id="current-message">Processed row 255.
+
+R1 checked on VPS:
+- systemctl show trader-earnings-otm-daily.service reports Type=oneshot and TimeoutStartUSec=infinity.
+- So the 7200s in-process retry sleep is not defeated by systemd start timeout.
+- Service still shows failed/rc=2 from the earlier healthy no-final-candidates run; I did not reset it by hand.
 
 Trader changes:
-- PR #199: https://github.com/atzmonpersonalassistant/trader/pull/199
-  Merged as 419186e. Adds classified daily retry: max 2 attempts, default 2h delay, lock contention/data-QC-capacity retryable, terminal no-candidate/no-pass exits systemd-success, code/invalid failures not retried. Kept earnings-qc-research rc=2 globally because earnings-llm-postrun-review is a real caller that depends on known rc=2 research blockers.
-- Review-agent caught two retry-window bugs before merge: watchdog stale-running on DAILY_RETRY_WAITING, then postrun reviewing failed attempt 1 while attempt 2 was pending. Both were fixed and covered by tests. Final review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92562604581
-- PR #200: https://github.com/atzmonpersonalassistant/trader/pull/200
-  Merged as f765155 to fix the workflow YAML indentation regression from #199. review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92563877080
+- PR #201: https://github.com/atzmonpersonalassistant/trader/pull/201
+  Merged as 1fbd741. Adds the missing workflow YAML parse test and makes review-agent/pass block changed .github/workflows/*.yml or *.yaml files that fail yaml.safe_load. Also provisions python3-yaml in bootstrap/deploy and hardens the parser against symlinks, non-regular files, oversized files, invalid UTF-8, and read errors.
+  review-agent/pass succeeded on head 17a62a7: https://github.com/atzmonpersonalassistant/trader/runs/92570284924
+  Deploy succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/31087514684
+  VPS verified PyYAML 6.0.3 and installed review-agent validation markers.
+- PR #202: https://github.com/atzmonpersonalassistant/trader/pull/202
+  Merged as 3b4f4ff. Records R2: the daily retry sleeps in-process and does not survive VPS reboot or systemctl restart; use timer-backed retry if durable retry-after-reboot behavior becomes required.
+  review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92571025090
 
-Deploy:
-- First deploy after #199 failed before jobs because vps-deploy.yml was invalid YAML.
-- Fix deploy after #200 succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/31085529887
-- VPS verified installed markers in earnings-otm-daily.sh, earnings-llm-postrun-review, and earnings-llm-research-watchdog.
+F5 caller answer:
+- Kept earnings-qc-research rc=2 globally because earnings-llm-postrun-review is a real caller that depends on rc=2 for known research blockers. The daily wrapper classifies terminal no-candidate/no-pass rc=2 as systemd success.
 
 Latest daily report:
 - run_id=earnings-qc-options-scan-full-20260806-073020
@@ -101,10 +107,11 @@ Latest daily report:
 - historical_failed_chunk_count=0
 - bottleneck=NULL
 - valuation_date=2026-08-05 in all six chunk artifacts.
-- No chunk failed. The systemd service still shows failed/rc=2 from the pre-deploy run; I did not reset it by hand.
+- No daily skip or stuck state found.
 
-Tests run locally included workflow behavioral tests, watchdog/postrun retry-window tests, earnings postrun/QC suites, bash -n for deployed shell scripts, generated daily shell bash -n, YAML parse, py_compile for test files, and git diff --check.
+Tests run for #201: focused workflow/review-agent unittest suite, py_compile, git diff --check, direct yaml.safe_load parse of .github/workflows/vps-deploy.yml, review-agent/pass, and production deploy.
 
+Open PRs now: #138 #129 #128.
 Next queue: Postgres 3-day retention plus F4, then S-2, assertNotIn cleanup, operator runbook, #138/#129/#128.
 </pre>
   <!-- CODEX_UPDATE_END -->
