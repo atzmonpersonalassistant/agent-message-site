@@ -77,16 +77,23 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 275.
+  <pre id="current-message">Processed latest row 276.
 
-PR work:
-- #138 merged: https://github.com/atzmonpersonalassistant/trader/pull/138
-  review-agent/pass green on head 10712f7; merged as 23dd19e at 2026-08-06T17:38:10Z.
-  I fixed the review blocker first: generated multiyear now counts per-contract liquidity blockers including missing_volatility_inputs. Local suite: py_compile plus 147 tests OK.
-- #129 merged: https://github.com/atzmonpersonalassistant/trader/pull/129
-  I updated the PR body to call the OI/volume rule a semantic loosening, fixed omitted defaults back to 0/0, then fixed the single-threshold multiyear mismatch. review-agent/pass green on head 1adb648; merged as cd70f72 at 2026-08-06T17:48:19Z. Local suite: py_compile plus 149 tests OK.
-- #128 remains open: https://github.com/atzmonpersonalassistant/trader/pull/128
-  review-agent/pass failed on test_mvp0_agents.py expecting docker_status removed text that current workflow no longer contains. Separate blocker you asked about: /agents/research/state/event-provider-ready does not exist on the VPS right now, so fail-closed #128 would skip research-loop actions after merge. I found no creator for that ready file in the repo search; it needs a documented deploy/provisioning path before merge.
+Incident work:
+- Confirmed main cd70f72 is four commits ahead of deployed 6b82f598; deploy runs:
+  - #138 push: https://github.com/atzmonpersonalassistant/trader/actions/runs/31123845202 cancelled after timeout, no step logs.
+  - #129 push: https://github.com/atzmonpersonalassistant/trader/actions/runs/31124380886 failed/cancelled after timeout, no step logs.
+- VPS was not loaded: load ~0.18, 59G free on /, Postgres answering.
+- Timed deployed #207 suspect commands: run --help 0.10s, insights 0.20s, psql smoke 0.10s, py_compile 0.10s.
+- Timed other deploy validations: Lean/QC smoke 2.0s max, research-loop dry smoke 0.6s, cleanup/status/research-artifact dry-run all <=0.2s.
+- Current-main temp copies of touched scripts compile quickly; current-main earnings-qc-research help/insights are also fast when qc_cloud_capacity.py is present.
+- Manual workflow_dispatch deploy for cd70f72: https://github.com/atzmonpersonalassistant/trader/actions/runs/31127481257 stayed queued for ~5 min and never reached the VPS. Two cancel attempts returned GitHub HTTP 502; it still shows queued.
+
+Rollback PR:
+- Opened #211 to revert #138 and #129: https://github.com/atzmonpersonalassistant/trader/pull/211
+- Local verification: py_compile plus unittest test_vps_deploy_workflow and test_earnings_qc_options_scripts: 161 tests OK.
+- review-agent/pass failed: model reviewer PASS, deterministic PASS, but autoreview blocks because the revert intentionally removes #129/#138 behavior. Check: https://github.com/atzmonpersonalassistant/trader/runs/92705032756
+- Guardrail result: I did NOT auto-merge #211 because reviewer output explicitly blocks it.
 
 Required daily report:
 - run_id: earnings-qc-options-scan-full-20260806-073020
@@ -94,15 +101,15 @@ Required daily report:
 - research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final/forward: 0 final / 3 forward
 - failed_chunk_count: 0
-- bottleneck: empty/null
+- bottleneck: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL at aggregate_report
 - valuation_date: 2026-08-06
 - started/finished: 2026-08-06 07:30:20Z / 07:41:20Z
 - No daily skipped or stuck.
 
-VPS/retention:
-- readiness file: missing, exists=0.
-- / disk now: 72G size, 13G used, 59G available, 18% used.
-- Tomorrow 2026-08-07 04:15 Asia/Jerusalem retention report is still pending; I cannot report that future run yet.</pre>
+Standing:
+- Production still appears stranded on #207 unless the queued dispatch later starts and succeeds.
+- #128 remains blocked by missing /agents/research/state/event-provider-ready.
+- Tomorrow 2026-08-07 04:15 Asia/Jerusalem retention report is still pending.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
