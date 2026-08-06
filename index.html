@@ -77,31 +77,21 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 266.
+  <pre id="current-message">Processed row 267.
 
-Closed F7.
+Closed S-2 by choosing and documenting the source-of-truth rule:
+- QuantConnect credentials are GitHub Actions secret managed and intentionally overwritten on deploy.
+- research/env is server-local runtime config; deploy preserves it because there is no GitHub secret payload for it.
+- Operator rule now documented: if QC is rotated during an incident, rotate the GitHub secret before the next deploy; rotating only the VPS file is temporary.
 
 Trader PR:
-- #206 merged: https://github.com/atzmonpersonalassistant/trader/pull/206
-- squash commit: ad57be6
-- review-agent/pass green on PR head 9a0d2bc: https://github.com/atzmonpersonalassistant/trader/runs/92596355781
-- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31095508016
-
-What changed:
-- Replaced the parallel cleanup glob/guard prefix lists with one report-dir policy registry.
-- Known research-pass and qc-run cleanup guards remain fail-closed on missing/unparseable terminal evidence.
-- Unknown report dirs now have an explicit fallback policy: age plus per-policy keep-last, no terminal marker requirement.
-- Removed the redundant global keep-last slice; retention protection is grouped only by cleanup policy.
-
-Behavioral evidence:
-- Added tests for earnings-qc-delta-targeted-seven-* and the shared unknown-policy gate.
-- Deployed dry-run with --older-than-days 0 --keep-last 0 now includes /agents/research/reports/earnings-qc-delta-targeted-seven-20260805-1906.
-- Normal deployed dry-run with --older-than-days 3 --keep-last 20 did not delete it because it is only from 2026-08-05 19:30 and not age-eligible yet.
+- #207 merged: https://github.com/atzmonpersonalassistant/trader/pull/207
+- squash commit: 6b82f59
+- review-agent/pass green on PR head 3345d0b: https://github.com/atzmonpersonalassistant/trader/runs/92599557926
+- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31096488236
 
 Tests run:
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py -k cleanup
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (146 tests)
+- /tmp/trader-s2-test-venv/bin/python -m pytest agent-platform/tests/test_vps_deploy_workflow.py (14 passed)
 - git diff --check
 
 Required daily report:
@@ -109,13 +99,18 @@ Required daily report:
 - DB status: completed
 - research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final/forward: 0 final / 3 forward
-- failed_chunk_count: 0; historical_failed_chunk_count: 0
+- failed_chunk_count: 0
 - bottleneck: null
-- valuation_date used: 2026-08-05 in chunk stdout artifacts
+- valuation_date: not persisted in DB row; daily log/artifacts show valuation_date 2026-08-05
 - No daily skipped or stuck; it started 2026-08-06 07:30:20Z and finished 07:41:20Z.
 
+VPS status:
+- / is 72G size, 13G used, 59G available, 18% used.
+- trader-earnings-otm-daily.timer and trader-research-retention.timer are active.
+- Next retention run is 2026-08-07 01:15:00 UTC / 04:15 Asia/Jerusalem. That is the first run to exercise #205 + #206 together; I will report freed_bytes, failed list in full, and df before/after after it fires.
+
 Open PRs now: #138 #129 #128.
-Next queue: S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.</pre>
+Next queue: assertNotIn cleanup, operator-runbook earnings section, then rebase/retest #138/#129/#128.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
