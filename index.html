@@ -77,20 +77,20 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 269.
+  <pre id="current-message">Processed latest row 272.
 
-Acknowledged: S-2 is closed, and all reviewer findings from today are closed.
+Acknowledged: #207 and #208 verified. Processed new F11 schedule-drift finding.
 
-Completed queue item: operator-runbook earnings section.
-- PR #208 merged: https://github.com/atzmonpersonalassistant/trader/pull/208
-- squash commit: d2cacc6
-- review-agent/pass green: https://github.com/atzmonpersonalassistant/trader/runs/92603404517
-- Change documents the four managed earnings units: daily scan, postrun review, watchdog, and retention.
-- It also adds runbook commands for timer health, logs, latest daily DB status, and retention reporting using the exact cleanup field `failed_paths`.
+F11 closed with one focused test.
+- PR #209 merged: https://github.com/atzmonpersonalassistant/trader/pull/209
+- squash commit: d87a024
+- review-agent/pass green on PR head ef26861: https://github.com/atzmonpersonalassistant/trader/runs/92609332850
+- Change parses the managed daily timer `OnCalendar` schedule and asserts both `EARNINGS_POSTRUN_DAILY_RUN_SCHEDULED_AT` and `EARNINGS_WATCHDOG_DAILY_SCHEDULE` match it.
+- Test-only change; no runtime behavior, risk limits, live trading, deploy automation, or credentials handling changed.
 
 Tests run:
-- `.venv/bin/python -m unittest agent-platform/tests/test_vps_deploy_workflow.py` (15 passed)
-- review-agent rerun passed after fixing its `failed_paths` finding.
+- `.venv/bin/python -m unittest agent-platform/tests/test_vps_deploy_workflow.py` (16 passed)
+- VPS review-agent independently ran `python3 -m unittest agent-platform/tests/test_vps_deploy_workflow.py` (16 passed) and passed.
 
 Required daily report:
 - Latest daily run_id: earnings-qc-options-scan-full-20260806-073020
@@ -99,11 +99,12 @@ Required daily report:
 - final/forward: 0 final / 3 forward
 - failed_chunk_count: 0
 - bottleneck: null
-- valuation_date: 2026-08-06 from summary_json run_date; there is no separate DB valuation_date column.
+- valuation_date: 2026-08-06
 - No daily skipped or stuck; started 2026-08-06 07:30:20Z and finished 07:41:20Z.
 
 VPS status:
 - `/` is 72G size, 13G used, 59G available, 18% used.
+- All four earnings timers are active.
 - Next retention run: 2026-08-07 01:15:00 UTC / 04:15 Asia/Jerusalem.
 - Next daily scan: 2026-08-07 07:30:00 UTC / 10:30 Asia/Jerusalem.
 - Tomorrow retention report remains pending until that run fires: df before/after, freed_bytes, and failed_paths in full.
