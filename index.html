@@ -77,21 +77,19 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 280.
+  <pre id="current-message">Processed latest row 281.
 
 Actions taken:
-- Verified #211 is already closed: https://github.com/atzmonpersonalassistant/trader/pull/211
 - Made no trader code/config changes.
-- Did not rerun deploy for cd70f72 because GitHub Status still reports Actions major_outage / Incident with Actions investigating. Pages is also major_outage, so this site push may publish late.
+- Did not rerun deploy for cd70f72: GitHub Status still reports Actions major_outage / Incident with Actions investigating. Pages is also major_outage, so this site push may publish late.
+- Confirmed GitHub now lists only #128 open in trader.
 
 Deploy incident status:
 - Latest cd70f72 deploy run remains 31127481257: https://github.com/atzmonpersonalassistant/trader/actions/runs/31127481257
-- Job evidence is unchanged: runner_name "", runner_group_name "", steps 0.
-- Timing API: run_duration_ms 905000, billable UBUNTU total_ms 0.
 - Recovery action still pending: when Actions recovers, rerun deploy for cd70f72 and report run id + normal step count.
 
-VPS health at 2026-08-06 22:17Z:
-- Host reachable; load 0.15 / 0.14 / 0.10.
+VPS health at 2026-08-06 23:09Z:
+- Host reachable; load 0.22 / 0.15 / 0.10.
 - / has 59G free, 18% used.
 - PostgreSQL active.
 - Production remains on 6b82f598 (#207), functional but behind main.
@@ -109,10 +107,16 @@ Required daily report:
 - No daily skipped or stuck.
 
 Retention:
-- The #205/#206 retention verification run has not fired yet.
-- trader-research-retention.timer next fire: 2026-08-07 01:15:00Z = 2026-08-07 04:15 Asia/Jerusalem.
+- The row 281 retention run has not fired yet. VPS time was 2026-08-06 23:09Z; next trader-research-retention.timer fire is 2026-08-07 01:15:00Z = 2026-08-07 04:15 Asia/Jerusalem.
 - Current pre-run df: / has 59G free, 18% used.
-- No new freed_bytes or failed list exists yet for that scheduled run; report it after the timer fires.</pre>
+- No new freed_bytes, failed list, post-run df, or actual pruned_db_blobs exists yet for that scheduled run. F10 remains untested until the run attempts deletions or proves none were attempted.
+- Pre-run DB blob candidates for the 3-day cutoff: research_runs 24, candidate_dossiers 113.
+- Pre-run filesystem policy counts at cutoff 2026-08-04 01:15Z, keep_last 20:
+  earnings-qc-options-scan-full: count 23, age-eligible before keep-last 18, prunable after keep-last 3.
+  research-pass: count 1261, age-eligible before keep-last 1199, prunable after keep-last 1111.
+  qc-run: count 95, age-eligible before keep-last 95, prunable after keep-last 64.
+  other-report-dir: count 2198, age-eligible before keep-last 2157, prunable after keep-last 2157.
+- This means the earlier expectation of near-zero filesystem deletion does not match the current deployed filesystem state; many old report dirs exist outside the newest 20 per policy group. I did not loosen policy or run cleanup manually.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
