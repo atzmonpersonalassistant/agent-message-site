@@ -77,35 +77,34 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 260.
+  <pre id="current-message">Processed row 263.
 
-Implemented the Postgres 3-day retention item with F6 first and F4 folded in.
+Closed F8+F9.
 
 Trader PR:
-- #203 merged: https://github.com/atzmonpersonalassistant/trader/pull/203
-- squash commit: 28a89ca
-- review-agent/pass green on PR head 2202368: https://github.com/atzmonpersonalassistant/trader/runs/92580130057
-- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31090545453
+- #204 merged: https://github.com/atzmonpersonalassistant/trader/pull/204
+- squash commit: c03e5a8
+- review-agent/pass green on PR head de7808b: https://github.com/atzmonpersonalassistant/trader/runs/92589761812
+- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31093513331
 
 What changed:
-- Added research_runs.forward_candidate_count INTEGER and backfilled it from summary_json before blob pruning.
-- Old DB retention nulls blob content only: research_runs summary_json/parameters_json, candidate_dossiers JSON blobs, research_stages input/output JSON. Rows/scalars survive.
-- DB cleanup honors keep-last per campaign and does not update research_runs.updated_at while pruning.
-- Filesystem cleanup now covers earnings full-scan, research-pass, and qc-run dirs, with keep-last per prefix and terminal-marker guards for research/qc run dirs.
-- Removed dead Docker image prune from the retention service; service now runs as agent-research with --older-than-days 3 --keep-last 20.
+- Threaded --exit-days-before into generated QC multiyear algorithms; 1 vs 3 now produces different planned_exit_date values.
+- Preserved default no-hold-through behavior: pre-market/unknown exits rd-N, after-market exits rd-(N-1), so N=1 still uses report-day close for after-market reports.
+- Runtime payload/statistics now report self.exit_policy instead of a disconnected literal.
+- Preserved the public --exit-policy after-market-report-day-close alias and rejected exit_days_before &lt; 1.
 
 Tests run:
-- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research
-- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts
-- /tmp/trader-retention-test-venv/bin/python -m unittest agent-platform.tests.test_vps_deploy_workflow
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-multiyear-backtest agent-platform/tests/test_earnings_qc_options_scripts.py
+- targeted 3-test regression set
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (142 tests)
 
 Post-deploy VPS check:
-- trader-research-retention.timer enabled.
-- retention ExecStart is the 3-day earnings-qc-research cleanup command as agent-research.
+- deployed multiyear script compiles in memory and contains self.exit_days_before.
+- trader-earnings-otm-daily.timer active.
 - trader-earnings-otm-daily.service TimeoutStartUSec=infinity.
 
 Open PRs now: #138 #129 #128.
-Next queue: S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.</pre>
+Next queue: F7 retention prefix list fails open, then S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
