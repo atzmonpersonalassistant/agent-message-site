@@ -77,22 +77,27 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 273.
+  <pre id="current-message">Processed latest row 274.
 
-Acknowledged: F11 verified closed. I did not start new earnings-IV research.
+Liveness: I was mid-rebase/suite. I rebased all three requested PRs onto current main and pushed them; I did not merge any this cycle.
 
-assertNotIn cleanup started and one slice is closed:
-- PR #210 merged: https://github.com/atzmonpersonalassistant/trader/pull/210
-- squash commit: fabfd47
-- review-agent/pass green on PR head 543274e: https://github.com/atzmonpersonalassistant/trader/runs/92612297013
-- Scope: test-only cleanup in `agent-platform/tests/test_earnings_qc_options_scripts.py`.
-- Replaced brittle stage2 generated-source absence checks with executed generated-algorithm behavior checks for no-chain finalization and zero OI/volume diagnostic-only handling.
-- No runtime logic, risk limits, live trading, deploy automation, or credentials/secrets handling changed. No VPS deploy needed for this test-only merge.
+PR #138: https://github.com/atzmonpersonalassistant/trader/pull/138
+- Rebased and force-pushed head 04d7f7a.
+- Fragment-numbering hunk was partly obsolete, but the branch still earns its place for historical-resolution diagnostics and numeric runtime-stat reassembly.
+- Tests: py_compile for touched scripts/test file; `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` = 146 passed.
 
-Tests run:
-- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` (145 passed)
-- `git diff --check`
-- VPS review-agent independently reran the same focused unittest file and `git diff --check`; passed.
+PR #129: https://github.com/atzmonpersonalassistant/trader/pull/129
+- Rebased and force-pushed head 78b5659.
+- Main already had most knob threading; retained the still-relevant scanner liquidity gate policy/default delta.
+- Tests: py_compile for touched scan/test file; `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` = 145 passed.
+
+PR #128: https://github.com/atzmonpersonalassistant/trader/pull/128
+- Rebased cleanly and force-pushed head 77632e8.
+- Tests: `bash -n agent-platform/scripts/trading-research-agent-loop` and `git diff --check` passed.
+- Full `python3 -m unittest agent-platform/tests/test_mvp0_agents.py` required a temp PyYAML venv; after that it still failed 1 current-main-looking source-text assertion expecting `docker_status": "removed"` while the workflow now contains shell style `docker_status="removed"`. Leaving open, not merging.
+
+PR metadata after pushes:
+- #138/#129/#128 all show mergeStateStatus BLOCKED and no check-rollup entries yet. No review-agent/pass was available from push alone.
 
 Required daily report:
 - Latest daily run_id: earnings-qc-options-scan-full-20260806-073020
@@ -100,20 +105,18 @@ Required daily report:
 - research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final/forward: 0 final / 3 forward
 - failed_chunk_count: 0
-- bottleneck: null
-- valuation_date used by chunk artifacts: 2026-08-05
-- Note: aggregate DB/full_summary valuation_date is null; chunk stdout artifacts all report 2026-08-05.
-- No daily skipped or stuck; started 2026-08-06 07:30:20Z and finished 07:41:20Z.
+- bottleneck: empty/null
+- valuation_date: DB aggregate empty; chunk artifacts report 2026-08-05
+- finished_at: 2026-08-06 07:41:20Z
+- No daily skipped or stuck.
 
 VPS status:
 - `/` is 72G size, 13G used, 59G available, 18% used.
-- Active/enabled timers observed: trader-earnings-otm-daily, trader-earnings-llm-postrun, trader-earnings-llm-watchdog, trader-research-retention.
 - Next retention run: 2026-08-07 01:15:00 UTC / 04:15 Asia/Jerusalem.
 - Next daily scan: 2026-08-07 07:30:00 UTC / 10:30 Asia/Jerusalem.
-- Tomorrow retention report remains pending until that run fires: df before/after, freed_bytes, and failed list in full.
+- Retention report remains pending until the 04:15 Asia/Jerusalem run fires: df before/after, freed_bytes, and failed list in full.
 
-Open PRs now: #138 #129 #128.
-Next queue: operator-runbook earnings section already closed by #208; next practical work is rebase/retest #138/#129/#128 unless you want more assertNotIn cleanup first.</pre>
+Next: wait for review-agent/required checks or fix the stale #128 `test_mvp0_agents.py` assertion separately before any merge.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
