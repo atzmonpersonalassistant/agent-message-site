@@ -77,31 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed rows 225-228. P0 daily incident handled first.
+  <pre id="current-message">Processed rows 229-230. Checked the requested 05:34Z rerun before opening PR B.
 
-Daily root cause test:
-- 03:00Z run was broken: earnings-qc-options-scan-full-20260806-030012, blocked/PARTIAL_FULL_QC_SCAN, 0 forward, 0 final, 6 failed chunks, bottleneck PARTIAL_FULL_QC_SCAN.
-- Offset 0 raw stderr was empty; the failure was in stdout as blocked_reason=&quot;QC produced zero option-chain rows on valuation date&quot;.
-- Manual rerun started 2026-08-06T05:34Z with same daily flags plus explicit --as-of-date 2026-08-06.
-- Rerun completed: earnings-qc-options-scan-full-20260806-053411, completed/NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL, 3 forward, 0 final, 0 failed chunks. Funnel: 127 calendar rows, 97 option-chain available, 3 liquidity/Greeks pass.
-- Chunk artifact reported run_date=2026-08-06 and valuation_date=2026-08-05. This confirms timing/data availability, not a scanner regression.
+Result: PR B remains blocked. The healthy rerun did not emit broker execution metadata.
+- Run: earnings-qc-options-scan-full-20260806-053411
+- Status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- Latest daily counters: run_id=earnings-qc-options-scan-full-20260806-053411, status=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL, research_verdict=null, forward_candidate_count=3, final_candidate_count=0, bottleneck=null
+- full_summary.json: qc_broker_execution=null
+- hebrew_report.md: no qc_broker_execution line
+- qc_research_artifact_manifest.json: ABSENT
 
-Fix:
-- Opened and merged PR #196: https://github.com/atzmonpersonalassistant/trader/pull/196
-- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92532185973
-- Deploy succeeded on d12e81a: https://github.com/atzmonpersonalassistant/trader/actions/runs/31075409433
-- VPS verified live: trader-earnings-otm-daily.timer is now OnCalendar=*-*-* 10:30:00 Asia/Jerusalem. Next fire is 2026-08-06 07:30:00 UTC.
-- Watchdog/postrun envs now also say 10:30.
+Distinction: this is manifest absent, not present-but-unsurfaced. The scan and historical gate were healthy: 127 calendar rows, 6/6 chunks OK, 0 failed chunks, historical_gate_ran=true. But all 3 forward candidates failed the final historical option window gate, leaving 0 final candidates, so the broker stage appears not to have run.
 
-Schedule reasoning:
-- 10:30 Asia/Jerusalem is at or after 02:30 New York across IDT/IST and US DST mismatch weeks, giving margin past the old healthy 02:00 EDT observation.
+I did not open PR B and did not touch Docker.
 
 Other requested status:
-- Retention log at /agents/research/logs/earnings-qc-research/retention.log exists. It freed 146MB research reports + 458.3MB Docker, not the predicted container-space win.
-- df remains 12G free on / and /var.
-- No research/review/QC processes left running.
+- df: / is 72G total, 61G used, 12G free, 85%.
+- Retention log at /agents/research/logs/earnings-qc-research/retention.log exists; latest recorded cleanup freed 146,429,146 bytes of research reports plus Docker reported Total reclaimed space: 458.3MB.
+- Current time checked: 2026-08-06T06:01Z / 09:01 Asia-Jerusalem, before the next scheduled 10:30 Asia-Jerusalem daily fire.
 
-Next queue: retention filter change, Postgres 3-day retention, S-2, then PR B/docker cleanup after healthy-daily criteria are satisfied. No current blocker.
+Next queue remains: wait for a scheduled healthy daily or another run that actually reaches broker metadata; then PR B. Until then, continue with retention filter / Postgres 3-day retention / S-2 as separate PR work.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
