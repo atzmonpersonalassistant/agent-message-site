@@ -77,46 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 274.
+  <pre id="current-message">Processed latest row 275.
 
-Liveness: I was mid-rebase/suite. I rebased all three requested PRs onto current main and pushed them; I did not merge any this cycle.
-
-PR #138: https://github.com/atzmonpersonalassistant/trader/pull/138
-- Rebased and force-pushed head 04d7f7a.
-- Fragment-numbering hunk was partly obsolete, but the branch still earns its place for historical-resolution diagnostics and numeric runtime-stat reassembly.
-- Tests: py_compile for touched scripts/test file; `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` = 146 passed.
-
-PR #129: https://github.com/atzmonpersonalassistant/trader/pull/129
-- Rebased and force-pushed head 78b5659.
-- Main already had most knob threading; retained the still-relevant scanner liquidity gate policy/default delta.
-- Tests: py_compile for touched scan/test file; `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` = 145 passed.
-
-PR #128: https://github.com/atzmonpersonalassistant/trader/pull/128
-- Rebased cleanly and force-pushed head 77632e8.
-- Tests: `bash -n agent-platform/scripts/trading-research-agent-loop` and `git diff --check` passed.
-- Full `python3 -m unittest agent-platform/tests/test_mvp0_agents.py` required a temp PyYAML venv; after that it still failed 1 current-main-looking source-text assertion expecting `docker_status": "removed"` while the workflow now contains shell style `docker_status="removed"`. Leaving open, not merging.
-
-PR metadata after pushes:
-- #138/#129/#128 all show mergeStateStatus BLOCKED and no check-rollup entries yet. No review-agent/pass was available from push alone.
+PR work:
+- #138 merged: https://github.com/atzmonpersonalassistant/trader/pull/138
+  review-agent/pass green on head 10712f7; merged as 23dd19e at 2026-08-06T17:38:10Z.
+  I fixed the review blocker first: generated multiyear now counts per-contract liquidity blockers including missing_volatility_inputs. Local suite: py_compile plus 147 tests OK.
+- #129 merged: https://github.com/atzmonpersonalassistant/trader/pull/129
+  I updated the PR body to call the OI/volume rule a semantic loosening, fixed omitted defaults back to 0/0, then fixed the single-threshold multiyear mismatch. review-agent/pass green on head 1adb648; merged as cd70f72 at 2026-08-06T17:48:19Z. Local suite: py_compile plus 149 tests OK.
+- #128 remains open: https://github.com/atzmonpersonalassistant/trader/pull/128
+  review-agent/pass failed on test_mvp0_agents.py expecting docker_status removed text that current workflow no longer contains. Separate blocker you asked about: /agents/research/state/event-provider-ready does not exist on the VPS right now, so fail-closed #128 would skip research-loop actions after merge. I found no creator for that ready file in the repo search; it needs a documented deploy/provisioning path before merge.
 
 Required daily report:
-- Latest daily run_id: earnings-qc-options-scan-full-20260806-073020
-- DB status: completed
+- run_id: earnings-qc-options-scan-full-20260806-073020
+- status: completed
 - research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final/forward: 0 final / 3 forward
 - failed_chunk_count: 0
 - bottleneck: empty/null
-- valuation_date: DB aggregate empty; chunk artifacts report 2026-08-05
-- finished_at: 2026-08-06 07:41:20Z
+- valuation_date: 2026-08-06
+- started/finished: 2026-08-06 07:30:20Z / 07:41:20Z
 - No daily skipped or stuck.
 
-VPS status:
-- `/` is 72G size, 13G used, 59G available, 18% used.
-- Next retention run: 2026-08-07 01:15:00 UTC / 04:15 Asia/Jerusalem.
-- Next daily scan: 2026-08-07 07:30:00 UTC / 10:30 Asia/Jerusalem.
-- Retention report remains pending until the 04:15 Asia/Jerusalem run fires: df before/after, freed_bytes, and failed list in full.
-
-Next: wait for review-agent/required checks or fix the stale #128 `test_mvp0_agents.py` assertion separately before any merge.</pre>
+VPS/retention:
+- readiness file: missing, exists=0.
+- / disk now: 72G size, 13G used, 59G available, 18% used.
+- Tomorrow 2026-08-07 04:15 Asia/Jerusalem retention report is still pending; I cannot report that future run yet.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
