@@ -77,45 +77,42 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 278. Diagnostic only: no trader code changes, no revert, no timeout change.
+  <pre id="current-message">Processed latest row 279.
 
-Deploy incident:
-- I confirm Claude's correction: this still points to GitHub Actions infrastructure/runner assignment, not #138/#129 code.
-- Run 31123845202: job cancelled, runner_name "", runner_group_name "", labels ["ubuntu-latest"], steps [].
-- Run 31124380886: job cancelled, runner_name "", runner_group_name "", labels ["ubuntu-latest"], steps [].
-- Manual run 31127481257: job cancelled, runner_name "", runner_group_name "", labels ["ubuntu-latest"], steps [].
-- Timing API for 31127481257: run_duration_ms 905000, billable UBUNTU total_ms 0.
-- Repo self-hosted runner API: total_count 0.
-- GitHub Status API currently says Partial System Outage; critical "Incident with Actions" is investigating, updated 2026-08-06T21:30:42Z.
-- Billing/quota API is blocked for this token: HTTP 403 "Resource not accessible by personal access token". I cannot see any account UI banner from here; Uriel must check that in GitHub.
+Actions taken:
+- Closed #211: https://github.com/atzmonpersonalassistant/trader/pull/211
+- Made no trader code/config changes.
+- Did not rerun deploy for cd70f72 because GitHub Status still reports Actions major_outage / Incident with Actions investigating. Pages is also major_outage, so this site push may publish late.
 
-VPS health:
-- Host reachable at 2026-08-06 21:35:36Z.
-- Load average 0.06 / 0.10 / 0.09.
+Deploy incident status:
+- Latest cd70f72 deploy run remains 31127481257: https://github.com/atzmonpersonalassistant/trader/actions/runs/31127481257
+- Job evidence is unchanged: runner_name "", runner_group_name "", steps 0.
+- Timing API: run_duration_ms 905000, billable UBUNTU total_ms 0.
+- Recovery action still pending: when Actions recovers, rerun deploy for cd70f72 and report run id + normal step count.
+
+VPS health at 2026-08-06 22:04Z:
+- Host reachable; load 0.09 / 0.12 / 0.09.
 - / has 59G free, 18% used.
 - PostgreSQL active.
+- Production remains on 6b82f598 (#207), functional but behind main.
 
 Required daily report:
 - run_id: earnings-qc-options-scan-full-20260806-073020
 - DB status: completed
 - research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final/forward: 0 final / 3 forward
-- failed_chunk_count: 0 from full_summary.json
-- bottleneck: blank/null in research_runs
-- valuation_date: 2026-08-05 in chunk stdout artifacts
+- failed_chunk_count: 0
+- bottleneck: null
+- summary run_date: 2026-08-06
+- valuation_date used: 2026-08-05 from chunk stdout artifacts
 - started/finished: 2026-08-06 07:30:20Z / 2026-08-06 07:41:20Z
 - No daily skipped or stuck.
 
 Retention:
-- The first scheduled retention run carrying both #205 and #206 has not fired yet.
-- Next trader-research-retention.timer fire: 2026-08-07 01:15:00Z = 2026-08-07 04:15 Asia/Jerusalem.
-- Current df before that run: / has 59G free, 18% used.
-- No new freed_bytes/failed-list report exists yet for the #205/#206 retention run.
-
-Standing:
-- Production remains stranded on deployed 6b82f598 (#207); main is cd70f72 until Actions recovers.
-- #211 remains unmerged and should not be merged under the corrected diagnosis.
-- #128 remains open; I did not check event-provider-ready because deploy is still unhealthy.</pre>
+- The #205/#206 retention verification run has not fired yet.
+- trader-research-retention.timer next fire: 2026-08-07 01:15:00Z = 2026-08-07 04:15 Asia/Jerusalem.
+- Current pre-run df: / has 59G free, 18% used.
+- No new freed_bytes or failed list exists yet for that scheduled run; report it after the timer fires.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
