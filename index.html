@@ -77,23 +77,23 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 276.
+  <pre id="current-message">Processed latest row 277. Diagnostic only; no trader code changes, no revert action, no timeout change.
 
-Incident work:
-- Confirmed main cd70f72 is four commits ahead of deployed 6b82f598; deploy runs:
-  - #138 push: https://github.com/atzmonpersonalassistant/trader/actions/runs/31123845202 cancelled after timeout, no step logs.
-  - #129 push: https://github.com/atzmonpersonalassistant/trader/actions/runs/31124380886 failed/cancelled after timeout, no step logs.
-- VPS was not loaded: load ~0.18, 59G free on /, Postgres answering.
-- Timed deployed #207 suspect commands: run --help 0.10s, insights 0.20s, psql smoke 0.10s, py_compile 0.10s.
-- Timed other deploy validations: Lean/QC smoke 2.0s max, research-loop dry smoke 0.6s, cleanup/status/research-artifact dry-run all <=0.2s.
-- Current-main temp copies of touched scripts compile quickly; current-main earnings-qc-research help/insights are also fast when qc_cloud_capacity.py is present.
-- Manual workflow_dispatch deploy for cd70f72: https://github.com/atzmonpersonalassistant/trader/actions/runs/31127481257 stayed queued for ~5 min and never reached the VPS. Two cancel attempts returned GitHub HTTP 502; it still shows queued.
+Deploy incident:
+- I agree with the corrected diagnosis: evidence points to GitHub Actions infrastructure/runner assignment, not #138/#129 code.
+- Run 31123845202: job completed cancelled, runner_name empty, steps [].
+- Run 31124380886: job completed cancelled, runner_name empty, steps [].
+- Manual run 31127481257: job completed cancelled, runner_name empty, steps [].
+- Repo has no self-hosted runners configured via API.
+- GitHub Status API currently reports "Partial System Outage" with a critical "Incident with Actions" in investigating state, updated 2026-08-06T20:34:17Z.
+- Actions billing/quota API is not readable with this token: GitHub returned HTTP 403 "Resource not accessible by personal access token", so I cannot confirm or rule out an account quota/banner from here. Uriel needs the account UI for that specific check.
+- Workflow timing API returned billable: {}, no useful usage signal.
 
-Rollback PR:
-- Opened #211 to revert #138 and #129: https://github.com/atzmonpersonalassistant/trader/pull/211
-- Local verification: py_compile plus unittest test_vps_deploy_workflow and test_earnings_qc_options_scripts: 161 tests OK.
-- review-agent/pass failed: model reviewer PASS, deterministic PASS, but autoreview blocks because the revert intentionally removes #129/#138 behavior. Check: https://github.com/atzmonpersonalassistant/trader/runs/92705032756
-- Guardrail result: I did NOT auto-merge #211 because reviewer output explicitly blocks it.
+VPS health:
+- Host reachable at 2026-08-06 21:16:47Z.
+- Load average 0.26 / 0.15 / 0.10.
+- / has 59G free, 18% used.
+- PostgreSQL active.
 
 Required daily report:
 - run_id: earnings-qc-options-scan-full-20260806-073020
@@ -101,15 +101,20 @@ Required daily report:
 - research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final/forward: 0 final / 3 forward
 - failed_chunk_count: 0
-- bottleneck: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL at aggregate_report
+- bottleneck: blank in research_runs
 - valuation_date: 2026-08-06
-- started/finished: 2026-08-06 07:30:20Z / 07:41:20Z
+- started/finished: 2026-08-06 07:30:20Z / 2026-08-06 07:41:20Z
 - No daily skipped or stuck.
 
+Retention:
+- The first scheduled retention run carrying both #205 and #206 has not fired yet.
+- Next trader-research-retention.timer fire: 2026-08-07 01:15:00Z = 2026-08-07 04:15 Asia/Jerusalem.
+- Current df before that run: / has 59G free, 18% used.
+
 Standing:
-- Production still appears stranded on #207 unless the queued dispatch later starts and succeeds.
-- #128 remains blocked by missing /agents/research/state/event-provider-ready.
-- Tomorrow 2026-08-07 04:15 Asia/Jerusalem retention report is still pending.</pre>
+- Production remains stranded on deployed 6b82f598 (#207); main remains cd70f72 until Actions recovers.
+- #211 remains unmerged and should not be merged under the corrected diagnosis.
+- #128 remains open; I did not check event-provider-ready because deploy is still not healthy.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
