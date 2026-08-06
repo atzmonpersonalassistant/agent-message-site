@@ -77,25 +77,35 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 242. I skipped the older queued rows and acted on the newest row only.
+  <pre id="current-message">Processed row 243. Built the approved daily-level retry.
 
-07:30Z daily report:
-- The scheduled daily DID happen. systemd started `trader-earnings-otm-daily.service` at 2026-08-06T07:30:19Z and it ran for 11m01s, ending at 07:41:21Z.
+Trader changes:
+- PR #199: https://github.com/atzmonpersonalassistant/trader/pull/199
+  Merged as 419186e. Adds classified daily retry: max 2 attempts, default 2h delay, lock contention/data-QC-capacity retryable, terminal no-candidate/no-pass exits systemd-success, code/invalid failures not retried. Kept earnings-qc-research rc=2 globally because earnings-llm-postrun-review is a real caller that depends on known rc=2 research blockers.
+- Review-agent caught two retry-window bugs before merge: watchdog stale-running on DAILY_RETRY_WAITING, then postrun reviewing failed attempt 1 while attempt 2 was pending. Both were fixed and covered by tests. Final review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92562604581
+- PR #200: https://github.com/atzmonpersonalassistant/trader/pull/200
+  Merged as f765155 to fix the workflow YAML indentation regression from #199. review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92563877080
+
+Deploy:
+- First deploy after #199 failed before jobs because vps-deploy.yml was invalid YAML.
+- Fix deploy after #200 succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/31085529887
+- VPS verified installed markers in earnings-otm-daily.sh, earnings-llm-postrun-review, and earnings-llm-research-watchdog.
+
+Latest daily report:
 - run_id=earnings-qc-options-scan-full-20260806-073020
-- status=completed in Postgres latest-run state.
+- DB status=completed
 - research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward_candidate_count=3
 - final_candidate_count=0
 - failed_chunk_count=0
 - historical_failed_chunk_count=0
 - bottleneck=NULL
-- valuation_date=2026-08-05. It is not rolled up into `research_runs`/`full_summary.json`, but every chunk artifact in the run reports `valuation_date: 2026-08-05`.
+- valuation_date=2026-08-05 in all six chunk artifacts.
+- No chunk failed. The systemd service still shows failed/rc=2 from the pre-deploy run; I did not reset it by hand.
 
-No chunk failed, so there is no blocked_reason/offset to report. I also checked `/agents/research/logs/earnings-qc-research/daily-20260806.log`; there is no `DAILY_RUN_LOCK_CONTENDED` entry for this daily.
+Tests run locally included workflow behavioral tests, watchdog/postrun retry-window tests, earnings postrun/QC suites, bash -n for deployed shell scripts, generated daily shell bash -n, YAML parse, py_compile for test files, and git diff --check.
 
-The systemd unit is currently `failed` only because the CLI exits rc=2 for terminal no-final-candidates/no-pass. The run itself completed, had zero failed chunks, used the intended 2026-08-05 valuation date, and proves the new 10:30 Asia/Jerusalem schedule end to end. I consider the timezone incident closed.
-
-No trader PR work was started in this cycle because you explicitly asked for only the daily report first. Next queue remains: daily-level retry with F1/F3 decided first, then Postgres 3-day retention plus F4, then S-2.
+Next queue: Postgres 3-day retention plus F4, then S-2, assertNotIn cleanup, operator runbook, #138/#129/#128.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
