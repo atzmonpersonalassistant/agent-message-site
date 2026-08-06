@@ -77,35 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 224.
+  <pre id="current-message">Processed rows 225-228. P0 daily incident handled first.
 
-PR B remains BLOCKED:
-- Latest daily run_id: earnings-qc-options-scan-full-20260806-030012
-- DB status: blocked
-- research_verdict: PARTIAL_FULL_QC_SCAN
-- final_candidate_count: 0
-- forward_candidate_count: 0
-- bottleneck: PARTIAL_FULL_QC_SCAN
-- finished_at: 2026-08-06 03:07:02 UTC
-- Artifact check: full_summary.json has qc_broker_execution:null; hebrew_report.md has no qc_broker_execution line; qc_research_artifact_manifest.json is ABSENT.
-- Therefore condition (b) is still not met. I did not open PR B and did not run Docker cleanup.
+Daily root cause test:
+- 03:00Z run was broken: earnings-qc-options-scan-full-20260806-030012, blocked/PARTIAL_FULL_QC_SCAN, 0 forward, 0 final, 6 failed chunks, bottleneck PARTIAL_FULL_QC_SCAN.
+- Offset 0 raw stderr was empty; the failure was in stdout as blocked_reason=&quot;QC produced zero option-chain rows on valuation date&quot;.
+- Manual rerun started 2026-08-06T05:34Z with same daily flags plus explicit --as-of-date 2026-08-06.
+- Rerun completed: earnings-qc-options-scan-full-20260806-053411, completed/NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL, 3 forward, 0 final, 0 failed chunks. Funnel: 127 calendar rows, 97 option-chain available, 3 liquidity/Greeks pass.
+- Chunk artifact reported run_date=2026-08-06 and valuation_date=2026-08-05. This confirms timing/data availability, not a scanner regression.
 
-Retention/disk:
-- Current df: /dev/sda1 72G size, 61G used, 12G free, 85%.
-- Full retention log path exists: /agents/research/logs/earnings-qc-research/retention.log
-- Log reports research cleanup freed 146,429,146 bytes and Docker image prune reclaimed 458.3MB.
+Fix:
+- Opened and merged PR #196: https://github.com/atzmonpersonalassistant/trader/pull/196
+- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92532185973
+- Deploy succeeded on d12e81a: https://github.com/atzmonpersonalassistant/trader/actions/runs/31075409433
+- VPS verified live: trader-earnings-otm-daily.timer is now OnCalendar=*-*-* 10:30:00 Asia/Jerusalem. Next fire is 2026-08-06 07:30:00 UTC.
+- Watchdog/postrun envs now also say 10:30.
 
-Closed P1-13c:
-- Opened trader PR #195: https://github.com/atzmonpersonalassistant/trader/pull/195
-- Fix: trading-research-qc-api-extract now defaults missing QC API success to ok=false instead of fail-open ok=true.
-- Tests: bash -n extractor; git diff --check; focused manifest-guard test; full agent-platform.tests.test_mvp0_agents, 74 tests OK.
-- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/92523285134
-- Merged as 504070c and deployed green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31072564607
-- VPS verification: /usr/local/bin/trading-research-qc-api-extract contains data.get("success", False); old data.get("success", True) is absent.
+Schedule reasoning:
+- 10:30 Asia/Jerusalem is at or after 02:30 New York across IDT/IST and US DST mismatch weeks, giving margin past the old healthy 02:00 EDT observation.
 
-Next state:
-- PR B/docker cleanup remains gated on a real daily handoff with qc_broker_execution present.
-- Other queued work remains: assertNotIn cleanup, operator-runbook daily/earnings/watchdog/postrun docs, then July backlog PRs #138/#129/#128.</pre>
+Other requested status:
+- Retention log at /agents/research/logs/earnings-qc-research/retention.log exists. It freed 146MB research reports + 458.3MB Docker, not the predicted container-space win.
+- df remains 12G free on / and /var.
+- No research/review/QC processes left running.
+
+Next queue: retention filter change, Postgres 3-day retention, S-2, then PR B/docker cleanup after healthy-daily criteria are satisfied. No current blocker.
+</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
