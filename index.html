@@ -77,44 +77,36 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest reviewer message, row 222.
+  <pre id="current-message">Processed latest reviewer message, row 223.
 
-Done:
-- Triggered review-agent/pass for #194 on the VPS.
-- review-agent/pass succeeded on a543288feed84fef8664956aea3d3a5982c8af41:
-  https://github.com/atzmonpersonalassistant/trader/runs/92449849213
-- Merged #194:
-  https://github.com/atzmonpersonalassistant/trader/pull/194
-- main is now af28950501268d2cabeaa838d41ca03553b1c366.
-- Deploy succeeded:
-  https://github.com/atzmonpersonalassistant/trader/actions/runs/31048531328
+Liveness:
+- VPS reachable at 2026-08-06T04:17Z.
+- Current df after both scheduled jobs: /dev/sda1 72G size, 61G used, 12G free, 85%.
 
-Review/test evidence:
-- Review agent deterministic pass + model PASS, no blocking findings.
-- Review output says it ran:
-  bash -n agent-platform/scripts/trading-research-qc-broker agent-platform/scripts/earnings-qc-options/earnings-qc-research agent-platform/scripts/earnings-qc-options/earnings-llm-research-watchdog
-  python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_daily_summary_surfaces_broker_cloud_failure agent-platform.tests.test_earnings_qc_options_scripts.EarningsQcOptionsGeneratedCodeTests.test_final_gate_warns_when_sample_size_unreachable_for_years
-  python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts agent-platform.tests.test_mvp0_agents
+01:15Z retention:
+- Service ran and exited SUCCESS at 2026-08-06 01:15:03 UTC.
+- Full log path exists: /agents/research/logs/earnings-qc-research/retention.log
+- Log reports research cleanup freed 146,429,146 bytes and docker image prune reclaimed 458.3MB.
+- The retention unit does not log df before/after. Last pre-fire df I had reported was 11G free; current post-fire df is 12G free, not the predicted ~20.5G.
 
-Post-deploy VPS verification:
-- /agents/research/bin/earnings-qc-research now contains qc_broker_execution reporting and fields cloud_status, execution_surface, surface_attempts.
-- /usr/local/bin/trading-research-qc-broker now has execution_surface=none_attempted, append_surface_attempt calls at the cloud/local/docker attempt sites, maybe_int execution_rc, and manifest surface_attempts persistence.
-
-Latest daily status from VPS, checked 2026-08-05T21:25:39Z:
-- run_id: earnings-qc-options-scan-full-20260805-060002
-- status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- research_verdict: absent/null in full_summary.json
+03:00Z daily:
+- run_id: earnings-qc-options-scan-full-20260806-030012
+- status: PARTIAL_FULL_QC_SCAN
+- research_verdict: absent/null
 - final_candidate_count: 0
-- forward_candidate_count: 5
+- forward_candidate_count: 0
 - bottleneck: absent/null
-- gate_warnings: null
+- per-symbol failed_checks: none; final_candidate_gate_evaluations is empty because there were zero forward/final candidates.
+- failed chunks: offsets 0, 25, 50, 75, 100, 125 all BLOCKED_QC_BATCH_FAILED with blocked_reason "QC produced zero option-chain rows on valuation date".
 
-Retention / disk:
-- df: /dev/sda1 72G size, 62G used, 11G free, 86%.
-- Full path checked: /agents/research/logs/earnings-qc-research/retention.log
-- Result: absent; it has not fired yet at this check time. Retention is still expected at 2026-08-06 01:15 UTC.
+PR B unblock evidence:
+- qc_broker_execution line in hebrew_report.md: ABSENT.
+- qc_research_artifact_manifest.json: ABSENT.
+- This is the "manifest absent / no handoff line" case, not "manifest present but not surfaced".
+- I did not open PR B and did not run docker cleanup, because condition (b) failed on the real 03:00 daily.
 
-PR B remains blocked until the 03:00 UTC daily handoff contains a real qc_broker_execution line from a live run. I did not open PR B, remove docker, clear the image, or run docker cleanup.</pre>
+Queued next after PR B remains blocked:
+- P1-13c qc-api-extract fail-open: data.get("success", True) must default false with an absent-success regression test.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
