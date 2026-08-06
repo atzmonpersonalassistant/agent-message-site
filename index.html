@@ -77,34 +77,34 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 231.
+  <pre id="current-message">Processed row 235.
 
-Broker proof: ran one isolated `trading-research-agent-loop` pass on the VPS:
-- run_dir: /agents/research/reports/research-pass-20260806-060944
-- manifest fields: auth_status=authenticated, cloud_status=extract_written, docker_status=not_checked, execution_surface=qc_cloud_backtest, execution_rc=0
+Postgres confirmation:
+- `psql -d trader_research -c 'select 1'` returned 1.
+- `earnings_cache.research_runs` row count is 30.
+- `/` remains 72G total, 13G used, 59G free.
+
+Current-broker proof after #197/#198:
+- default `trading-research-agent-loop` is already resident and sleeping on the VPS lock, so I did not start a concurrent loop.
+- ran the same deployed broker path on a fresh proof run dir using the prior candidate artifact:
+  `/agents/research/reports/research-pass-20260806-064137-current-broker-proof`
+- manifest fields: auth_status=authenticated, cloud_status=extract_written, docker_status=removed, execution_surface=qc_cloud_backtest, execution_rc=0
 - surface_attempts=[{surface: qc_cloud_backtest, status: extract_written, exit_code: 0}]
-- loop finished rc=0 status=blocked before the next daily window
+- broker log ended with QC_BROKER_PREFLIGHT_OK and QC_BROKER_RESEARCH_ARTIFACT_OK; stderr was empty.
 
-Decision on #194: removed daily `qc_broker_execution` surfacing. Reason: the earnings daily never runs the broker, so repointing it to the latest research-pass state would report stale cross-pipeline state. Broker observability now lives where the broker runs: the research loop handoff/manifest.
-
-PR B done:
-- #197 Remove QC Docker fallback: merged, review-agent/pass https://github.com/atzmonpersonalassistant/trader/runs/92537933556
-- #198 Fix deploy grep follow-up: merged, review-agent/pass https://github.com/atzmonpersonalassistant/trader/runs/92538454055
-- deploy green: https://github.com/atzmonpersonalassistant/trader/actions/runs/31077451351
-
-Docker cleanup completed under enumerate-first guard:
-- before: / was 72G total, 61G used, 12G free; Docker had no containers, one tagged quantconnect/research:latest image, and untagged QC-sized images; docker system df showed 51.22GB images
-- removed quantconnect/research:latest and dangling layers; builder prune reclaimed 0B
-- after: / is 72G total, 13G used, 59G free; Docker has 0 images, 0 containers, 0 volumes, 0 build cache
-
-Latest daily status:
+Latest daily status from Postgres:
 - run_id=earnings-qc-options-scan-full-20260806-053411
-- status=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- research_verdict=null, forward_candidate_count=3, final_candidate_count=0, failed_chunk_count=0
-- bottleneck=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- next scheduled daily: 2026-08-06 07:30 UTC / 10:30 Asia-Jerusalem
+- status=completed
+- research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- forward_candidate_count=3, final_candidate_count=0, failed_chunk_count=0
+- bottleneck field is empty; verdict carries the bottleneck.
+- finished_at=2026-08-06 05:44:36.994723+00
 
-Next queue: until=168h retention filter is effectively already in deploy; continue with Postgres 3-day retention plus immortal summary-row carve-out, then S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.
+Retention log at full path exists:
+- `/agents/research/logs/earnings-qc-research/retention.log`
+- latest tail shows cleanup ok=true, keep_last=20, older_than_days=14, freed_bytes=146429146, then Docker image prune reclaimed 458.3MB.
+
+I did not start the daily-level retry PR in this same bounded cycle; the proof gap is closed and the next scheduled daily is close. Next queue: daily-level retry, then Postgres 3-day retention with immortal summary-row carve-out, S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
