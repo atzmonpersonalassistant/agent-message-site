@@ -77,28 +77,25 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 236.
+  <pre id="current-message">Processed row 242. I skipped the older queued rows and acted on the newest row only.
 
-F2 today:
-- The resident `trading-research-agent.service` was active but only sleeping with an empty queue.
-- I stopped it at 2026-08-06T06:49:51Z before the 07:30Z daily; it remains inactive, so it could not submit QC work during today&apos;s daily window.
+07:30Z daily report:
+- The scheduled daily DID happen. systemd started `trader-earnings-otm-daily.service` at 2026-08-06T07:30:19Z and it ran for 11m01s, ending at 07:41:21Z.
+- run_id=earnings-qc-options-scan-full-20260806-073020
+- status=completed in Postgres latest-run state.
+- research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- forward_candidate_count=3
+- final_candidate_count=0
+- failed_chunk_count=0
+- historical_failed_chunk_count=0
+- bottleneck=NULL
+- valuation_date=2026-08-05. It is not rolled up into `research_runs`/`full_summary.json`, but every chunk artifact in the run reports `valuation_date: 2026-08-05`.
 
-07:30Z daily validation:
-- Timer fired at 2026-08-06T07:30:19Z; service entered `activating` at 07:30:25Z.
-- New run: `/agents/research/reports/earnings-qc-options-scan-full-20260806-073020`
-- Postgres: run_id=earnings-qc-options-scan-full-20260806-073020, status=completed, research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL.
-- Counts: forward_candidate_count=3, final_candidate_count=0, failed_chunk_count=0, historical_failed_chunk_count=0.
-- bottleneck=NULL; df still 59G free.
-- valuation_date is not rolled up into Postgres/full_summary, but every chunk artifact I checked reports valuation_date=2026-08-05.
-- systemd service is `failed` only because `earnings-qc-research` exits rc=2 for terminal no-candidate/no-pass. The research run itself is healthy.
+No chunk failed, so there is no blocked_reason/offset to report. I also checked `/agents/research/logs/earnings-qc-research/daily-20260806.log`; there is no `DAILY_RUN_LOCK_CONTENDED` entry for this daily.
 
-Retry PR decision before coding:
-- I agree F1 should be fixed by making daily lock contention exit non-zero. &quot;Did not run&quot; must be visible to systemd and operators.
-- But raw `OnFailure=` is not enough: today proves a healthy terminal no-candidate run also exits rc=2, so blindly retrying every failure would retry the wrong thing.
-- Design I will build next: daily wrapper records/classifies the last attempt; lock contention is non-zero and retryable, data-availability class is retryable, terminal no-candidate/no-pass is not retryable, code exceptions are not retried. Retry path backs off before rerun instead of piling onto an active holder, and records attempt_count/per-attempt reasons in the handoff.
-- Longer-term F2 fix belongs in the same area: enforce shared exclusion / daily blackout for `trading-research-agent-loop`, not just today&apos;s manual stop.
+The systemd unit is currently `failed` only because the CLI exits rc=2 for terminal no-final-candidates/no-pass. The run itself completed, had zero failed chunks, used the intended 2026-08-05 valuation date, and proves the new 10:30 Asia/Jerusalem schedule end to end. I consider the timezone incident closed.
 
-No PR was started in this cycle because you asked for the decision first and the scheduled daily result was due. Next queue: daily-level retry with F1/F2 shaped as above, then Postgres 3-day retention with immortal summary-row carve-out, S-2, assertNotIn cleanup, operator-runbook, #138/#129/#128.
+No trader PR work was started in this cycle because you explicitly asked for only the daily report first. Next queue remains: daily-level retry with F1/F3 decided first, then Postgres 3-day retention plus F4, then S-2.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
