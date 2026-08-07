@@ -77,40 +77,43 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 290.
+  <pre id="current-message">Processed latest row 291.
 
-P1-9 is closed. I implemented validate-before-mutate in PR #214:
-https://github.com/atzmonpersonalassistant/trader/pull/214
+W-3 Lean pin is closed. PR #215:
+https://github.com/atzmonpersonalassistant/trader/pull/215
 
 What changed:
-- staged deploy payload now gets syntax-checked before the first live sudo install
-- Bash entrypoints use bash -n from $DEPLOY_DIR
-- Python payloads, including extensionless Python executables, are AST-parsed from $DEPLOY_DIR
-- minimal hosts bootstrap python3 before Python AST validation, still before live path mutation
+- pinned active Lean CLI install surfaces to lean==1.0.225
+- deploy/bootstrap now check installed package version and reinstall the pin if a host drifts
+- research-agent setup-plan pip/pipx guidance is pinned too
+- tests reject the old unpinned --upgrade install path
 
 Verification:
-- local payload syntax mirror passed
-- git diff --check passed
-- python3 -m unittest agent-platform.tests.test_vps_deploy_workflow: 17 tests OK
-- python3 -m unittest discover agent-platform/tests: 281 tests OK
-- review-agent/pass succeeded on PR head b160b8c, check run 92793413274
+- VPS had Lean 1.0.225 before the change, so the pin preserves the current toolchain
+- bash -n agent-platform/scripts/bootstrap-new-vps.sh
+- YAML parse for .github/workflows/vps-deploy.yml
+- git diff --check
+- targeted MVP0 tests: 3 OK
+- python3 -m unittest discover agent-platform/tests: 281 OK
+- review-agent/pass succeeded on PR head efd6372, check run 92799237721
 
 Merged/deployed:
-- merged to main as 5a688b2
-- VPS deploy run 31155335504 succeeded:
-  https://github.com/atzmonpersonalassistant/trader/actions/runs/31155335504
+- merged to main as 5e7866d
+- VPS deploy run 31157238041 succeeded:
+  https://github.com/atzmonpersonalassistant/trader/actions/runs/31157238041
+- verified deploy by run id and job step count: job 92799300945, 10 reported successful steps including post/complete
+- post-deploy VPS Lean version: lean 1.0.225
 
-Daily status at 2026-08-07T06:50Z: the 07:30Z daily has not fired yet; timer shows next fire at 2026-08-07 07:30:00 UTC. Latest completed daily remains:
+Daily status at 2026-08-07T07:20Z: the 07:30Z daily has not fired yet; timer shows next fire at 2026-08-07 07:30:00 UTC. Latest completed daily remains:
 - run_id: earnings-qc-options-scan-full-20260806-073020
 - DB status/research_verdict: completed / NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final/forward: 0 / 3
 - failed_chunk_count: 0
 - valuation/run date: 2026-08-06
+- bottleneck: not populated in DB row
 - funnel counters from full_summary aggregate: expiry 40 / OTM expiry 40 / liquidity_pass 3
 
-Retention 01:15Z result: ok=true, failed_paths=[], freed_bytes=2228440244, pruned_db_blobs candidate_dossiers=48 research_runs=7 research_stages=30.
-
-Next queued from the live list: W-3 Lean pin is now eligible after P1-9; P1-7 right_filter remains queued and snapshot pruning remains explicitly out of scope.</pre>
+Next queued: P1-7 right_filter cheap half. Snapshot pruning remains explicitly out of scope.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
