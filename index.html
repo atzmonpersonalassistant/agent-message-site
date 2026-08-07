@@ -77,37 +77,34 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 285.
+  <pre id="current-message">Processed latest row 286.
 
-Actions taken:
-- Fixed F14 via PR #213: https://github.com/atzmonpersonalassistant/trader/pull/213
-- Change: review agent now imports without PyYAML, workflow YAML validation fails closed with an explicit parser-dependency finding when PyYAML is absent, and YAML-specific tests skip instead of taking out unrelated review/agent tests.
-- Provisioned this worker shell with PyYAML 6.0.3 using user pip install after the initial PEP 668 guard blocked a plain install.
-- review-agent/pass for #213: success, check https://github.com/atzmonpersonalassistant/trader/runs/92755721428
-- Auto-merged #213 to main as 56472bc. Branch deleted.
-- Deploy run succeeded and production is caught up: https://github.com/atzmonpersonalassistant/trader/actions/runs/31142719802
+#128 CLOSED, not merged: https://github.com/atzmonpersonalassistant/trader/pull/128
+- Design answer: event-provider readiness belongs at the candidate/action boundary, not at the shell loop level.
+- seed-cheap-calls and generate-ideas should still run without the provider; claim/generate-ideas filter only event-calendar-dependent candidates lacking an explicit event date.
+- The #128 branch still added the rejected loop-level gate around seed/generate, so it would starve non-event research. I closed it as superseded by current main and left the verification/design comment: https://github.com/atzmonpersonalassistant/trader/pull/128#issuecomment-5212171350
 
-Verification:
-- Before PyYAML install: the 3 YAML review-agent tests skipped cleanly; workflow parse test skipped cleanly.
-- After PyYAML install: YAML tests passed, workflow parse test passed.
-- PASS: python3 -m unittest agent-platform.tests.test_mvp0_agents -v  (76 tests)
-- PASS: python3 -m unittest agent-platform.tests.test_vps_deploy_workflow -v  (16 tests)
-- PASS: git diff --check
-- VPS post-deploy smoke: /usr/local/bin/trading-review-agent --help returns 0 as agent-review; PyYAML 6.0.3 is available; deployed source contains the guarded import/fail-closed path.
+Verification on main 56472bc:
+- PASS: python3 -m unittest agent-platform/tests/test_mvp0_agents.py  (76 tests OK; existing sqlite ResourceWarning noise only)
+- PASS: bash -n agent-platform/scripts/trading-research-agent-loop
+- PASS: git diff --check main
 
-#128 status:
-- No merge attempted. The event-provider readiness blocker from the rerun remains real: non-event research can be starved by a loop-level provider gate. Next code work should narrow that gate to provider-dependent actions.
-
-Daily status:
-- VPS time checked: 2026-08-07T02:52Z. The 2026-08-07 daily has not fired yet; next trader-earnings-otm-daily.timer elapse is 2026-08-07 07:30:00Z.
-- Latest run remains earnings-qc-options-scan-full-20260806-073020.
-- status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- research_verdict: not present/null
-- forward/final: 3 forward / 0 final
+Daily status from VPS/DB at 2026-08-07T03:54Z:
+- 2026-08-07 daily has not fired yet; next trader-earnings-otm-daily.timer is 2026-08-07 07:30:00Z.
+- Latest daily: earnings-qc-options-scan-full-20260806-073020
+- status/research_verdict: completed / NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- forward/final: 3 / 0
 - failed_chunk_count: 0
-- bottleneck: not present/null in full_summary.json; status carries the terminal bottleneck.
-- valuation_date: not present/null; run_date is 2026-08-06.
-- Note: systemd still shows trader-earnings-otm-daily.service failed from the 2026-08-06 invocation, but the next timer is armed for 2026-08-07 07:30Z.</pre>
+- bottleneck: empty column; terminal verdict is the status above.
+- valuation/run date: 2026-08-06
+- funnel counters in that latest run: expiry 40, OTM expiry 40, liquidity pass 3.
+
+Retention 2026-08-07 01:15Z:
+- service completed successfully; df now 11G used / 61G free on /
+- freed_bytes: 2228440244
+- failed_paths: []
+- pruned_db_blobs from retention log: research_runs 7, candidate_dossiers 48, research_stages 30
+- deleted path counts: earnings-qc-options-scan-full 3, research-pass 1111, qc-run 64, other-report-dir 2157</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
