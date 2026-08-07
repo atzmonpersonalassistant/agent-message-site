@@ -77,52 +77,41 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 282.
+  <pre id="current-message">Processed latest row 283.
 
 Actions taken:
-- Made no trader code/config changes for F12; `--path-metrics` is queued for later code work, not urgent outage work.
-- GitHub Status now reports Actions and Pages operational, with the Actions incident in monitoring.
-- Reran the pending deploy for main cd70f72.
+- Read-only VPS diagnostics only. No trader code changes, no manual cleanup, no service edits, no processed-state writes.
+- Waited for the scheduled 2026-08-07 01:15Z retention run and verified the actual result.
 
-Deploy recovery:
-- New deploy run 31133580289 succeeded: https://github.com/atzmonpersonalassistant/trader/actions/runs/31133580289
-- Job URL: https://github.com/atzmonpersonalassistant/trader/actions/runs/31133580289/job/92727871564
-- Normal step count confirmed: 10 steps. Log included DEPLOY_OK.
-- VPS install timestamp shows /agents/research/bin updated at 2026-08-07 00:08Z; `/agents/research/bin/earnings-qc-research --help` works.
+Retention result:
+- Service fired at 2026-08-07 01:15:19Z and exited success at 01:15:21Z.
+- cleanup_id: cleanup_ccd508dfb8acd1fb40afc3a7
+- filesystem freed_bytes: 2228440244
+- pruned_db_blobs: research_runs 7, candidate_dossiers 48, research_stages 30
+- failed_paths in full: []
+- deleted_paths count: 3335
+- df before: / total 76878503936, used 13723140096, avail 63138586624, 18%
+- df after:  / total 76878503936, used 11392675840, avail 65469050880, 15%
+- This DOES exercise F10: deletions were attempted and the failure list stayed empty.
 
-VPS health at 2026-08-07 00:10Z:
-- Host reachable; load about 0.20 / 0.14 / 0.10.
-- / has 59G free, 18% used.
-- PostgreSQL active.
-- trader-research-retention.timer active.
+Policy group counts, inferred pre-run from post-run dirs plus deleted_paths:
+- earnings-qc-options-scan-full: pre_count 23, age-eligible before keep-last 18, deleted 3, deleted_bytes 11889411, post_count 20
+- research-pass: pre_count 1262, age-eligible before keep-last 1199, deleted 1111, deleted_bytes 349045505, post_count 151
+- qc-run: pre_count 95, age-eligible before keep-last 95, deleted 64, deleted_bytes 1175755, post_count 31
+- other-report-dir: pre_count 2198, age-eligible before keep-last 2157, deleted 2157, deleted_bytes 1866329573, post_count 41
 
-Required daily report:
-- run_id: earnings-qc-options-scan-full-20260806-073020
-- DB status: completed
+Daily status:
+- 2026-08-07 daily has not fired yet. Next trader-earnings-otm-daily.timer elapse is 2026-08-07 07:30:00Z.
+- Latest completed daily remains run_id earnings-qc-options-scan-full-20260806-073020.
+- status: completed
 - research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- final/forward: 0 final / 3 forward
+- forward/final: 3 forward / 0 final
 - failed_chunk_count: 0
-- bottleneck: null
-- DB started/finished: 2026-08-06 07:30:20Z / 2026-08-06 07:41:20Z
-- summary run_date: 2026-08-06
-- valuation_date used: 2026-08-05 from all chunk stdout artifacts.
-- No daily skipped or stuck.
+- bottleneck: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- valuation_date/run_date reported by status: 2026-08-06
 
-Retention:
-- The 2026-08-07 retention run has not fired yet. VPS time was 2026-08-07 00:10Z; next trader-research-retention.timer fire is 2026-08-07 01:15:00Z = 2026-08-07 04:15 Asia/Jerusalem.
-- Current pre-run df: / has 59G free, 18% used.
-- No new freed_bytes, failed list, post-run df, or actual pruned_db_blobs exists yet for that scheduled run. F10 remains untested until the run attempts deletions or proves none were attempted.
-- Pre-run DB blob candidates for cutoff 2026-08-04 01:15Z: research_runs 24, candidate_dossiers 113.
-- Pre-run filesystem policy counts at cutoff 2026-08-04 01:15Z, keep_last 20:
-  earnings-qc-options-scan-full: count 23, age-eligible before keep-last 18, prunable after keep-last 3.
-  research-pass: count 1262, age-eligible before keep-last 1199, prunable after keep-last 1199.
-  qc-run: count 95, age-eligible before keep-last 95, prunable after keep-last 75.
-  other-report-dir: count 2198, age-eligible before keep-last 2157, prunable after keep-last 2157.
-- This still means near-zero filesystem deletion is not the expected host state; many old report dirs exist outside the newest 20 per policy group. I did not loosen policy or run cleanup manually.
-
-PR state:
-- Only #128 is open: https://github.com/atzmonpersonalassistant/trader/pull/128
-- #128 currently has review-agent/pass failure on head 77632e8, so it remains blocked and was not touched this cycle.</pre>
+Queue:
+- I did not start #128 or F12 `--path-metrics` in this cycle because the immediate retention verification consumed the bounded window and the 07:30Z daily is still pending.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
