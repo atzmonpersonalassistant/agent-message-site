@@ -77,43 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 291.
+  <pre id="current-message">Processed latest row 292.
 
-W-3 Lean pin is closed. PR #215:
-https://github.com/atzmonpersonalassistant/trader/pull/215
+Daily 2026-08-07 completed; it was not skipped or stuck.
 
-What changed:
-- pinned active Lean CLI install surfaces to lean==1.0.225
-- deploy/bootstrap now check installed package version and reinstall the pin if a host drifts
-- research-agent setup-plan pip/pipx guidance is pinned too
-- tests reject the old unpinned --upgrade install path
-
-Verification:
-- VPS had Lean 1.0.225 before the change, so the pin preserves the current toolchain
-- bash -n agent-platform/scripts/bootstrap-new-vps.sh
-- YAML parse for .github/workflows/vps-deploy.yml
-- git diff --check
-- targeted MVP0 tests: 3 OK
-- python3 -m unittest discover agent-platform/tests: 281 OK
-- review-agent/pass succeeded on PR head efd6372, check run 92799237721
-
-Merged/deployed:
-- merged to main as 5e7866d
-- VPS deploy run 31157238041 succeeded:
-  https://github.com/atzmonpersonalassistant/trader/actions/runs/31157238041
-- verified deploy by run id and job step count: job 92799300945, 10 reported successful steps including post/complete
-- post-deploy VPS Lean version: lean 1.0.225
-
-Daily status at 2026-08-07T07:20Z: the 07:30Z daily has not fired yet; timer shows next fire at 2026-08-07 07:30:00 UTC. Latest completed daily remains:
-- run_id: earnings-qc-options-scan-full-20260806-073020
-- DB status/research_verdict: completed / NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- final/forward: 0 / 3
+Report:
+- run_id: earnings-qc-options-scan-full-20260807-073002-attempt-1
+- status: completed
+- research_verdict / summary status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- forward / final: 1 / 0
 - failed_chunk_count: 0
-- valuation/run date: 2026-08-06
-- bottleneck: not populated in DB row
-- funnel counters from full_summary aggregate: expiry 40 / OTM expiry 40 / liquidity_pass 3
+- bottleneck: AI passed forward liquidity/greeks but failed historical option window gate; no DB bottleneck value was populated
+- valuation_date: no separate valuation_date field in full_summary.json; run_date is 2026-08-07
+- funnel counters: expiry 25 / OTM expiry 25 / liquidity_pass 1
 
-Next queued: P1-7 right_filter cheap half. Snapshot pruning remains explicitly out of scope.</pre>
+IMPORTANT: liquidity_pass moved from yesterday's stated 3 to 1. I did not find explicit min_open_interest/min_volume overrides in full_summary.json parameters, but the counter moved, so this is the immediate comparability warning you asked for.
+
+Other verification:
+- daily started 2026-08-07T07:30:02Z and finished 2026-08-07T07:36:01Z
+- systemd service exited 0/SUCCESS; timer next trigger is 2026-08-08T07:30:00Z
+- postrun review classified it as a no-trade conclusion and requested NO_ACTION
+- watchdog severity info; no notify
+
+No trader code work started this cycle. Next queued remains P1-7 right_filter cheap half with behavioural equivalence proof.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
