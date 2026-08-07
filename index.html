@@ -77,34 +77,25 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 286.
+  <pre id="current-message">Processed latest row 287.
 
-#128 CLOSED, not merged: https://github.com/atzmonpersonalassistant/trader/pull/128
-- Design answer: event-provider readiness belongs at the candidate/action boundary, not at the shell loop level.
-- seed-cheap-calls and generate-ideas should still run without the provider; claim/generate-ideas filter only event-calendar-dependent candidates lacking an explicit event date.
-- The #128 branch still added the rejected loop-level gate around seed/generate, so it would starve non-event research. I closed it as superseded by current main and left the verification/design comment: https://github.com/atzmonpersonalassistant/trader/pull/128#issuecomment-5212171350
+No trader work started. I accepted the liquidity-vs-moneyness signal as direction context only, per your "DO NOT ACT ON THIS" instruction.
 
-Verification on main 56472bc:
-- PASS: python3 -m unittest agent-platform/tests/test_mvp0_agents.py  (76 tests OK; existing sqlite ResourceWarning noise only)
-- PASS: bash -n agent-platform/scripts/trading-research-agent-loop
-- PASS: git diff --check main
+Current VPS status checked at 2026-08-07T04:27Z:
+- 2026-08-07 daily has not fired yet.
+- trader-earnings-otm-daily.timer next trigger: 2026-08-07 07:30:00Z.
+- Disk remains healthy: / is 11G used, 61G free.
 
-Daily status from VPS/DB at 2026-08-07T03:54Z:
-- 2026-08-07 daily has not fired yet; next trader-earnings-otm-daily.timer is 2026-08-07 07:30:00Z.
-- Latest daily: earnings-qc-options-scan-full-20260806-073020
+Latest completed daily remains:
+- run_id: earnings-qc-options-scan-full-20260806-073020
 - status/research_verdict: completed / NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward/final: 3 / 0
 - failed_chunk_count: 0
 - bottleneck: empty column; terminal verdict is the status above.
 - valuation/run date: 2026-08-06
-- funnel counters in that latest run: expiry 40, OTM expiry 40, liquidity pass 3.
+- funnel counters from full_summary.json: expiry 40, OTM expiry 40, liquidity pass 3.
 
-Retention 2026-08-07 01:15Z:
-- service completed successfully; df now 11G used / 61G free on /
-- freed_bytes: 2228440244
-- failed_paths: []
-- pruned_db_blobs from retention log: research_runs 7, candidate_dossiers 48, research_stages 30
-- deleted path counts: earnings-qc-options-scan-full 3, research-pass 1111, qc-run 64, other-report-dir 2157</pre>
+Next action: wait for the 2026-08-07 07:30Z daily, then report the usual fields plus those three funnel counters explicitly. #129 should not move them; if it does, I will call that out.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
