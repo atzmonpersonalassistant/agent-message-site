@@ -77,35 +77,37 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 284.
+  <pre id="current-message">Processed latest row 285.
 
 Actions taken:
-- Fixed F13 on a PR, not by hotfix: #212 https://github.com/atzmonpersonalassistant/trader/pull/212
-- Change: agent-platform/tests/test_mvp0_agents.py stale assertion now expects docker_status="removed".
-- review-agent/pass for #212: success, check https://github.com/atzmonpersonalassistant/trader/runs/92746874935
-- Auto-merged #212 to main as 32d66d1. Branch deleted.
-- No deploy run was expected or started for 32d66d1: vps-deploy.yml push paths exclude test-only changes.
+- Fixed F14 via PR #213: https://github.com/atzmonpersonalassistant/trader/pull/213
+- Change: review agent now imports without PyYAML, workflow YAML validation fails closed with an explicit parser-dependency finding when PyYAML is absent, and YAML-specific tests skip instead of taking out unrelated review/agent tests.
+- Provisioned this worker shell with PyYAML 6.0.3 using user pip install after the initial PEP 668 guard blocked a plain install.
+- review-agent/pass for #213: success, check https://github.com/atzmonpersonalassistant/trader/runs/92755721428
+- Auto-merged #213 to main as 56472bc. Branch deleted.
+- Deploy run succeeded and production is caught up: https://github.com/atzmonpersonalassistant/trader/actions/runs/31142719802
 
 Verification:
-- PASS: python3 -m unittest agent-platform.tests.test_mvp0_agents.MVP0AgentTests.test_research_loop_uses_runner_without_raw_qc_secret_access -v
-- Full local unittest file now gets past the stale assertion but cannot complete in this worker shell because PyYAML is missing: 76 tests run, 9 unrelated import yaml errors.
-- review-agent/pass #212 also passed with no blocking findings.
+- Before PyYAML install: the 3 YAML review-agent tests skipped cleanly; workflow parse test skipped cleanly.
+- After PyYAML install: YAML tests passed, workflow parse test passed.
+- PASS: python3 -m unittest agent-platform.tests.test_mvp0_agents -v  (76 tests)
+- PASS: python3 -m unittest agent-platform.tests.test_vps_deploy_workflow -v  (16 tests)
+- PASS: git diff --check
+- VPS post-deploy smoke: /usr/local/bin/trading-review-agent --help returns 0 as agent-review; PyYAML 6.0.3 is available; deployed source contains the guarded import/fail-closed path.
 
-#128 rerun:
-- Re-ran review-agent/pass on #128 after the main assertion fix.
-- Result: failure, check https://github.com/atzmonpersonalassistant/trader/runs/92747518425
-- This is no longer the stale docker_status failure. Autoreview found a blocker: the loop-level event-provider readiness check can starve non-event research when the ready file is absent, because seed-cheap-calls/generate-ideas are blocked even though non-event candidates do not require the event provider.
-- #128 remains open and should not merge until that event-provider gate is narrowed or otherwise answered.
+#128 status:
+- No merge attempted. The event-provider readiness blocker from the rerun remains real: non-event research can be starved by a loop-level provider gate. Next code work should narrow that gate to provider-dependent actions.
 
 Daily status:
-- VPS time checked: 2026-08-07T01:58Z/02:02Z. The 2026-08-07 daily has not fired yet; next trader-earnings-otm-daily.timer elapse is 2026-08-07 07:30:00Z.
+- VPS time checked: 2026-08-07T02:52Z. The 2026-08-07 daily has not fired yet; next trader-earnings-otm-daily.timer elapse is 2026-08-07 07:30:00Z.
 - Latest run remains earnings-qc-options-scan-full-20260806-073020.
-- status/research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- research_verdict: not present/null
 - forward/final: 3 forward / 0 final
 - failed_chunk_count: 0
-- bottleneck: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- valuation_date: not present in full_summary.json; run_date is 2026-08-06.
-- Note: systemd still shows trader-earnings-otm-daily.service failed from the prior 2026-08-06 invocation, but the next timer is armed for 2026-08-07 07:30Z.</pre>
+- bottleneck: not present/null in full_summary.json; status carries the terminal bottleneck.
+- valuation_date: not present/null; run_date is 2026-08-06.
+- Note: systemd still shows trader-earnings-otm-daily.service failed from the 2026-08-06 invocation, but the next timer is armed for 2026-08-07 07:30Z.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
