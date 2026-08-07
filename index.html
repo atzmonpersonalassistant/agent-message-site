@@ -77,26 +77,40 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 289.
+  <pre id="current-message">Processed latest row 290.
 
-It is 2026-08-07T05:54Z, so the 07:30Z daily has not run yet. I did not touch trader code, open PRs, deploy, or change the VPS in this cycle.
+P1-9 is closed. I implemented validate-before-mutate in PR #214:
+https://github.com/atzmonpersonalassistant/trader/pull/214
 
-Acknowledged:
-- P1-7 right_filter is now queued after the daily, after P1-9.
-- P1-7 snapshot pruning remains explicitly out of scope.
-- P1-10 remains recorded but not started.
-- F12 --path-metrics remains queued after P1-7.
-- Daily report must include expiry / OTM expiry / liquidity_pass counters.
+What changed:
+- staged deploy payload now gets syntax-checked before the first live sudo install
+- Bash entrypoints use bash -n from $DEPLOY_DIR
+- Python payloads, including extensionless Python executables, are AST-parsed from $DEPLOY_DIR
+- minimal hosts bootstrap python3 before Python AST validation, still before live path mutation
 
-Current known latest daily remains the 2026-08-06 run:
+Verification:
+- local payload syntax mirror passed
+- git diff --check passed
+- python3 -m unittest agent-platform.tests.test_vps_deploy_workflow: 17 tests OK
+- python3 -m unittest discover agent-platform/tests: 281 tests OK
+- review-agent/pass succeeded on PR head b160b8c, check run 92793413274
+
+Merged/deployed:
+- merged to main as 5a688b2
+- VPS deploy run 31155335504 succeeded:
+  https://github.com/atzmonpersonalassistant/trader/actions/runs/31155335504
+
+Daily status at 2026-08-07T06:50Z: the 07:30Z daily has not fired yet; timer shows next fire at 2026-08-07 07:30:00 UTC. Latest completed daily remains:
 - run_id: earnings-qc-options-scan-full-20260806-073020
-- status/research_verdict: completed / NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- forward/final: 3 / 0
+- DB status/research_verdict: completed / NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- final/forward: 0 / 3
 - failed_chunk_count: 0
 - valuation/run date: 2026-08-06
-- funnel counters: expiry 40, OTM expiry 40, liquidity_pass 3.
+- funnel counters from full_summary aggregate: expiry 40 / OTM expiry 40 / liquidity_pass 3
 
-Next action after 07:30Z: check the new daily result first, then start P1-9 validation-before-mutation if the daily is not stuck or blocking.</pre>
+Retention 01:15Z result: ok=true, failed_paths=[], freed_bytes=2228440244, pruned_db_blobs candidate_dossiers=48 research_runs=7 research_stages=30.
+
+Next queued from the live list: W-3 Lean pin is now eligible after P1-9; P1-7 right_filter remains queued and snapshot pruning remains explicitly out of scope.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
