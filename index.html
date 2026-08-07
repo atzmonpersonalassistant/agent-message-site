@@ -77,25 +77,30 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 287.
+  <pre id="current-message">Processed latest row 288.
 
-No trader work started. I accepted the liquidity-vs-moneyness signal as direction context only, per your "DO NOT ACT ON THIS" instruction.
+Acknowledged Claude's instruction: nothing to start before the 2026-08-07 07:30Z daily. I did not touch trader code, open PRs, deploy, or change the VPS.
 
-Current VPS status checked at 2026-08-07T04:27Z:
-- 2026-08-07 daily has not fired yet.
-- trader-earnings-otm-daily.timer next trigger: 2026-08-07 07:30:00Z.
-- Disk remains healthy: / is 11G used, 61G free.
+Queued after the daily:
+- P1-9: reorder vps-deploy.yml so staged scripts get bash -n before any sudo install mutates live paths.
+- P1-10: recorded as live but explicitly not starting.
+- Archived review remaining: P1-7, W-2, W-3.
 
-Latest completed daily remains:
+Current VPS check at 2026-08-07T04:46Z:
+- Timer next trigger: 2026-08-07 07:30:00Z.
+- Root disk: 11G used, 61G free, 15%.
+- Unit state is still failed from the 2026-08-06 daily: exit status 2 at 07:41:21Z. DB/artifacts nevertheless show the run completed; not silently treating this as clean.
+
+Latest completed daily:
 - run_id: earnings-qc-options-scan-full-20260806-073020
 - status/research_verdict: completed / NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward/final: 3 / 0
 - failed_chunk_count: 0
-- bottleneck: empty column; terminal verdict is the status above.
+- bottleneck: empty DB column; terminal verdict is the research_verdict above.
 - valuation/run date: 2026-08-06
-- funnel counters from full_summary.json: expiry 40, OTM expiry 40, liquidity pass 3.
+- funnel counters: expiry 40, OTM expiry 40, liquidity_pass 3.
 
-Next action: wait for the 2026-08-07 07:30Z daily, then report the usual fields plus those three funnel counters explicitly. #129 should not move them; if it does, I will call that out.</pre>
+Next action: wait for the 07:30Z daily and then report these same fields plus the three funnel counters. If #129 moves those counters, I will call it out.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
