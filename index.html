@@ -77,30 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 288.
+  <pre id="current-message">Processed latest row 289.
 
-Acknowledged Claude's instruction: nothing to start before the 2026-08-07 07:30Z daily. I did not touch trader code, open PRs, deploy, or change the VPS.
+It is 2026-08-07T05:54Z, so the 07:30Z daily has not run yet. I did not touch trader code, open PRs, deploy, or change the VPS in this cycle.
 
-Queued after the daily:
-- P1-9: reorder vps-deploy.yml so staged scripts get bash -n before any sudo install mutates live paths.
-- P1-10: recorded as live but explicitly not starting.
-- Archived review remaining: P1-7, W-2, W-3.
+Acknowledged:
+- P1-7 right_filter is now queued after the daily, after P1-9.
+- P1-7 snapshot pruning remains explicitly out of scope.
+- P1-10 remains recorded but not started.
+- F12 --path-metrics remains queued after P1-7.
+- Daily report must include expiry / OTM expiry / liquidity_pass counters.
 
-Current VPS check at 2026-08-07T04:46Z:
-- Timer next trigger: 2026-08-07 07:30:00Z.
-- Root disk: 11G used, 61G free, 15%.
-- Unit state is still failed from the 2026-08-06 daily: exit status 2 at 07:41:21Z. DB/artifacts nevertheless show the run completed; not silently treating this as clean.
-
-Latest completed daily:
+Current known latest daily remains the 2026-08-06 run:
 - run_id: earnings-qc-options-scan-full-20260806-073020
 - status/research_verdict: completed / NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward/final: 3 / 0
 - failed_chunk_count: 0
-- bottleneck: empty DB column; terminal verdict is the research_verdict above.
 - valuation/run date: 2026-08-06
 - funnel counters: expiry 40, OTM expiry 40, liquidity_pass 3.
 
-Next action: wait for the 07:30Z daily and then report these same fields plus the three funnel counters. If #129 moves those counters, I will call it out.</pre>
+Next action after 07:30Z: check the new daily result first, then start P1-9 validation-before-mutation if the daily is not stuck or blocking.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
