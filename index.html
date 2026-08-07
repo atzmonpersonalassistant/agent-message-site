@@ -77,41 +77,35 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 283.
+  <pre id="current-message">Processed latest row 284.
 
 Actions taken:
-- Read-only VPS diagnostics only. No trader code changes, no manual cleanup, no service edits, no processed-state writes.
-- Waited for the scheduled 2026-08-07 01:15Z retention run and verified the actual result.
+- Fixed F13 on a PR, not by hotfix: #212 https://github.com/atzmonpersonalassistant/trader/pull/212
+- Change: agent-platform/tests/test_mvp0_agents.py stale assertion now expects docker_status="removed".
+- review-agent/pass for #212: success, check https://github.com/atzmonpersonalassistant/trader/runs/92746874935
+- Auto-merged #212 to main as 32d66d1. Branch deleted.
+- No deploy run was expected or started for 32d66d1: vps-deploy.yml push paths exclude test-only changes.
 
-Retention result:
-- Service fired at 2026-08-07 01:15:19Z and exited success at 01:15:21Z.
-- cleanup_id: cleanup_ccd508dfb8acd1fb40afc3a7
-- filesystem freed_bytes: 2228440244
-- pruned_db_blobs: research_runs 7, candidate_dossiers 48, research_stages 30
-- failed_paths in full: []
-- deleted_paths count: 3335
-- df before: / total 76878503936, used 13723140096, avail 63138586624, 18%
-- df after:  / total 76878503936, used 11392675840, avail 65469050880, 15%
-- This DOES exercise F10: deletions were attempted and the failure list stayed empty.
+Verification:
+- PASS: python3 -m unittest agent-platform.tests.test_mvp0_agents.MVP0AgentTests.test_research_loop_uses_runner_without_raw_qc_secret_access -v
+- Full local unittest file now gets past the stale assertion but cannot complete in this worker shell because PyYAML is missing: 76 tests run, 9 unrelated import yaml errors.
+- review-agent/pass #212 also passed with no blocking findings.
 
-Policy group counts, inferred pre-run from post-run dirs plus deleted_paths:
-- earnings-qc-options-scan-full: pre_count 23, age-eligible before keep-last 18, deleted 3, deleted_bytes 11889411, post_count 20
-- research-pass: pre_count 1262, age-eligible before keep-last 1199, deleted 1111, deleted_bytes 349045505, post_count 151
-- qc-run: pre_count 95, age-eligible before keep-last 95, deleted 64, deleted_bytes 1175755, post_count 31
-- other-report-dir: pre_count 2198, age-eligible before keep-last 2157, deleted 2157, deleted_bytes 1866329573, post_count 41
+#128 rerun:
+- Re-ran review-agent/pass on #128 after the main assertion fix.
+- Result: failure, check https://github.com/atzmonpersonalassistant/trader/runs/92747518425
+- This is no longer the stale docker_status failure. Autoreview found a blocker: the loop-level event-provider readiness check can starve non-event research when the ready file is absent, because seed-cheap-calls/generate-ideas are blocked even though non-event candidates do not require the event provider.
+- #128 remains open and should not merge until that event-provider gate is narrowed or otherwise answered.
 
 Daily status:
-- 2026-08-07 daily has not fired yet. Next trader-earnings-otm-daily.timer elapse is 2026-08-07 07:30:00Z.
-- Latest completed daily remains run_id earnings-qc-options-scan-full-20260806-073020.
-- status: completed
-- research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- VPS time checked: 2026-08-07T01:58Z/02:02Z. The 2026-08-07 daily has not fired yet; next trader-earnings-otm-daily.timer elapse is 2026-08-07 07:30:00Z.
+- Latest run remains earnings-qc-options-scan-full-20260806-073020.
+- status/research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - forward/final: 3 forward / 0 final
 - failed_chunk_count: 0
 - bottleneck: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-- valuation_date/run_date reported by status: 2026-08-06
-
-Queue:
-- I did not start #128 or F12 `--path-metrics` in this cycle because the immediate retention verification consumed the bounded window and the 07:30Z daily is still pending.</pre>
+- valuation_date: not present in full_summary.json; run_date is 2026-08-06.
+- Note: systemd still shows trader-earnings-otm-daily.service failed from the prior 2026-08-06 invocation, but the next timer is armed for 2026-08-07 07:30Z.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
