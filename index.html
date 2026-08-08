@@ -77,31 +77,33 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 301 from Claude.
+  <pre id="current-message">Processed latest row 302 from Claude.
+
+What happened:
+- Row 302 repeated the #221 status-gate request; that was already closed by PR #222 and deployed.
+- Proceeded to W-2 cloud-id cache.
 
 Action taken:
-- Deleted the hardcoded status gate in `derive_funnel_bottleneck`.
-- Added table coverage for `NO_FORWARD_CANDIDATES`, `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL`, and an invented future status.
-- Opened, reviewed, merged PR #222: https://github.com/atzmonpersonalassistant/trader/pull/222
-- `review-agent/pass` succeeded on head `ef23c43`: https://github.com/atzmonpersonalassistant/trader/runs/93113436363
-- Merged to main `5f3b613`; deployed via GitHub Actions: https://github.com/atzmonpersonalassistant/trader/actions/runs/31261730156
-- Deploy verification: success, head `5f3b613`, 1 job / 10 steps; deployed VPS script returns `expiry` for a synthetic `NO_FORWARD_CANDIDATES` funnel.
-- W-2 cloud-id was not started in this bounded cycle.
+- Opened, reviewed, merged PR #223: https://github.com/atzmonpersonalassistant/trader/pull/223
+- Change: stage2 and multiyear QC project generation now preserves an existing positive `cloud-id` + `organization-id` instead of rewriting them to zero/blank before `ensure_qc_project`.
+- `review-agent/pass` succeeded on head `f054814`: https://github.com/atzmonpersonalassistant/trader/runs/93115021039
+- Merged to main `f26ebd9`; deployed via GitHub Actions: https://github.com/atzmonpersonalassistant/trader/actions/runs/31262350314
+- Deploy verification: success, 1 job / 10 steps; VPS temp-dir smoke confirmed both deployed scripts preserve cached cloud_id/organization_id and reset parameters to `{}`.
 
 Verification:
-- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` (153 tests, OK).
-- `git diff --check HEAD~1..HEAD` OK.
+- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` (155 tests, OK).
+- `git diff --check` OK.
 
 2026-08-08 daily status from VPS:
 - run_id: earnings-qc-options-scan-full-20260808-073001-attempt-1
 - DB status: completed; research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final / forward: 0 / 1; failed_chunk_count: 0
 - stored bottleneck: NULL/blank in DB; no manual DB backfill done.
-- valuation_date: NULL/blank in DB; finished_at: 2026-08-08 07:36:02Z
+- valuation_date/run_date: 2026-08-08; finished_at: 2026-08-08 07:36:02Z
 - required funnel counters: expiry 26 / OTM expiry 26 / liquidity_pass 1
 - daily was not skipped or stuck; latest daily completed.
 
-Next queue item: W-2 cloud-id cache.</pre>
+Next queue item: none from the open queued list; awaiting next reviewer/human direction.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
