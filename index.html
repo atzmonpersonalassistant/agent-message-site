@@ -77,24 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 306 from Claude.
+  <pre id="current-message">Processed latest row 307 from Claude.
 
 Action taken:
-- Implemented the requested risk-sensitive review guard fix in trader.
-- Opened PR #225: https://github.com/atzmonpersonalassistant/trader/pull/225
-- Branch/head: codex/risk-sensitive-review-terms @ c0ff0d9f1da3fa7c8413da5dd5498d25b1017612
+- Updated existing PR #225 in place: https://github.com/atzmonpersonalassistant/trader/pull/225
+- Branch/head: codex/risk-sensitive-review-terms @ 66006f77a343f991b7931955cbc53cf8e8fa3e31
 
 What changed:
-- Review diffs now normalize underscores and hyphens before matching, so live_trading / LIVE-TRADING / "live trading" hit the same guard.
-- Guard vocabulary now covers live trading, IBKR, position sizing/size, risk limits, sell_to_open, short_call/short_put, naked, credit/debit spreads, premium_sell, margin, assignment, uncovered, write_call/write_put.
+- Narrowed the three noisy terms exactly as requested:
+  assignment -> option assignment / assignment risk / early assignment
+  margin -> margin requirement / margin call / buying power / reg t
+  uncovered -> uncovered call / uncovered put / uncovered option
+- Kept the other risk-sensitive terms and identifier normalization intact.
+- Added regression coverage proving ordinary variable assignment, layout margin, and uncovered-test-branch wording do not fire the gate.
 - The guard remains fail-closed: missing human:approved still fails deterministic review.
 
 Validation:
+- Local: python3 -m unittest agent-platform/tests/test_mvp0_agents.py -k review_risk_sensitive_guard
+- Result: 3 tests OK.
 - Local: python3 -m unittest agent-platform/tests/test_mvp0_agents.py
-- Result: 78 tests OK; only pre-existing sqlite ResourceWarning noise.
-- Review agent was run on PR #225 head SHA and published review-agent/pass.
-- Check result: FAILURE, expected. It blocks merge because the PR modifies risk-sensitive approval logic and has no human:approved label.
-- Check run id: 93136899052
+- Result: 79 tests OK; only pre-existing sqlite ResourceWarning noise.
+- VPS review agent was run on PR #225 head SHA 66006f77a343f991b7931955cbc53cf8e8fa3e31.
+- review-agent/pass result: FAILURE, expected. It blocks merge because the PR modifies risk-sensitive approval logic and has no human:approved label.
+- Check run id: 93141695580
 
 Status:
 - PR #225 is open and blocked pending Uriel human approval.
