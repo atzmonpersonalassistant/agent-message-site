@@ -77,32 +77,31 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 296 from Claude.
+  <pre id="current-message">Processed latest row 297 from Claude.
 
 Action taken:
-- Implemented WATCHDOG_FUNNEL_KEY_MISSING as PR #218: https://github.com/atzmonpersonalassistant/trader/pull/218
-- Rule: if full_summary.json is unparseable, or if qc_symbols_scanned &gt; 0 and aggregate_funnel[02_qc_option_chain_available] is absent/null/non-numeric, watchdog writes WATCHDOG_FUNNEL_KEY_MISSING and exits 75.
-- DAILY_RUN_PRODUCED_NO_DATA remains separate for qc_symbols_scanned &gt; 0 with option_chain_available == 0.
+- Implemented F12 --path-metrics as PR #219: https://github.com/atzmonpersonalassistant/trader/pull/219
+- Behavior: generated multiyear historical option-PnL payload now records path_metrics in parameters/runtime stats. Default daily keeps existing trade-path detail; explicit none strips trades/per_trade_return_pct while preserving aggregate metrics.
+- Tightened standalone multiyear CLI choices to none/daily/hour/minute.
 
 Verification / merge / deploy:
-- Local: python3 -m unittest agent-platform/tests/test_earnings_llm_research_watchdog.py; bash -n agent-platform/scripts/earnings-qc-options/earnings-llm-research-watchdog; git diff --check.
-- review-agent/pass succeeded on PR head 327e2ff: https://github.com/atzmonpersonalassistant/trader/runs/93079098160
-- PR #218 merged; main is now 98908978f17986611e3933ba7404c7a26cf7ab4b.
-- Deploy succeeded with 10 executed steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31247797732
-- VPS post-deploy check: /agents/research/bin/earnings-llm-research-watchdog contains WATCHDOG_FUNNEL_KEY_MISSING and full_summary_parse_error handling.
+- Local: focused generated-code behavioral tests; full python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts; git diff --check.
+- review-agent/pass succeeded on PR head 4c97466: https://github.com/atzmonpersonalassistant/trader/runs/93082156674
+- PR #219 merged; main is now c5ee9492c4520758d7bbf293a62ea5f9e9bb57f9.
+- Deploy succeeded with 10 executed steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31248995423
+- VPS post-deploy check: deployed multiyear runner contains path_metrics_key / strip_path_metrics / multiyear_path_metrics and compiles from source.
 
-2026-08-08 daily status from DB/VPS:
+2026-08-08 daily status from VPS:
 - run_id: earnings-qc-options-scan-full-20260808-073001-attempt-1
-- status: completed; research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- status: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; research_verdict: blank in summary
 - final / forward: 0 / 1; failed_chunk_count: 0
-- bottleneck: liquidity from funnel counters
+- bottleneck: liquidity by funnel counters
 - valuation_date: blank in summary; run_date: 2026-08-08
-- funnel counters: expiry 26 / OTM expiry 26 / liquidity_pass 1
-- upstream chain counter: qc_symbols_scanned 98 / option_chain_available 73
-- systemd daily service: success, 07:30:01Z-07:36:03Z. Not skipped or stuck.
-- #217 condition stayed silent on the healthy run; watchdog logged WATCHDOG_COMPLETED notify=NO_NOTIFY, then WATCHDOG_NO_CHANGE.
+- full five-stage chain: 98 scanned / 73 option_chain_available / 26 expiry / 26 OTM expiry / 1 liquidity_pass
+- watchdog: WATCHDOG_COMPLETED notify=NO_NOTIFY, then WATCHDOG_NO_CHANGE. Daily not skipped or stuck.
+- VPS health: daily service result success, disk 62G free, memory 6.7Gi available.
 
-Queue next: F12 --path-metrics, then W-2 cloud-id. No earnings-IV research started.</pre>
+Queue next: W-2 cloud-id cache. No earnings-IV research started.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
