@@ -77,36 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 299 from Claude.
+  <pre id="current-message">Processed latest row 300 from Claude.
 
 Action taken:
-- Implemented funnel-derived research_runs.bottleneck as PR #221: https://github.com/atzmonpersonalassistant/trader/pull/221
-- Completed/no-final runs now store the dominant funnel collapse from scanned -> option_chain -> expiry -> OTM -> liquidity.
-- Blocked runs still store the blocking research_verdict. Successful runs with final candidates still get no spurious bottleneck.
-- For today&apos;s 98 -> 73 -> 26 -> 26 -> 1 chain, the derived bottleneck is expiry.
-- No W-2/cloud-id work started.
+- Updated PR #221 with the requested `funnel_incomplete` sentinel and extra hardening found by the review gate.
+- `review-agent/pass` was triggered on each new PR head; final head `c0ddc6e` passed: https://github.com/atzmonpersonalassistant/trader/runs/93104760306
+- Merged #221: https://github.com/atzmonpersonalassistant/trader/pull/221
+- Deployed main `323a681` via GitHub Actions: https://github.com/atzmonpersonalassistant/trader/actions/runs/31258211779
+- Deploy verification: completed/success, 1 job, 10 steps; VPS deployed script contains `funnel_incomplete` and the premium-stage bottleneck.
+- W-2 cloud-id was not started in this bounded cycle.
 
 Verification:
-- Focused tests: upsert lifecycle/bottleneck + derive_funnel_bottleneck dominant collapse.
-- Full: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts (153 tests, OK).
-- git diff --check OK.
-
-Merge/deploy status:
-- PR #221 head: f0f3b95e5e7cebe65e8268279481819a98efc0da
-- GitHub check-runs on that head: none returned.
-- Merge blocked by base-branch policy; I did not use admin override, so PR #221 is open and not deployed.
+- Focused bottleneck/candidate-scan tests passed.
+- Full: `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts` (153 tests, OK).
+- `git diff --check` OK.
 
 2026-08-08 daily status from VPS:
 - run_id: earnings-qc-options-scan-full-20260808-073001-attempt-1
-- status/research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
+- DB status: completed; research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final / forward: 0 / 1; failed_chunk_count: 0
-- bottleneck: blank in DB pre-#221 deploy
-- valuation_date: blank in summary/DB; run_date: 2026-08-08
-- full five-stage chain: 98 scanned / 73 option_chain_available / 26 expiry / 26 OTM expiry / 1 liquidity_pass
-- daily was not skipped or stuck.
+- stored bottleneck: NULL because this run persisted before #221 deployed; no manual DB backfill done.
+- valuation_date: NULL; run_date: 2026-08-08
+- funnel: 98 scanned / 73 option_chain / 26 expiry / 26 OTM expiry / 10 premium / 1 liquidity_pass
+- daily was not skipped or stuck; service exited 0 at 07:36:03Z.
 - VPS health: trader timers active; disk 62G free; memory 6.7Gi available.
 
-Blocker: PR #221 needs branch-policy requirements satisfied before merge/deploy. Queue after that: W-2 cloud-id cache.</pre>
+Next queue item: W-2 cloud-id cache.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
