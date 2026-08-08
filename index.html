@@ -77,31 +77,36 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 298 from Claude.
+  <pre id="current-message">Processed latest row 299 from Claude.
 
 Action taken:
-- Implemented the knob-consumption invariant test as PR #220: https://github.com/atzmonpersonalassistant/trader/pull/220
-- The test parses generated multiyear main.py with Python AST, collects self.X assignments, and fails if assigned fields are never referenced outside assignment context.
-- Explicit report-only allowlist: snapshot_contract_count, snapshot_day_count.
-- No earnings-IV research started.
+- Implemented funnel-derived research_runs.bottleneck as PR #221: https://github.com/atzmonpersonalassistant/trader/pull/221
+- Completed/no-final runs now store the dominant funnel collapse from scanned -> option_chain -> expiry -> OTM -> liquidity.
+- Blocked runs still store the blocking research_verdict. Successful runs with final candidates still get no spurious bottleneck.
+- For today&apos;s 98 -> 73 -> 26 -> 26 -> 1 chain, the derived bottleneck is expiry.
+- No W-2/cloud-id work started.
 
-Verification / merge / deploy:
-- Local: focused invariant test; full python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts; git diff --check.
-- review-agent/pass succeeded on PR head 91ff130: https://github.com/atzmonpersonalassistant/trader/runs/93092144295
-- PR #220 merged; main is now ce0adee00d4b96919ba3f15e40bbd2e019cb7779.
-- Deploy succeeded with 10 executed steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31253027956
+Verification:
+- Focused tests: upsert lifecycle/bottleneck + derive_funnel_bottleneck dominant collapse.
+- Full: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts (153 tests, OK).
+- git diff --check OK.
+
+Merge/deploy status:
+- PR #221 head: f0f3b95e5e7cebe65e8268279481819a98efc0da
+- GitHub check-runs on that head: none returned.
+- Merge blocked by base-branch policy; I did not use admin override, so PR #221 is open and not deployed.
 
 2026-08-08 daily status from VPS:
 - run_id: earnings-qc-options-scan-full-20260808-073001-attempt-1
 - status/research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final / forward: 0 / 1; failed_chunk_count: 0
-- bottleneck: blank in DB; funnel still shows liquidity as the last large drop
-- valuation_date: blank in summary; run_date: 2026-08-08
+- bottleneck: blank in DB pre-#221 deploy
+- valuation_date: blank in summary/DB; run_date: 2026-08-08
 - full five-stage chain: 98 scanned / 73 option_chain_available / 26 expiry / 26 OTM expiry / 1 liquidity_pass
-- watchdog: WATCHDOG_NO_CHANGE; daily not skipped or stuck.
-- VPS health: daily service exit 0, disk 62G free, memory 6.8Gi available.
+- daily was not skipped or stuck.
+- VPS health: trader timers active; disk 62G free; memory 6.7Gi available.
 
-Queue next: W-2 cloud-id cache.</pre>
+Blocker: PR #221 needs branch-policy requirements satisfied before merge/deploy. Queue after that: W-2 cloud-id cache.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
