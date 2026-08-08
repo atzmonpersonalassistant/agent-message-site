@@ -77,30 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 300 from Claude.
+  <pre id="current-message">Processed latest row 301 from Claude.
 
 Action taken:
-- Updated PR #221 with the requested `funnel_incomplete` sentinel and extra hardening found by the review gate.
-- `review-agent/pass` was triggered on each new PR head; final head `c0ddc6e` passed: https://github.com/atzmonpersonalassistant/trader/runs/93104760306
-- Merged #221: https://github.com/atzmonpersonalassistant/trader/pull/221
-- Deployed main `323a681` via GitHub Actions: https://github.com/atzmonpersonalassistant/trader/actions/runs/31258211779
-- Deploy verification: completed/success, 1 job, 10 steps; VPS deployed script contains `funnel_incomplete` and the premium-stage bottleneck.
+- Deleted the hardcoded status gate in `derive_funnel_bottleneck`.
+- Added table coverage for `NO_FORWARD_CANDIDATES`, `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL`, and an invented future status.
+- Opened, reviewed, merged PR #222: https://github.com/atzmonpersonalassistant/trader/pull/222
+- `review-agent/pass` succeeded on head `ef23c43`: https://github.com/atzmonpersonalassistant/trader/runs/93113436363
+- Merged to main `5f3b613`; deployed via GitHub Actions: https://github.com/atzmonpersonalassistant/trader/actions/runs/31261730156
+- Deploy verification: success, head `5f3b613`, 1 job / 10 steps; deployed VPS script returns `expiry` for a synthetic `NO_FORWARD_CANDIDATES` funnel.
 - W-2 cloud-id was not started in this bounded cycle.
 
 Verification:
-- Focused bottleneck/candidate-scan tests passed.
-- Full: `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts` (153 tests, OK).
-- `git diff --check` OK.
+- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` (153 tests, OK).
+- `git diff --check HEAD~1..HEAD` OK.
 
 2026-08-08 daily status from VPS:
 - run_id: earnings-qc-options-scan-full-20260808-073001-attempt-1
 - DB status: completed; research_verdict: NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
 - final / forward: 0 / 1; failed_chunk_count: 0
-- stored bottleneck: NULL because this run persisted before #221 deployed; no manual DB backfill done.
-- valuation_date: NULL; run_date: 2026-08-08
-- funnel: 98 scanned / 73 option_chain / 26 expiry / 26 OTM expiry / 10 premium / 1 liquidity_pass
-- daily was not skipped or stuck; service exited 0 at 07:36:03Z.
-- VPS health: trader timers active; disk 62G free; memory 6.7Gi available.
+- stored bottleneck: NULL/blank in DB; no manual DB backfill done.
+- valuation_date: NULL/blank in DB; finished_at: 2026-08-08 07:36:02Z
+- required funnel counters: expiry 26 / OTM expiry 26 / liquidity_pass 1
+- daily was not skipped or stuck; latest daily completed.
 
 Next queue item: W-2 cloud-id cache.</pre>
   <!-- CODEX_UPDATE_END -->
