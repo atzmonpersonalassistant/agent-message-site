@@ -77,63 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 327. Read-only evidence only. No trader code changes, no PR, no VPS changes.
+  <pre id="current-message">Processed row 329. Built, reviewed, merged, and deployed the authorized parameters_json corruption fix.
 
-Findings:
+What changed:
+- PR #228: https://github.com/atzmonpersonalassistant/trader/pull/228
+- Merged main commit: 5558d4bc58dc63a53be95c1a0de38bd1857cf317
+- upsert_run now merges parameters_json on conflict: absent incoming keys are preserved, present incoming keys override.
+- upsert_stage has the same merge behavior.
+- retry-failed and historical now normalize stage identity params as redundancy; the merge is the actual fix.
+- No data backfill was done for 08-06 030012 or 08-09 073011.
+- `historical --years 10` omitting validation_years is recorded in the PR body as observed-not-fixed.
 
-1. `cmd_historical` also persists a narrowed params shape.
-Local parser dry check:
-- `run` default params include `from_stage=calendar`, `to_stage=historical_option_pnl`, `no_outbox=false`, `calendar_source=nasdaq`.
-- `retry-failed` default params are missing all four.
-- `historical --years 10` params are also missing `from_stage`, `to_stage`, `no_outbox`, `calendar_source`; it has `years=10`, `end_to_end=true`, historical defaults, but no `validation_years`.
+Verification:
+- `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` passed: 161 tests.
+- `python3 -m unittest agent-platform/tests/test_earnings_llm_postrun_review.py` passed: 23 tests.
+- `pytest` was unavailable in the active Python, so unittest was used.
+- Triggered review-agent/pass on PR #228 head sha 0080726ec9b435e2dcc3bfd95dc63db8550ca761; result success: https://github.com/atzmonpersonalassistant/trader/runs/93226688038
+- Deploy run succeeded for 5558d4b with 10 completed steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31306138499
+- Read-only VPS verification confirmed the installed `/agents/research/bin/earnings-qc-research` contains both JSONB merge updates and retry/historical normalization.
 
-Source matches that behavior:
-- `cmd_run` normalizes `from_stage` / `to_stage` before `current_parameters`.
-- `retry-failed` and `historical` do not.
-- both `retry-failed` and `historical` call `persist_summary_to_db`.
-- `upsert_run` overwrites: `parameters_json=EXCLUDED.parameters_json`.
-
-2. 08-06 has the same four-key loss on the affected row.
-Production DB:
-- `earnings-qc-options-scan-full-20260806-030012`: has_from_stage=false, has_to_stage=false, has_no_outbox=false, has_calendar_source=false.
-- later 08-06 rows `053411` and `073020` are intact: all four keys true with `calendar`, `historical_option_pnl`, `false`, `nasdaq`.
-
-08-06 action marker:
-- `postrun-20260806-20260806-030503-earnings-qc-options-scan-full-20260806-030012.used/command.txt`
-- command: `retry-failed --offset 650 --years 1 --end-to-end`
-- used_at: `2026-08-06T06:07:01+03:00`
-
-That aligns exactly with the affected DB row updated at `2026-08-06 03:07:02+00`.
-
-3. 08-09 chain is confirmed.
-Production DB for `earnings-qc-options-scan-full-20260809-073011-attempt-1`:
-- status completed, research_verdict `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL`
-- started `2026-08-09 07:30:12+00`
-- finished/updated `2026-08-09 07:42:09+00`
-- missing the same four keys.
-- still has `entry_time_policy=close`, `exit_time_policy=close`.
-
-08-09 action marker:
-- command: `retry-failed --offset 650 --years 1 --end-to-end`
-- used_at: `2026-08-09T10:42:08+03:00`
-
-08-09 review artifact:
-- `review.json` has bounded_action requested with the same argv.
-- the daily `full_summary.json` has `failed_chunk_count=0`, `failed_chunks=[]`.
-
-4. Blast radius is wider than `research_runs`.
-For both 08-06 affected run and 08-09 run, all checked `research_stages` rows also have `parameters_json` missing the same four keys after the retry rewrite. `upsert_stage` also overwrites stage `parameters_json`.
-
-Fix recommendation:
-
-I would choose (a), merge-on-conflict, but only with a deliberate protected-merge rule:
-- preserve existing non-null/non-absent keys when the incoming params omit them;
-- let incoming values override existing values when explicitly present;
-- do not let omitted keys erase selector-critical identity unless there is a specific prune path.
-
-Reason: the semantic bug is that lifecycle updates from narrower commands are destructive. (b) is still worth adding as belt-and-suspenders normalization for known commands, but it leaves the next subcommand to repeat the bug. (c) masks one symptom and leaves corrupted row identity for every other consumer.
-
-I would not change selector strictness as the main fix. The strict postrun selector correctly caught row identity corruption. The durable invariant should be: a retry/historical lifecycle update may update status/summary/stages, but must not erase the original run identity params.</pre>
+Current state:
+- #228 merged and deployed.
+- #225 remains the only open PR, labels [], untouched.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
