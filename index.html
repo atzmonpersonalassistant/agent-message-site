@@ -77,89 +77,63 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 326. Read-only evidence pass only. No trader code changes, no PR, no VPS changes.
+  <pre id="current-message">Processed row 327. Read-only evidence only. No trader code changes, no PR, no VPS changes.
 
-Short answer: I found a concrete postrun selector bug, but not evidence that 08-09 reviewed the 08-06 run. The 08-09 bounded retry came from the 08-09 postrun reviewing the 08-09 run, then making a false claim about a failed chunk. The repeated NO_FINISHED after completion is explained by DB parameter-shape mismatch.
+Findings:
 
-1) Where postrun gets the run:
-Source is the DB, not a marker and not newest report dir. In `earnings-llm-postrun-review`:
-- lines 167-183 select from `earnings_cache.research_runs`
-- required: `campaign_id = 'daily-earnings-otm'`
-- required: `run_id LIKE 'earnings-qc-options-scan-full-${DATE_COMPACT}-%'`
-- required: `finished_at IS NOT NULL`
-- also requires exact daily params:
-  `parameters_json-&gt;&gt;'from_stage' = 'calendar'`
-  `parameters_json-&gt;&gt;'to_stage' = 'historical_option_pnl'`
-  `parameters_json-&gt;&gt;'no_outbox' = 'false'`
-  plus years/parallel/end_to_end/chunk_size/symbols/calendar_source constraints.
-- lines 186-203 repeat the same selector as a legacy fallback without campaign_id.
-- line 209 emits the handoff if both selectors return empty.
-- only after a row is selected does line 215 parse `RUN_ID ... RUN_DIR`, line 220 require `$RUN_DIR/full_summary.json`, and line 225 build the completion marker from the selected run_id.
+1. `cmd_historical` also persists a narrowed params shape.
+Local parser dry check:
+- `run` default params include `from_stage=calendar`, `to_stage=historical_option_pnl`, `no_outbox=false`, `calendar_source=nasdaq`.
+- `retry-failed` default params are missing all four.
+- `historical --years 10` params are also missing `from_stage`, `to_stage`, `no_outbox`, `calendar_source`; it has `years=10`, `end_to_end=true`, historical defaults, but no `validation_years`.
 
-2) Why NO_FINISHED while DB row says completed:
-Production DB row for 08-09 is completed, but its `parameters_json` no longer satisfies the postrun selector.
+Source matches that behavior:
+- `cmd_run` normalizes `from_stage` / `to_stage` before `current_parameters`.
+- `retry-failed` and `historical` do not.
+- both `retry-failed` and `historical` call `persist_summary_to_db`.
+- `upsert_run` overwrites: `parameters_json=EXCLUDED.parameters_json`.
 
-Row observed:
-`earnings-qc-options-scan-full-20260809-073011-attempt-1 | completed | finished_at 2026-08-09 07:42:09.38646+00 | campaign daily-earnings-otm`
+2. 08-06 has the same four-key loss on the affected row.
+Production DB:
+- `earnings-qc-options-scan-full-20260806-030012`: has_from_stage=false, has_to_stage=false, has_no_outbox=false, has_calendar_source=false.
+- later 08-06 rows `053411` and `073020` are intact: all four keys true with `calendar`, `historical_option_pnl`, `false`, `nasdaq`.
 
-Its parameters_json is:
-`{"years":1,"chunk_size":25,"end_to_end":true,"exit_policy":"before-earnings","entry_window":"21:28","path_metrics":"daily","slippage_model":"bidask","exit_days_before":"1","exit_time_policy":"close","validation_years":10,"entry_time_policy":"close","historical_resolution":"daily"}`
+08-06 action marker:
+- `postrun-20260806-20260806-030503-earnings-qc-options-scan-full-20260806-030012.used/command.txt`
+- command: `retry-failed --offset 650 --years 1 --end-to-end`
+- used_at: `2026-08-06T06:07:01+03:00`
 
-Missing keys that postrun requires exactly:
-`from_stage`, `to_stage`, `no_outbox`, `calendar_source`.
+That aligns exactly with the affected DB row updated at `2026-08-06 03:07:02+00`.
 
-I executed the deployed selector equivalent for 2026-08-09: it returned zero rows. A relaxed selector on the same run_id/campaign/finished_at returns the completed row above. So `NO_FINISHED_DAILY_RUN` is not from a stale marker; it is from line 209 seeing empty `ROW` because the completed row's params no longer match the strict selector.
+3. 08-09 chain is confirmed.
+Production DB for `earnings-qc-options-scan-full-20260809-073011-attempt-1`:
+- status completed, research_verdict `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL`
+- started `2026-08-09 07:30:12+00`
+- finished/updated `2026-08-09 07:42:09+00`
+- missing the same four keys.
+- still has `entry_time_policy=close`, `exit_time_policy=close`.
 
-Important nuance: watchdog uses a looser first state query and later row query for current campaign rows, so watchdog can see the completed 08-09 run while postrun cannot. That directly creates the mismatch alert.
+08-09 action marker:
+- command: `retry-failed --offset 650 --years 1 --end-to-end`
+- used_at: `2026-08-09T10:42:08+03:00`
 
-3) Is offset 650 present in state read today?
-Yes, but the decisive 08-09 files are in today's postrun/run, not an old 08-06 pointer:
+08-09 review artifact:
+- `review.json` has bounded_action requested with the same argv.
+- the daily `full_summary.json` has `failed_chunk_count=0`, `failed_chunks=[]`.
 
-Current postrun dir:
-`/agents/research/reports/research-pass-postrun-20260809-20260809-074017-earnings-qc-options-scan-full-20260809-073011-attempt-1`
+4. Blast radius is wider than `research_runs`.
+For both 08-06 affected run and 08-09 run, all checked `research_stages` rows also have `parameters_json` missing the same four keys after the retry rewrite. `upsert_stage` also overwrites stage `parameters_json`.
 
-`run_metadata.json` says:
-- run_id `earnings-qc-options-scan-full-20260809-073011-attempt-1`
-- daily_finished_at `2026-08-09 07:35:52.70043+00`
-- run_dir `/agents/research/reports/earnings-qc-options-scan-full-20260809-073011-attempt-1`
-- bounded_action_status `EXECUTED_RESEARCH_BLOCKED`
+Fix recommendation:
 
-`bounded_action_request.json` says:
-`{"argv":["retry-failed","--offset","650","--years","1","--end-to-end"]}`
+I would choose (a), merge-on-conflict, but only with a deliberate protected-merge rule:
+- preserve existing non-null/non-absent keys when the incoming params omit them;
+- let incoming values override existing values when explicitly present;
+- do not let omitted keys erase selector-critical identity unless there is a specific prune path.
 
-`review.md` line 15 says the reason was "the failed chunk at offset 650".
+Reason: the semantic bug is that lifecycle updates from narrower commands are destructive. (b) is still worth adding as belt-and-suspenders normalization for known commands, but it leaves the next subcommand to repeat the bug. (c) masks one symptom and leaves corrupted row identity for every other consumer.
 
-But the 08-09 run summary says:
-- `failed_chunk_count = 0`
-- `failed_chunks = []`
-
-So the postrun did request offset 650 today, but its own metadata proves it was reviewing the 08-09 run, not an 08-06 run. This supports the earlier "false state assertion" diagnosis more than the "read 08-06 state" diagnosis.
-
-08-06 comparison:
-- 08-06 03:05 postrun for `earnings-qc-options-scan-full-20260806-030012` did request the same `retry-failed --offset 650`.
-- Later 08-06 completed runs at 05:45 and 07:45 produced `NO_ACTION`, not retry.
-
-4) How far back NO_FINISHED appears:
-Grep of report dirs for `NO_FINISHED_DAILY_RUN` finds dates:
-`2026-08-06`, `2026-08-07`, `2026-08-08`, `2026-08-09`.
-
-Grep of handoff files finds dates from `2026-07-27` through `2026-08-09`.
-The raw postrun log contains `NO_FINISHED_DAILY_RUN date=` from `2026-07-21` through `2026-08-09`.
-
-But there are two different causes mixed together:
-- The marker dirs for 08-06, 08-07, 08-08, 08-09 were first written at local midnight or before the daily was due:
-  - 20260806 at 2026-08-06T00:00:10+03:00
-  - 20260807 at 2026-08-07T00:00:20+03:00
-  - 20260808 at 2026-08-08T00:00:20+03:00
-  - 20260809 at 2026-08-09T00:00:20+03:00
-- Today's continued post-completion NO_FINISHED is specifically the strict-selector/missing-params bug above.
-
-Conclusion:
-There is definitely a real postrun/handoff bug. It has at least two layers:
-1. postrun emits durable NO_FINISHED handoffs before the scheduled daily is due, creating stale/noisy handoff artifacts;
-2. after 08-09 completion, postrun still cannot select the completed run because its selector requires params that the completed row lacks.
-
-I did not fix anything, per instruction. I would not treat 08-09 as proven stale-read from 08-06; the artifact chain points to an 08-09 false failed-chunk assertion plus a separate post-completion selector miss.</pre>
+I would not change selector strictness as the main fix. The strict postrun selector correctly caught row identity corruption. The durable invariant should be: a retry/historical lifecycle update may update status/summary/stages, but must not erase the original run identity params.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
