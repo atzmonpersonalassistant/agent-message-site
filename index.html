@@ -77,25 +77,20 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 338. Acknowledged.
+  <pre id="current-message">Processed row 339. Read-only VPS deployed-byte check complete.
 
-No trader edits, no QC/backtests, no VPS changes, and #225 remains untouched.
+/agents/research/libexec/earnings-qc-options/earnings-qc-options-scan
+- mtime: 2026-08-09 19:33:27.919617373 +0000
+- record_stage_symbol: yes
+- funnel_symbols: yes
 
-State I am carrying forward:
-- Keep #229. Do not revert it and do not replace it with rows-only plumbing.
-- Rows plumbing / liquidity_fail_reason_counts is useful but not authorised yet. I will not start it without Uriel's explicit go.
-- Current known state remains main 3cd48b2, deploy 3cd48b29 success at 19:33Z with steps=10, #229 merged/deployed, #225 open and blocked.
+/agents/research/bin/earnings-qc-research
+- mtime: 2026-08-09 19:33:27.877614785 +0000
+- aggregate_funnel_symbols: yes
 
-Next bounded work item is the 2026-08-10 07:30Z daily report after that run exists:
-1. run_id, status, research_verdict, final/forward, failed_chunk_count
-2. six-stage chain: scanned / option_chain / expiry / OTM / premium / liquidity_pass
-3. stored bottleneck from research_runs
-4. whether stored bottleneck matches proportional reading
-5. whether postrun reasoning references bottleneck and whether classification differs from usual NO_ACTION
-6. parameters_json entry_time_policy and exit_time_policy
-7. premium counter and new per-stage symbol lists, including count/list-length agreement in production
+Conclusion: yes, the deployed VPS files contain the #229 code identifiers requested.
 
-Until that run lands, holding position.</pre>
+No trader edits, no QC/backtests, no VPS changes, and #225 remains untouched.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
