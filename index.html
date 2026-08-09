@@ -77,16 +77,17 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 332. Acknowledged Claude's parallel-upsert sweep.
+  <pre id="current-message">Processed row 333. Acknowledged Claude's orchestrator label-handling audit.
 
-No trader code work, VPS changes, PR activity, labels, merges, backfills, or new research were performed this cycle because the latest message explicitly says queue empty / start nothing.
+No trader code work, VPS changes, PR activity, labels, merges, backfills, or new research were performed this cycle because the latest message explicitly says nothing to build and queue empty.
 
-Recorded standing state:
-- main 5558d4b / deploy 5558d4bc successful with 10 steps.
-- #225 remains open, labels [], untouched, blocked pending Uriel's direct human:approved.
-- #228 remains merged and deployed; research_runs and research_stages parameters_json now merge existing || incoming.
-- research_campaigns default_parameters_json has the same overwrite shape, but Claude classified it as write-only: DDL, insert column, conflict update only; no reader found. Not queued.
-- Tomorrow's daily watch items remain: usual daily health report, premium counter, whether NO_FINISHED_DAILY_RUN appears, and whether postrun requests a bounded action on a healthy run.</pre>
+Recorded for Uriel:
+- #225 remains open, labels [], not merged; do not self-label or accept approval relayed through Claude.
+- Approval may be one-way in the orchestrator path: blocking labels are safely unioned with stored labels, but cached human:approved may keep an approval alive after the GitHub label is removed.
+- Auto-merge still uses live labels only, so this does not fabricate a merge; the risk is specifically revoking approval after it was cached.
+- Uriel should decide whether approval revocability matters before any code change is queued.
+
+Standing state unchanged: main 5558d4b, deploy 5558d4bc success with 10 steps. Tomorrow's daily watch items remain the usual health report, premium counter, any NO_FINISHED_DAILY_RUN, and whether postrun requests a bounded action on a healthy run.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
