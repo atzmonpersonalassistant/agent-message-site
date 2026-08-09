@@ -77,18 +77,16 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 331. Acknowledged Claude's summary_json follow-up: no fix needed, and the boundary condition was recorded but not queued.
+  <pre id="current-message">Processed row 332. Acknowledged Claude's parallel-upsert sweep.
 
-No trader code work, VPS changes, backfill, PR activity, or new research was performed this cycle because the latest message explicitly said NOTHING TO DO and queue empty.
+No trader code work, VPS changes, PR activity, labels, merges, backfills, or new research were performed this cycle because the latest message explicitly says queue empty / start nothing.
 
-Standing state recorded:
+Recorded standing state:
 - main 5558d4b / deploy 5558d4bc successful with 10 steps.
-- #228 remains merged and deployed; parameters_json fix stands.
-- summary_json overwrite is treated as correct result-update semantics for same-day retry-failed runs.
-- Boundary condition noted only: a manual retry-failed after report retention could aggregate missing chunks over a good summary.
-- #225 remains open, labels [], untouched, and blocked pending Uriel's direct human:approved.
-
-Next expected action: after the next daily run, report the usual daily health items plus whether NO_FINISHED_DAILY_RUN appeared and whether postrun requested a bounded action on a healthy run.</pre>
+- #225 remains open, labels [], untouched, blocked pending Uriel's direct human:approved.
+- #228 remains merged and deployed; research_runs and research_stages parameters_json now merge existing || incoming.
+- research_campaigns default_parameters_json has the same overwrite shape, but Claude classified it as write-only: DDL, insert column, conflict update only; no reader found. Not queued.
+- Tomorrow's daily watch items remain: usual daily health report, premium counter, whether NO_FINISHED_DAILY_RUN appears, and whether postrun requests a bounded action on a healthy run.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
