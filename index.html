@@ -77,51 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 335. Read-only facts only: no code, no PRs, no labels, no deploy, no QC.
+  <pre id="current-message">Processed row 336. Phase one funnel symbol recording is built, reviewed, merged, and deployed. No QC/backtests were run. #225 untouched.
 
-FACT 1: full_summary.json does NOT retain rejected-symbol identities by funnel stage. For run /agents/research/reports/earnings-qc-options-scan-full-20260809-073011-attempt-1/full_summary.json:
-- top-level keys include aggregate_funnel, calendar_row_count, calendar_universe_count, qc_symbols_scanned, forward_candidates, candidates, final_candidates.
-- aggregate_funnel is count-only:
-  01_nasdaq_earnings_21_28d_universe=98
-  02_qc_option_chain_available=73
-  03_qc_expiry_within_0_7d_after_earnings=26
-  035_qc_otm_expiry_within_0_7d_after_earnings=26
-  04_qc_calls_ask_under_max_premium=9
-  05_qc_liquidity_greeks_quality_pass=1
-- Missing symbol-list keys in full_summary: symbols, calendar_symbols, scanned_symbols, option_chain_symbols, expiry_symbols, otm_symbols, premium_symbols, liquidity_pass_symbols.
-- Named in full_summary by requested stage:
-  scanned: 0 in full_summary, count only 98. Adjacent calendar_snapshot.json names all 98 scanned symbols.
-  option_chain: 0, count only 73.
-  expiry: 0, count only 26.
-  OTM: 0, count only 26.
-  premium: 0, count only 9.
-  liquidity_pass: no liquidity_pass_symbols key; forward_candidates names the single survivor NIO.
-Per-chunk stdout is the same shape: funnel counts plus candidate_details only. It does not preserve rejected identities at option_chain/expiry/OTM/premium.
+What changed:
+- PR #229: https://github.com/atzmonpersonalassistant/trader/pull/229
+- Merge commit: 3cd48b29d32da758121f01976d22bac65b164bfe
+- Scanner now emits survivor lists beside existing aggregate_funnel counters:
+  01_nasdaq_earnings_21_28d_universe_symbols
+  02_qc_option_chain_available_symbols
+  03_qc_expiry_within_0_7d_after_earnings_symbols
+  035_qc_otm_expiry_within_0_7d_after_earnings_symbols
+  04_qc_calls_ask_under_max_premium_symbols
+  05_qc_liquidity_greeks_quality_pass_symbols
+- Existing counter key names are unchanged. Zero-symbol stages emit [].
+- Full-run chunk aggregation concatenates/de-duplicates symbol lists while preserving the existing counter aggregation.
+- Confirmed research_runs.summary_json is JSONB; no schema migration needed.
 
-Conclusion for Uriel's idea: "any symbol that appeared in the daily" is not possible from full_summary alone. The scanned universe is recoverable from calendar_snapshot.json, but stage-specific rejected symbol identities are not retained in the daily summary artifacts I inspected.
+Verification:
+- review-agent/pass: SUCCESS, check run 93291466133
+- Local: py_compile for earnings-qc-research and earnings-qc-options-scan
+- Local: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts = 163 tests OK
+- Deploy: SUCCESS, run 31331950949, step count 10, head 3cd48b2
 
-FACT 2: the bounded wrapper allowlist is enforced in /usr/local/sbin/trading-research-bounded-earnings-qc, matching local clean clone main 5558d4b at agent-platform/scripts/earnings-qc-options/trading-research-bounded-earnings-qc.
-
-Allowed surface from usage lines 18-28:
-  status [--pretty]
-  history [--last N] [--pretty]
-  insights [--last N] [--pretty]
-  summarize --run-dir DIR
-  run --symbols A,B[,C...] --years 1 --parallel 1 --end-to-end
-  run --max-chunks 1|2 --years 1 --parallel 1 --end-to-end
-  historical --run-dir DIR --years 1..10 --end-to-end
-  retry-failed --offset N --years 1 --end-to-end
-  decision add --type TYPE --rationale TEXT [--previous-run-id ID] [--next-run-id ID] [--parameter-changes-json JSON]
-
-Important enforcement quotes:
-- lines 157-165: only run|historical|status|history|insights|summarize|retry-failed|decision are accepted; anything else fails unsupported command.
-- lines 216-236: run accepts --symbols, --max-chunks, --start-offset, --years 1..2, --parallel exactly 1, --chunk-size 1..25, --end-to-end; requires --symbols or --max-chunks, not both.
-- lines 239-256: historical accepts --run-dir, --years 1..10, --chunk-size 1..25, --end-to-end; it requires --run-dir and has no --symbols case.
-- lines 259-275: retry-failed accepts --offset 0..2000, --years 1..2, --chunk-size 1..25, --end-to-end; it requires --offset.
-- lines 62-64: --symbols is limited to 1-5 uppercase tickers, but only for run.
-- lines 51-59: --run-dir must be under /agents/research/reports/* or /agents/research/state/*, realpath-identical, existing, and not symlink/alias.
-
-Underlying earnings-qc-research parser agrees: historical has common --run-dir/--run-id/--campaign/--chunk-size plus --years and --end-to-end, but no --symbols. run has --symbols. So bounded historical cannot already backtest an arbitrary symbol directly; it is restricted to a run directory's existing candidates/material. Arbitrary symbols are only available through bounded run --symbols, which reruns the scan path for up to 5 tickers, not a direct historical backtest of rejected symbols.</pre>
+Out of scope respected: no rejected-symbol QC experiments, no bounded allowlist change, no postrun prompt change, no phase two spend.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
