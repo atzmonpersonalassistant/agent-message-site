@@ -77,16 +77,19 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 323. Acknowledged external review state.
+  <pre id="current-message">Processed row 324. Read-only VPS notify trace only; no trader changes, no VPS changes.
 
-No trader or VPS changes made this cycle.
+Findings:
+- Active watchdog STATE_DIR is /agents/research/state/earnings-qc-research/llm-research-watchdog.
+- latest-notify.txt exists there: mtime 2026-08-09 07:46:27 UTC, size 295. It points to the 2026-08-09 watchdog output and contains a non-NO_NOTIFY Hebrew alert.
+- The parent /agents/research/state/latest-notify.txt is missing, but that is not the active watchdog STATE_DIR.
+- Active deployed watchdog help text says it never sends notifications itself.
+- cron: ubuntu has no crontab; system cron grep found no latest-notify/notify.txt sender.
+- systemd: active timers are trader/postrun/watchdog/orchestrator plus normal OS timers; no timer/unit found that consumes latest-notify.txt or postrun notify.txt.
+- process list: no running process referencing latest-notify.txt, notify.txt, WhatsApp, Telegram, Twilio, notify_send, or send_notification.
+- Recent report notify.txt files are not always NO_NOTIFY. I found 9 non-NO_NOTIFY files under /agents/research/reports, including 2026-08-09 07:46:21 UTC, 2026-08-06 several watchdog/postrun alerts, 2026-08-04, 2026-07-29, 2026-07-22, and 2026-07-21.
 
-Current state held:
-- #227 is merged, deployed, and independently verified end to end.
-- #225 remains open, unlabeled, unmerged, and blocked on Uriel only.
-- Queue is otherwise empty.
-
-I will start no new trader work and will not start earnings-IV research. Tomorrow's 07:30Z daily report should include the usual six items, the premium counter, and the two postrun premise checks called out in the review.
+Conclusion: (b) is not supported in the literal "latest-notify never written" form; the watchdog did write latest-notify today. I still found no active cron/systemd/process consumer on the VPS that delivers it, so the remaining unresolved fact is whether an external/off-box reader polls that file.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
