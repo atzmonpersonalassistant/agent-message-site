@@ -77,54 +77,89 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 325. Read-only VPS notify artifact inspection only; no trader changes, no VPS changes.
+  <pre id="current-message">Processed row 326. Read-only evidence pass only. No trader code changes, no PR, no VPS changes.
 
-I checked all /agents/research/reports/notify.txt files with UTC mtime on 2026-08-06. There are three non-NO_NOTIFY files.
+Short answer: I found a concrete postrun selector bug, but not evidence that 08-09 reviewed the 08-06 run. The 08-09 bounded retry came from the 08-09 postrun reviewing the 08-09 run, then making a false claim about a failed chunk. The repeated NO_FINISHED after completion is explained by DB parameter-shape mismatch.
 
-1) 2026-08-06 03:06:51.400672937 UTC
-path: /agents/research/reports/research-pass-postrun-20260806-20260806-030503-earnings-qc-options-scan-full-20260806-030012/notify.txt
-component inferred from path: postrun
-VERBATIM:
-יומן 2026-08-06 03:04:44Z. Funnel: final candidates 0; bottleneck PARTIAL_FULL_QC_SCAN. שינוי: נרשם retry-failed ממוקד ל-offset 650 עם `--years 1 --end-to-end`. עדכון: ריצה חלקית נכשלה, אין עדיין מסקנת no-trade סופית. צעד הבא: להפעיל retry על החלקים שנכשלו ולבדוק אם התקלה נעלמת.
+1) Where postrun gets the run:
+Source is the DB, not a marker and not newest report dir. In `earnings-llm-postrun-review`:
+- lines 167-183 select from `earnings_cache.research_runs`
+- required: `campaign_id = 'daily-earnings-otm'`
+- required: `run_id LIKE 'earnings-qc-options-scan-full-${DATE_COMPACT}-%'`
+- required: `finished_at IS NOT NULL`
+- also requires exact daily params:
+  `parameters_json-&gt;&gt;'from_stage' = 'calendar'`
+  `parameters_json-&gt;&gt;'to_stage' = 'historical_option_pnl'`
+  `parameters_json-&gt;&gt;'no_outbox' = 'false'`
+  plus years/parallel/end_to_end/chunk_size/symbols/calendar_source constraints.
+- lines 186-203 repeat the same selector as a legacy fallback without campaign_id.
+- line 209 emits the handoff if both selectors return empty.
+- only after a row is selected does line 215 parse `RUN_ID ... RUN_DIR`, line 220 require `$RUN_DIR/full_summary.json`, and line 225 build the completion marker from the selected run_id.
 
-Translation:
-Log 2026-08-06 03:04:44Z. Funnel: final candidates 0; bottleneck PARTIAL_FULL_QC_SCAN. Change: a focused retry-failed was recorded for offset 650 with `--years 1 --end-to-end`. Update: a partial run failed; there is not yet a final no-trade conclusion. Next step: run retry on the failed parts and check whether the fault disappears.
+2) Why NO_FINISHED while DB row says completed:
+Production DB row for 08-09 is completed, but its `parameters_json` no longer satisfies the postrun selector.
 
-2) 2026-08-06 05:46:36.557694615 UTC
-path: /agents/research/reports/research-watchdog-20260806-20260806-054503-earnings-qc-options-scan-full-20260806-053411/notify.txt
-component inferred from path: watchdog
-VERBATIM:
-בדיקת הפוסט-ראן נתקעה על state ישן: הלוגים מראים `NO_FINISHED_DAILY_RUN` ומצביעים על run_id ישן במקום הריצה הנוכחית. כרגע אין מועמדים סופיים.
+Row observed:
+`earnings-qc-options-scan-full-20260809-073011-attempt-1 | completed | finished_at 2026-08-09 07:42:09.38646+00 | campaign daily-earnings-otm`
 
-Translation:
-The post-run check is stuck on old state: the logs show `NO_FINISHED_DAILY_RUN` and point to an old run_id instead of the current run. Currently there are no final candidates.
+Its parameters_json is:
+`{"years":1,"chunk_size":25,"end_to_end":true,"exit_policy":"before-earnings","entry_window":"21:28","path_metrics":"daily","slippage_model":"bidask","exit_days_before":"1","exit_time_policy":"close","validation_years":10,"entry_time_policy":"close","historical_resolution":"daily"}`
 
-3) 2026-08-06 07:46:18.390466553 UTC
-path: /agents/research/reports/research-watchdog-20260806-20260806-074520-earnings-qc-options-scan-full-20260806-073020/notify.txt
-component inferred from path: watchdog
-VERBATIM:
-הריצה עצמה הסתיימה בלי מועמדים סופיים, אבל ה-postrun תקוע על `NO_FINISHED_DAILY_RUN`. צריך לבדוק אם חסר marker של סיום או שיש mismatch ב-run/date של ההנדאוף.
+Missing keys that postrun requires exactly:
+`from_stage`, `to_stage`, `no_outbox`, `calendar_source`.
 
-Translation:
-The run itself finished without final candidates, but the postrun is stuck on `NO_FINISHED_DAILY_RUN`. Need to check whether a completion marker is missing or there is a run/date mismatch in the handoff.
+I executed the deployed selector equivalent for 2026-08-09: it returned zero rows. A relaxed selector on the same run_id/campaign/finished_at returns the completed row above. So `NO_FINISHED_DAILY_RUN` is not from a stale marker; it is from line 209 seeing empty `ROW` because the completed row's params no longer match the strict selector.
 
-Plain outcome for 2026-08-06:
-They did NOT name the zero-rows / no-data / zero option-chain-row problem. The alerts were about a partial scan/retry-failed state and postrun state/handoff mismatch. So for this specific failure, detection was still absent; your original diagnosis stands.
+Important nuance: watchdog uses a looser first state query and later row query for current campaign rows, so watchdog can see the completed 08-09 run while postrun cannot. That directly creates the mismatch alert.
 
-Today's alert:
-latest-notify.txt mtime: 2026-08-09 07:46:27.275004044 UTC
-source report path: /agents/research/reports/research-watchdog-20260809-20260809-074520-earnings-qc-options-scan-full-20260809-073011-attempt-1/notify.txt
-source report mtime: 2026-08-09 07:46:21.081103982 UTC
-component inferred from path: watchdog
-VERBATIM:
-אין מועמדים סופיים אחרי הסינון ההיסטורי, אבל יש גם חוסר התאמה ב-postrun: הוא ממשיך לדווח NO_FINISHED_DAILY_RUN למרות שהריצה היומית סומנה completed. צריך לבדוק את לוגיקת ה-state וה-handoff.
+3) Is offset 650 present in state read today?
+Yes, but the decisive 08-09 files are in today's postrun/run, not an old 08-06 pointer:
 
-Translation:
-There are no final candidates after the historical filtering, but there is also a mismatch in postrun: it continues to report NO_FINISHED_DAILY_RUN even though the daily run was marked completed. Need to check the state and handoff logic.
+Current postrun dir:
+`/agents/research/reports/research-pass-postrun-20260809-20260809-074017-earnings-qc-options-scan-full-20260809-073011-attempt-1`
 
-Today's classification:
-This is partly an informational no-final-candidates update, but the postrun mismatch portion is a watchdog false alarm or stale-state/handoff bug on an otherwise healthy run.
-</pre>
+`run_metadata.json` says:
+- run_id `earnings-qc-options-scan-full-20260809-073011-attempt-1`
+- daily_finished_at `2026-08-09 07:35:52.70043+00`
+- run_dir `/agents/research/reports/earnings-qc-options-scan-full-20260809-073011-attempt-1`
+- bounded_action_status `EXECUTED_RESEARCH_BLOCKED`
+
+`bounded_action_request.json` says:
+`{"argv":["retry-failed","--offset","650","--years","1","--end-to-end"]}`
+
+`review.md` line 15 says the reason was "the failed chunk at offset 650".
+
+But the 08-09 run summary says:
+- `failed_chunk_count = 0`
+- `failed_chunks = []`
+
+So the postrun did request offset 650 today, but its own metadata proves it was reviewing the 08-09 run, not an 08-06 run. This supports the earlier "false state assertion" diagnosis more than the "read 08-06 state" diagnosis.
+
+08-06 comparison:
+- 08-06 03:05 postrun for `earnings-qc-options-scan-full-20260806-030012` did request the same `retry-failed --offset 650`.
+- Later 08-06 completed runs at 05:45 and 07:45 produced `NO_ACTION`, not retry.
+
+4) How far back NO_FINISHED appears:
+Grep of report dirs for `NO_FINISHED_DAILY_RUN` finds dates:
+`2026-08-06`, `2026-08-07`, `2026-08-08`, `2026-08-09`.
+
+Grep of handoff files finds dates from `2026-07-27` through `2026-08-09`.
+The raw postrun log contains `NO_FINISHED_DAILY_RUN date=` from `2026-07-21` through `2026-08-09`.
+
+But there are two different causes mixed together:
+- The marker dirs for 08-06, 08-07, 08-08, 08-09 were first written at local midnight or before the daily was due:
+  - 20260806 at 2026-08-06T00:00:10+03:00
+  - 20260807 at 2026-08-07T00:00:20+03:00
+  - 20260808 at 2026-08-08T00:00:20+03:00
+  - 20260809 at 2026-08-09T00:00:20+03:00
+- Today's continued post-completion NO_FINISHED is specifically the strict-selector/missing-params bug above.
+
+Conclusion:
+There is definitely a real postrun/handoff bug. It has at least two layers:
+1. postrun emits durable NO_FINISHED handoffs before the scheduled daily is due, creating stale/noisy handoff artifacts;
+2. after 08-09 completion, postrun still cannot select the completed run because its selector requires params that the completed row lacks.
+
+I did not fix anything, per instruction. I would not treat 08-09 as proven stale-read from 08-06; the artifact chain points to an 08-09 false failed-chunk assertion plus a separate post-completion selector miss.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
