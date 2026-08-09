@@ -77,19 +77,53 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 324. Read-only VPS notify trace only; no trader changes, no VPS changes.
+  <pre id="current-message">Processed row 325. Read-only VPS notify artifact inspection only; no trader changes, no VPS changes.
 
-Findings:
-- Active watchdog STATE_DIR is /agents/research/state/earnings-qc-research/llm-research-watchdog.
-- latest-notify.txt exists there: mtime 2026-08-09 07:46:27 UTC, size 295. It points to the 2026-08-09 watchdog output and contains a non-NO_NOTIFY Hebrew alert.
-- The parent /agents/research/state/latest-notify.txt is missing, but that is not the active watchdog STATE_DIR.
-- Active deployed watchdog help text says it never sends notifications itself.
-- cron: ubuntu has no crontab; system cron grep found no latest-notify/notify.txt sender.
-- systemd: active timers are trader/postrun/watchdog/orchestrator plus normal OS timers; no timer/unit found that consumes latest-notify.txt or postrun notify.txt.
-- process list: no running process referencing latest-notify.txt, notify.txt, WhatsApp, Telegram, Twilio, notify_send, or send_notification.
-- Recent report notify.txt files are not always NO_NOTIFY. I found 9 non-NO_NOTIFY files under /agents/research/reports, including 2026-08-09 07:46:21 UTC, 2026-08-06 several watchdog/postrun alerts, 2026-08-04, 2026-07-29, 2026-07-22, and 2026-07-21.
+I checked all /agents/research/reports/notify.txt files with UTC mtime on 2026-08-06. There are three non-NO_NOTIFY files.
 
-Conclusion: (b) is not supported in the literal "latest-notify never written" form; the watchdog did write latest-notify today. I still found no active cron/systemd/process consumer on the VPS that delivers it, so the remaining unresolved fact is whether an external/off-box reader polls that file.
+1) 2026-08-06 03:06:51.400672937 UTC
+path: /agents/research/reports/research-pass-postrun-20260806-20260806-030503-earnings-qc-options-scan-full-20260806-030012/notify.txt
+component inferred from path: postrun
+VERBATIM:
+יומן 2026-08-06 03:04:44Z. Funnel: final candidates 0; bottleneck PARTIAL_FULL_QC_SCAN. שינוי: נרשם retry-failed ממוקד ל-offset 650 עם `--years 1 --end-to-end`. עדכון: ריצה חלקית נכשלה, אין עדיין מסקנת no-trade סופית. צעד הבא: להפעיל retry על החלקים שנכשלו ולבדוק אם התקלה נעלמת.
+
+Translation:
+Log 2026-08-06 03:04:44Z. Funnel: final candidates 0; bottleneck PARTIAL_FULL_QC_SCAN. Change: a focused retry-failed was recorded for offset 650 with `--years 1 --end-to-end`. Update: a partial run failed; there is not yet a final no-trade conclusion. Next step: run retry on the failed parts and check whether the fault disappears.
+
+2) 2026-08-06 05:46:36.557694615 UTC
+path: /agents/research/reports/research-watchdog-20260806-20260806-054503-earnings-qc-options-scan-full-20260806-053411/notify.txt
+component inferred from path: watchdog
+VERBATIM:
+בדיקת הפוסט-ראן נתקעה על state ישן: הלוגים מראים `NO_FINISHED_DAILY_RUN` ומצביעים על run_id ישן במקום הריצה הנוכחית. כרגע אין מועמדים סופיים.
+
+Translation:
+The post-run check is stuck on old state: the logs show `NO_FINISHED_DAILY_RUN` and point to an old run_id instead of the current run. Currently there are no final candidates.
+
+3) 2026-08-06 07:46:18.390466553 UTC
+path: /agents/research/reports/research-watchdog-20260806-20260806-074520-earnings-qc-options-scan-full-20260806-073020/notify.txt
+component inferred from path: watchdog
+VERBATIM:
+הריצה עצמה הסתיימה בלי מועמדים סופיים, אבל ה-postrun תקוע על `NO_FINISHED_DAILY_RUN`. צריך לבדוק אם חסר marker של סיום או שיש mismatch ב-run/date של ההנדאוף.
+
+Translation:
+The run itself finished without final candidates, but the postrun is stuck on `NO_FINISHED_DAILY_RUN`. Need to check whether a completion marker is missing or there is a run/date mismatch in the handoff.
+
+Plain outcome for 2026-08-06:
+They did NOT name the zero-rows / no-data / zero option-chain-row problem. The alerts were about a partial scan/retry-failed state and postrun state/handoff mismatch. So for this specific failure, detection was still absent; your original diagnosis stands.
+
+Today's alert:
+latest-notify.txt mtime: 2026-08-09 07:46:27.275004044 UTC
+source report path: /agents/research/reports/research-watchdog-20260809-20260809-074520-earnings-qc-options-scan-full-20260809-073011-attempt-1/notify.txt
+source report mtime: 2026-08-09 07:46:21.081103982 UTC
+component inferred from path: watchdog
+VERBATIM:
+אין מועמדים סופיים אחרי הסינון ההיסטורי, אבל יש גם חוסר התאמה ב-postrun: הוא ממשיך לדווח NO_FINISHED_DAILY_RUN למרות שהריצה היומית סומנה completed. צריך לבדוק את לוגיקת ה-state וה-handoff.
+
+Translation:
+There are no final candidates after the historical filtering, but there is also a mismatch in postrun: it continues to report NO_FINISHED_DAILY_RUN even though the daily run was marked completed. Need to check the state and handoff logic.
+
+Today's classification:
+This is partly an informational no-final-candidates update, but the postrun mismatch portion is a watchdog false alarm or stale-state/handoff bug on an otherwise healthy run.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
