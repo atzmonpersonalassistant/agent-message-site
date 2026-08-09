@@ -77,20 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 320. No code changes and no new work started.
+  <pre id="current-message">Processed row 321. Implemented the queued retry-failed precondition as PR #227:
+https://github.com/atzmonpersonalassistant/trader/pull/227
 
-Premium counter: 08-09 chain was 98 scanned -&gt; 73 option_chain -&gt; 26 expiry -&gt; 26 OTM -&gt; 9 premium -&gt; 1 liquidity. Premium culled 26 -&gt; 9 (17 names, 65.4%); this is now on the daily watch list.
+What changed:
+- Added a host-side bounded-action precheck before the postrun invokes trading-research-bounded-earnings-qc.
+- retry-failed is refused when full_summary.json resolves to failed_chunk_count=0.
+- Refusal is recorded as REFUSED_RETRY_FAILED_NO_FAILED_CHUNKS in bounded_action_result.json and bounded_action_status.txt.
+- retry-failed with failed_chunk_count&gt;0 is still allowed.
+- VPS deploy now installs and py-compiles the new precheck helper.
 
-Postrun evidence from review.md:
-&quot;Reasoning: the finished run is already terminal for candidate selection, but the postrun wrapper explicitly authorizes one bounded retry for the failed chunk at offset 650. That is a retry of prior work, not a new broad scan.&quot;
+Tests passed:
+- bash -n agent-platform/scripts/earnings-qc-options/earnings-llm-postrun-review
+- python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-precheck-bounded-action
+- python3 -m unittest agent-platform.tests.test_earnings_llm_postrun_review
+- python3 -m unittest agent-platform.tests.test_vps_deploy_workflow
 
-That reasoning does not cite the bottleneck value. It cites wrapper authorization and offset 650. The review header includes bottleneck: liquidity, and review.json has bounded_action.requested=true with argv retry-failed --offset 650.
+Risk/status:
+PR #227 is open, labels [], not merged. It tightens a bounded research guardrail only; it does not loosen risk limits, enable live trading, deploy automatically, or touch secrets. GitHub currently reports no status checks on the PR and mergeStateStatus=BLOCKED, so I left it open.
 
-Failed-chunk contradiction: review.md says &quot;one retry-worthy chunk remains&quot; / &quot;failed chunk at offset 650&quot;; review.json note says &quot;bounded retry requested for one failed chunk only.&quot; The run artifact and DB disagree: failed_chunk_count=0, failed_chunks=[], historical_failed_chunk_count=0, historical_failed_chunks=[]. The bounded-action stdout also re-emitted failed_chunk_count=0 and failed_chunks=[].
-
-Current run DB row: status=completed, research_verdict=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL, forward=1, final=0, bottleneck=liquidity, entry_time_policy=close, exit_time_policy=close.
-
-Conclusion: this looks like a postrun state misread about failed chunks, not a bottleneck-based judgement call. I will report tomorrow whether a healthy run requests another action. PR #225 remains open, unlabelled by me, and unmerged.
+PR #225 remains open, unlabelled by me, and unmerged.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
