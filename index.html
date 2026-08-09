@@ -77,29 +77,27 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 336. Phase one funnel symbol recording is built, reviewed, merged, and deployed. No QC/backtests were run. #225 untouched.
+  <pre id="current-message">Processed row 337. I stopped after investigation as requested; no new trader edits, no QC/backtests, #225 untouched.
 
-What changed:
-- PR #229: https://github.com/atzmonpersonalassistant/trader/pull/229
-- Merge commit: 3cd48b29d32da758121f01976d22bac65b164bfe
-- Scanner now emits survivor lists beside existing aggregate_funnel counters:
-  01_nasdaq_earnings_21_28d_universe_symbols
-  02_qc_option_chain_available_symbols
-  03_qc_expiry_within_0_7d_after_earnings_symbols
-  035_qc_otm_expiry_within_0_7d_after_earnings_symbols
-  04_qc_calls_ask_under_max_premium_symbols
-  05_qc_liquidity_greeks_quality_pass_symbols
-- Existing counter key names are unchanged. Zero-symbol stages emit [].
-- Full-run chunk aggregation concatenates/de-duplicates symbol lists while preserving the existing counter aggregation.
-- Confirmed research_runs.summary_json is JSONB; no schema migration needed.
+Important timing/state: row 337 arrived after row 336 had already been implemented/merged/deployed as PR #229. Current main is 3cd48b2. I did not add any further aggregation.
 
-Verification:
-- review-agent/pass: SUCCESS, check run 93291466133
-- Local: py_compile for earnings-qc-research and earnings-qc-options-scan
-- Local: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts = 163 tests OK
-- Deploy: SUCCESS, run 31331950949, step count 10, head 3cd48b2
+Item 3 evidence, checked against pre-#229 main 5558d4b and current main:
+- Normal chain row append:
+  self.rows.append({"symbol": ticker, "spot": spot, "earnings_date": str(edate), "chain_contracts": len(contracts), "after_earnings_call_expiry_count": len(expiries), "selected_contracts_0_7d_after_earnings": len(selected), "cheap_calls_under_max_premium": len(cheap), "liquidity_pass": len(liquid), "liquidity_fail_reason_counts": liquidity_fail_reason_counts, "liquidity_warning_counts": liquidity_warning_counts, "cheap_contract_diagnostics_sample": cheap_contract_diagnostics[:5], "candidate_count": 1 if liquid else 0, "multi_year_backtest_status": "REQUIRES_QC_EODHD_MULTIYEAR_OPTION_PNL"})
+- Spot-unavailable chain row uses the same shape but zero selected/cheap/liquid and status SPOT_UNAVAILABLE.
+- No-chain symbols are also already appended by mark_unprocessed_symbols(), not only recoverable by calendar subtraction:
+  self.rows.append({"symbol": ticker, "spot": spot, "earnings_date": self.earnings.get(ticker), "chain_contracts": 0, "after_earnings_call_expiry_count": 0, "selected_contracts_0_7d_after_earnings": 0, "cheap_calls_under_max_premium": 0, "liquidity_pass": 0, "liquidity_fail_reason_counts": {}, "liquidity_warning_counts": {"zero_option_chain_slices_observed": 1}, "cheap_contract_diagnostics_sample": [], "candidate_count": 0, "multi_year_backtest_status": "NO_QC_OPTION_CHAIN_SLICES_OBSERVED_ON_VALUATION_DATE"})
 
-Out of scope respected: no rejected-symbol QC experiments, no bounded allowlist change, no postrun prompt change, no phase two spend.</pre>
+What is reconstructible from rows:
+- Chain availability: yes, via chain_contracts > 0 or no-chain status.
+- Expiry stage: yes, via selected fields around after_earnings_call_expiry_count / selected_contracts_0_7d_after_earnings.
+- OTM and premium stages: yes, via selected_contracts_0_7d_after_earnings and cheap_calls_under_max_premium.
+- Liquidity/candidate stage: yes, via liquidity_pass and candidate_count.
+- Liquidity reasons/warnings: partly, via aggregate per-symbol reason/warning counts plus up to 5 cheap contract diagnostics.
+
+Downstream status:
+- Before #229, scan payload used parsed_result.rows only for qc_processed_row_count and the zero-row block; it did not surface rows into full_summary.
+- #229 surfaced survivor symbol lists instead, not rows. Given your corrected spec, the next choice is whether to revert/replace #229 with rows-only plumbing or keep #229 and add rows plumbing separately after explicit go.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
