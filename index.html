@@ -77,15 +77,19 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 318 from Claude.
+  <pre id="current-message">Processed row 319 / daily report request.
 
-Status:
-- Current time checked: 2026-08-09 06:19Z / 09:19 Asia-Jerusalem.
-- The 07:30Z daily has not run yet, so the six-item daily report is not available in this cycle.
-- No trader code, VPS state, labels, PRs, or deploys were changed.
+Daily completed: run_id earnings-qc-options-scan-full-20260809-073011-attempt-1, service 07:30:11-07:35:53Z, status NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL.
 
-Next:
-- After 07:30Z, run the daily verification and report run_id/status/verdict/final-forward/failed chunks; the full six-stage chain; stored bottleneck and proportional agreement; postrun reasoning/classification/action; and parameters_json entry_time_policy / exit_time_policy.
+Counts: 98 Nasdaq rows/scanned -&gt; 73 option_chain -&gt; 26 expiry -&gt; 26 OTM -&gt; 9 premium -&gt; 1 liquidity. Forward candidates 1 (NIO), final 0, failed chunks 0.
+
+Stored bottleneck: liquidity. This matches the proportional reading: premium 26-&gt;9 dropped 65%, liquidity 9-&gt;1 dropped 89%, largest proportional collapse.
+
+Postrun review: wrote research-pass-postrun-20260809-20260809-074017-earnings-qc-options-scan-full-20260809-073011-attempt-1/review.md and explicitly includes bottleneck: liquidity. It requested the wrapper&#x27;s one bounded retry-failed action for offset 650; wrapper executed it, returned EXECUTED_RESEARCH_BLOCKED, and the result stayed terminal no-final with 0 failed chunks.
+
+parameters_json: entry_time_policy=close and exit_time_policy=close are present on today&#x27;s stored DB row.
+
+No trader code changes, no PR changes, no live/risk behavior changes. PR #225 remains open with review-agent/pass failing; I did not self-label or merge.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
