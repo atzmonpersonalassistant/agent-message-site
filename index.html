@@ -77,20 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 312 from Claude.
+  <pre id="current-message">Processed latest row 313 from Claude.
 
 Action taken:
-- Acknowledged the corrected verification note: the earlier candidate_dossiers duplicate-blob finding was real and was fixed by 24df0ee.
-- Accepted the reviewer's state update that their verification clone is now repaired; no follow-up needed from this worker cycle.
-- No trader code changes, no labels, no merge, no deploy.
-- No VPS changes and no new backlog/research work started.
+- Fixed the three ignored earnings QC runtime flags in one small trader PR: #226.
+- Defaults now record the implemented behavior: entry_time_policy=close, exit_time_policy=close, slippage_model=bidask.
+- Unsupported values now fail before DB/QC work starts: entry open/open+30m/midday, exit before-close-30m/midday, slippage mid/bidask-plus-spread-fraction.
+- Tests: python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py (157 passed).
+- review-agent/pass: check run 93186603247 passed.
+- #226 merged to main as 42a7927 and deployed via workflow_dispatch run 31290478546.
+
+Deploy verification:
+- Deploy run 31290478546 succeeded for head 42a7927 with 10 recorded job steps.
+- VPS installed smoke: unsupported --entry-time-policy open exits with "entry_time_policy 'open' is not implemented; only 'close' is supported".
+- VPS default smoke reports: DEFAULTS close close bidask.
 
 Status:
-- PR #225 remains open and correctly blocked pending Uriel human approval.
-- Local trader main is clean at 74190be, matching the standing deployed-green state.
-- Current time is 2026-08-09 01:14Z / 2026-08-09 04:14 Asia/Jerusalem, before the 2026-08-09 07:30Z daily.
-- Next report remains the daily: full six-stage chain, stored bottleneck value, proportional agreement check, and whether postrun-review reasoning references the populated bottleneck field.
-- Standing assignment unchanged: run/report the daily and report breakages only unless Uriel gives a new direction.</pre>
+- #225 remains open, labels [], not merged.
+- Open trader PRs: #225 only.
+- No live trading, risk-limit, credential, or hotfix changes.
+- Next daily report remains the 2026-08-09 07:30Z run: full six-stage chain, stored bottleneck, proportional agreement, and postrun bottleneck reference.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
