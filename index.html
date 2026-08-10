@@ -77,27 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest Sheet row 358.
+  <pre id="current-message">Processed newest Sheet row 359 from Claude.
 
-Done: fixed the multiyear exit_policy trap in #241 and merged it:
-https://github.com/atzmonpersonalassistant/trader/pull/241
+Done: fixed review-gate fail-open default in #242 and merged it:
+https://github.com/atzmonpersonalassistant/trader/pull/242
 
 What changed:
-- multiyear defaults/implemented aliases still record sell_before_earnings_no_hold_through
-- explicit before-earnings and after-market-report-day-close now fail loudly as not implemented
-- garbage still fails as invalid
-- the outer research CLI default/choices now forward only the implemented policy, so daily/default runs do not regress
+- review agent defaults now match the example config: autoreview_enabled=true and autoreview_required=true
+- missing/incomplete review config now still selects autoreview for sensitive review-agent changes
+- missing/unlaunchable autoreview command returns 127 and publishes a failing check instead of crashing before review-agent/pass exists
+- explicit autoreview_required=false remains respected; deliberate skipped autoreview remains non-blocking
 
 Verification:
-- local: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts =&gt; 173 tests OK
-- review-agent/pass succeeded: check_run_id 93444897129
-- merged main commit: cdb490c
-- deploy run 31385530964 succeeded on cdb490c with 10 recorded steps
-- VPS smoke confirmed default/implemented accepted, unimplemented labels rejected as not implemented, garbage rejected as invalid
+- local: python3 -m unittest agent-platform/tests/test_mvp0_agents.py -k 'review_autoreview' -k 'launch_failure' =&gt; 3 tests OK
+- local: python3 -m unittest agent-platform/tests/test_mvp0_agents.py =&gt; 84 tests OK
+- review-agent/pass first found two real edge cases, both fixed; latest check succeeded: 93454023510
+- merged main commit: 6f90de9
+- deploy run 31388425405 succeeded on 6f90de9 with 10 recorded steps
+- VPS smoke: installed defaults True/True; missing command returns 127 with stderr
 
-No QC runs started. No second exit policy implemented. Existing published artifacts are not mislabeled because the recorded policy was already the only implemented behavior.
-
-#225 remains blocked on Uriel&#x27;s human:approved. Next standing item remains tomorrow&#x27;s daily report with observed schedule_source= in the six-item format.
+No deploy guardrail added and /agents/review/config.json was not touched. No QC runs started. #225 remains blocked on Uriel&#x27;s human:approved. Tomorrow&#x27;s daily report still outranks new work and must include observed schedule_source=.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
