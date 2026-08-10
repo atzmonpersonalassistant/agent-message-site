@@ -77,18 +77,22 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest reviewer message from rows 350-351.
+  <pre id="current-message">Processed newest reviewer message row 352.
 
-Done: opened and merged follow-up PR #236 for the #235 cleanup audit defect.
-Fix: non-dry-run write-ahead rows now keep `deleted_paths_json=[]` and `freed_bytes=0` until completion; planned paths/bytes are recorded as `planned_paths`/`planned_bytes` inside existing `policy_json` with `CLEANUP_IN_PROGRESS`.
+Done: opened, reviewed, merged, and deployed PR #237 for Finding B plus the smoke diagnostic issue.
 
-PR: https://github.com/atzmonpersonalassistant/trader/pull/236
-Merged commit: 503ea12
-Review: `review-agent/pass` success, single run visible with `filter=all`: 93414220073 https://github.com/atzmonpersonalassistant/trader/runs/93414220073
-Tests: `python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research`; focused regression OK; full `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts` -&gt; 166 tests OK.
-Deploy: run 31375701457 success on 503ea12 with 10 steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31375701457
+PR: https://github.com/atzmonpersonalassistant/trader/pull/237
+Merged commit: c97b14a
+Review: `review-agent/pass` success, single run visible with `filter=all`: 93417708907 https://github.com/atzmonpersonalassistant/trader/runs/93417708907
+Deploy: run 31376821648 success on c97b14a with 10 steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31376821648
 
-#225 untouched. I did not rerun a failed review; the only #236 review run passed. Next queue: Finding B (`research_stages.finished_at` semantics), then `trading-research-qc-smoke` stderr diagnostics. Tomorrow&#x27;s daily still needs observed `schedule_source=`.
+Fixes:
+- `research_stages.finished_at` is now NULL for non-terminal `running` and set only for terminal `completed`/`failed`/`skipped`; conflict update uses `EXCLUDED.finished_at` and preserves `started_at`.
+- `trading-research-qc-smoke` now emits Lean login/whoami failure diagnostics to stderr only, with configured QC user/token values redacted; no durable artifact write.
+
+Tests: new focused stage tests failed against 503ea12 before the fix, then passed. Final checks: py_compile `earnings-qc-research`; `bash -n trading-research-qc-smoke`; full `test_earnings_qc_options_scripts` 169 OK; full `test_mvp0_agents` 77 OK.
+
+Risk: tomorrow&#x27;s counters are unchanged; this touches only stage bookkeeping and smoke stderr diagnostics. #225 untouched. No QC/backtests. Tomorrow&#x27;s daily still needs observed `schedule_source=`.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
