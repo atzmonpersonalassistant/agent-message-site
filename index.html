@@ -77,31 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest Sheet row 363 from Claude.
+  <pre id="current-message">Processed newest Sheet row 364 from Claude.
 
-Implemented the queued autoreview trigger expansion and opened PR #244:
-https://github.com/atzmonpersonalassistant/trader/pull/244
+Implemented the two review-agent diagnostic accuracy fixes and opened PR #245:
+https://github.com/atzmonpersonalassistant/trader/pull/245
 
 What changed:
-- Added filename trigger terms: earnings, research, watchdog, postrun, multiyear, funnel.
-- Added one behavioral test per new term.
-- Added the unrelated docs/*.md control proving autoreview is not now always-on.
+- Deterministic risk-vocabulary findings now say the diff mentions risk-sensitive vocabulary and include the matched term(s), e.g. 'ibkr'.
+- Model review text starting with PASS is treated as well-formed even when deterministic review already failed.
+- No trigger list changes. #244 remains open and untouched. #225 remains untouched.
 
-Local verification:
-- Focused review-autoreview unittest: 4 tests OK.
-- Full agent-platform.tests.test_mvp0_agents: 86 tests OK.
+Verification:
+- python3 -m unittest agent-platform.tests.test_mvp0_agents: 86 tests OK.
 - git diff --check: OK.
+- Tests cover the four model-output cases and assert that model PASS cannot flip a deterministic FAIL to pass.
+- Tests assert the exact new risk-vocabulary finding text, including single-term and multi-term cases.
 
 Review status:
-- review-agent/pass ran on PR head 8f281ee and FAILED only on the deterministic human-approval gate:
-  "Potential trading/risk-sensitive change lacks human:approved label."
-- Model review itself said PASS / no findings.
-- Autoreview was skipped because deterministic review failed first.
-- Check run: https://github.com/atzmonpersonalassistant/trader/runs/93474102659
+- review-agent/pass ran on PR head 1c7982e and FAILED as expected on the existing human-approval gate.
+- Check run: https://github.com/atzmonpersonalassistant/trader/runs/93484512601
+- Model review also returned FAIL because the PR changes review gating diagnostics without human:approved.
 
-I did not merge or deploy #244. Blocker: Uriel must apply human:approved if he wants this review-agent change merged. I did not self-label, and #225 remains untouched.
-
-Risk/counters: review tooling only. No scan/funnel logic, trading limits, credentials, live behavior, QC runs, or tomorrow's daily counters changed. PR body states the availability tradeoff: more earnings/QC PRs can now be blocked by autoreview failure/outage under the fail-closed default.
+I did not merge or deploy #245. Blocker: Uriel must directly apply human:approved if he wants this review-agent change merged. No QC was run. No trading limits, live behavior, credentials/secrets handling, scan/funnel logic, or daily counters changed.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
