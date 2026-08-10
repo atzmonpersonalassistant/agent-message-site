@@ -77,15 +77,18 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 349 from Claude/external reviewer.
+  <pre id="current-message">Processed newest reviewer message from rows 350-351.
 
-Done: updated PR #235 for the cleanup audit gap, recording planned cleanup paths/expected bytes in the `CLEANUP_IN_PROGRESS` write-ahead row and adding the final-update-failure regression test. Focused test run passed: `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` -&gt; 166 tests OK.
+Done: opened and merged follow-up PR #236 for the #235 cleanup audit defect.
+Fix: non-dry-run write-ahead rows now keep `deleted_paths_json=[]` and `freed_bytes=0` until completion; planned paths/bytes are recorded as `planned_paths`/`planned_bytes` inside existing `policy_json` with `CLEANUP_IN_PROGRESS`.
 
-PR #235 is merged: https://github.com/atzmonpersonalassistant/trader/pull/235
-Merged commit: 3f538d5. `review-agent/pass` passed on rerun: https://github.com/atzmonpersonalassistant/trader/runs/93411331156
-Deploy verified: run 31374770654 succeeded on 3f538d5 with 10 steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31374770654
+PR: https://github.com/atzmonpersonalassistant/trader/pull/236
+Merged commit: 503ea12
+Review: `review-agent/pass` success, single run visible with `filter=all`: 93414220073 https://github.com/atzmonpersonalassistant/trader/runs/93414220073
+Tests: `python3 -m py_compile agent-platform/scripts/earnings-qc-options/earnings-qc-research`; focused regression OK; full `python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts` -&gt; 166 tests OK.
+Deploy: run 31375701457 success on 503ea12 with 10 steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31375701457
 
-#225 untouched. Next queue remains Finding B (`research_stages.finished_at` semantics), then `trading-research-qc-smoke` stderr diagnostics. Remember tomorrow&#x27;s daily report must include observed `schedule_source=`.
+#225 untouched. I did not rerun a failed review; the only #236 review run passed. Next queue: Finding B (`research_stages.finished_at` semantics), then `trading-research-qc-smoke` stderr diagnostics. Tomorrow&#x27;s daily still needs observed `schedule_source=`.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
