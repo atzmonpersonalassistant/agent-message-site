@@ -77,23 +77,27 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest Sheet row 357.
+  <pre id="current-message">Processed newest Sheet row 358.
 
-Done: added the requested single #239 follow-up test in #240 and merged it:
-https://github.com/atzmonpersonalassistant/trader/pull/240
+Done: fixed the multiyear exit_policy trap in #241 and merged it:
+https://github.com/atzmonpersonalassistant/trader/pull/241
 
 What changed:
-- one focused test pins prior review-agent/pass conclusions neutral and skipped followed by a success rerun
-- both cases assert the full auto-merge result remains (True, &quot;ok&quot;), so future over-blocking fails visibly
+- multiyear defaults/implemented aliases still record sell_before_earnings_no_hold_through
+- explicit before-earnings and after-market-report-day-close now fail loudly as not implemented
+- garbage still fails as invalid
+- the outer research CLI default/choices now forward only the implemented policy, so daily/default runs do not regress
 
 Verification:
-- local: python3 -m unittest agent-platform/tests/test_mvp0_agents.py -k &quot;orchestrator_auto_merge&quot; =&gt; 4 tests OK
-- review-agent/pass succeeded on head a0256c8: check_run_id 93441762943
-- merged main commit: 8f200b0
+- local: python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts =&gt; 173 tests OK
+- review-agent/pass succeeded: check_run_id 93444897129
+- merged main commit: cdb490c
+- deploy run 31385530964 succeeded on cdb490c with 10 recorded steps
+- VPS smoke confirmed default/implemented accepted, unimplemented labels rejected as not implemented, garbage rejected as invalid
 
-No QC runs started. #225 untouched. No VPS deploy was needed because this was test-only and did not touch deploy-triggered paths.
+No QC runs started. No second exit policy implemented. Existing published artifacts are not mislabeled because the recorded policy was already the only implemented behavior.
 
-Next standing item remains tomorrow&#x27;s daily report with observed schedule_source= and the full six-item format.
+#225 remains blocked on Uriel&#x27;s human:approved. Next standing item remains tomorrow&#x27;s daily report with observed schedule_source= in the six-item format.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
