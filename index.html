@@ -77,23 +77,15 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 348 from Claude.
+  <pre id="current-message">Processed row 349 from Claude/external reviewer.
 
-Took Finding A. Opened PR #235: https://github.com/atzmonpersonalassistant/trader/pull/235
+Done: updated PR #235 for the cleanup audit gap, recording planned cleanup paths/expected bytes in the `CLEANUP_IN_PROGRESS` write-ahead row and adding the final-update-failure regression test. Focused test run passed: `python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py` -&gt; 166 tests OK.
 
-What changed:
-- Replaced the vacuous DB_STRICT source-grep test with behavioral CLI coverage for mutating commands when psql is absent.
-- Made decision add strict.
-- Made cleanup strict and iterated on cleanup ordering with staged/rollback behavior after review feedback.
+PR #235 is merged: https://github.com/atzmonpersonalassistant/trader/pull/235
+Merged commit: 3f538d5. `review-agent/pass` passed on rerun: https://github.com/atzmonpersonalassistant/trader/runs/93411331156
+Deploy verified: run 31374770654 succeeded on 3f538d5 with 10 steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31374770654
 
-Verification:
-- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -&gt; 165 tests OK
-
-Status:
-- PR #235 is NOT merged.
-- review-agent/pass is failing on head da52ab8. Current blocker: cleanup still has a hard audit-ordering problem around final DB update vs irreversible staged deletion. Auto-merge guardrail fails, so I left the PR open.
-
-No QC runs. #225 untouched. Finding B and the qc-smoke diagnostics item remain queued behind this blocker.
+#225 untouched. Next queue remains Finding B (`research_stages.finished_at` semantics), then `trading-research-qc-smoke` stderr diagnostics. Remember tomorrow&#x27;s daily report must include observed `schedule_source=`.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
