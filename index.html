@@ -77,25 +77,27 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 342. Read today's completed 07:30Z daily artifacts only; no QC, no code, #225 untouched.
+  <pre id="current-message">Processed row 343. Implemented the postrun missing-run grace fix; no QC/backtests, #225 untouched.
 
-Daily 2026-08-10:
-1. run_id earnings-qc-options-scan-full-20260810-073005-attempt-1; DB status completed; research_verdict NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; final/forward 0/1; failed_chunk_count 0. Started 07:30:05Z, finished 07:35:48Z.
-2. Funnel: 100 scanned -> 73 option_chain -> 26 expiry -> 26 OTM -> 9 premium -> 1 liquidity_pass. Premium culled again: 26 -> 9.
-3. Stored bottleneck: liquidity. Proportional ranking also liquidity (8/9 = 88.89%). Absolute ranking would be expiry (47 names), so today is discriminating, not vacuous.
-4. Retry state: no retry happened; daily-retry-20260810.json has attempt_count 1 only. A NO_FINISHED_DAILY_RUN marker for 2026-08-10 exists, but it was written 2026-08-09 21:00:20Z before the daily, so its presence does not prove a post-daily retry failure and absence/presence here says nothing useful about #228.
-5. Postrun did not request a bounded action. bounded_action_status.txt = NO_REQUEST; review.json says bounded_action_request NO_ACTION. #227 was therefore not exercised today.
-6. All six _symbols lists are present and len(list)==counter: scanned 100/100, option_chain 73/73, expiry 26/26, OTM 26/26, premium 9/9, liquidity 1/1. Monotonicity check passed.
+Done:
+- Opened PR #231: https://github.com/atzmonpersonalassistant/trader/pull/231
+- Change: `NO_FINISHED_DAILY_RUN` now fires only after `EARNINGS_POSTRUN_DAILY_RUN_SCHEDULED_AT + EARNINGS_POSTRUN_MISSING_RUN_GRACE_SECONDS` in Asia/Jerusalem. Before that it emits `DAILY_RUN_NOT_DUE_YET` with computed `due_at` and writes no handoff task/marker.
+- Default boundary verified by test: 10:30 + 10800s = 13:30 Asia/Jerusalem.
+- Explicit scope choice: `STALE_RUNNING_SECONDS` remains unimplemented in this PR; no running-row selector/new stale condition was added.
 
-Baseline symbol lists:
-- scanned: ABM,AEO,AGX,AI,AOUT,ASAN,ASO,AVGO,AVLN,BABA,BBCP,BMRA,BRC,BRZE,CAL,CANG,CELU,CHA,CHPT,CIEN,CISS,COE,CPB,CPRT,CRDO,CRESY,CRMT,CURV,CXM,DAVA,DETX,DLTH,DLTR,DOCU,DOO,EGAN,ENLV,FLWS,FRO,GDEV,GEG,GIII,GTLB,GWRE,HPE,HTLM,HURC,IBIO,IMMP,IMPP,IOT,IRS,JILL,KT,LFVN,LND,LOT,LULU,M,MDB,MDT,MESO,MMED,NEWP,NFE,NIO,NRT,NTSK,NUTR,NX,OPTH,PANW,PATH,PD,PDEX,PHR,PICS,PL,PLCE,REA,RGS,RZLV,SAIC,SHOE,SIG,SNOW,SPWH,SWBI,TLYS,TTAN,TTC,VBNK,VFS,VIRC,WDH,WLY,WLYB,YQ,ZS,ZUMZ
-- option_chain: AEO,AI,ASO,CPB,CRDO,CXM,DLTR,GTLB,HPE,IRS,M,MDB,MDT,MMED,NIO,NTSK,PANW,RZLV,SIG,SNOW,AGX,AVGO,BRC,CHPT,CIEN,CPRT,DOCU,GWRE,IOT,LULU,NEWP,PATH,PD,PL,SAIC,TLYS,TTAN,TTC,VFS,ZS,AOUT,ASAN,BBCP,BRZE,CAL,CRESY,CURV,DAVA,DLTH,EGAN,FLWS,GIII,LFVN,NX,PHR,SWBI,VBNK,WLY,ZUMZ,ABM,BABA,CELU,DOO,FRO,IMMP,IMPP,KT,MESO,NFE,NRT,PLCE,SPWH,VIRC
-- expiry: AEO,AI,ASO,CPB,CRDO,DLTR,GTLB,HPE,M,MDB,MDT,NIO,PANW,RZLV,SIG,SNOW,AVGO,CIEN,DOCU,IOT,LULU,PATH,PL,ZS,BABA,NFE
-- OTM: AEO,AI,ASO,CPB,CRDO,DLTR,GTLB,HPE,M,MDB,MDT,NIO,PANW,RZLV,SIG,SNOW,AVGO,CIEN,DOCU,IOT,LULU,PATH,PL,ZS,BABA,NFE
-- premium: AEO,AI,CPB,M,MDT,NIO,RZLV,PATH,NFE
-- liquidity: NIO
+Tests run:
+- `bash -n agent-platform/scripts/earnings-qc-options/earnings-llm-postrun-review`
+- `python3 -m unittest agent-platform.tests.test_earnings_llm_postrun_review` - 27 tests OK
+- `python3 -m unittest agent-platform.tests.test_vps_deploy_workflow` - 18 tests OK
 
-Note: scratchpad/check_daily.py was not present in the worker clone or on the VPS, so I performed the same structured checks against full_summary.json: length equality, funnel monotonicity, absolute ranking, and proportional ranking.</pre>
+Review/deploy:
+- Triggered `review-agent/pass` on PR head 8bc3ed64; passed, check run 93392972673.
+- Auto-merged PR #231 to main as b8a4d84 because guardrails passed.
+- Deployed via workflow_dispatch run 31368890438 on b8a4d84; success, install job 93393207011, 10 completed steps.
+- VPS verification: postrun timer enabled+active; installed script passes `bash -n`; installed script contains `DAILY_RUN_NOT_DUE_YET`.
+
+Still queued behind this, unchanged:
+- `trading-research-qc-smoke` should emit lean login/whoami failure logs to stderr before exit instead of deleting its own diagnostics.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
