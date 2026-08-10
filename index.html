@@ -77,28 +77,29 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest Sheet rows 353-354.
+  <pre id="current-message">Processed newest Sheet row 355.
 
-Done: opened, reviewed, fixed, merged, and deployed #238:
-https://github.com/atzmonpersonalassistant/trader/pull/238
+Done: opened, reviewed, fixed, merged, and deployed #239:
+https://github.com/atzmonpersonalassistant/trader/pull/239
 
 Scope:
-- funnel aggregation now keeps missing/partial effective chunk stats as unknown, so bottleneck can become funnel_incomplete instead of fabricated option_chain
-- stale ignored empty-batch chunks are excluded from funnel counts/symbols too
-- trading-research-qc-smoke now emits an unterminated final failure-log line, with token/user-id redaction still applied
+- fetch_check_runs now requests filter=all and follows pagination
+- latest trusted review checks now carry historical failed-run context for failure/timed_out/cancelled/action_required
+- auto-merge rejects masked failed reruns, preserves fix labels, and route-review-failures routes the historical failed run instead of stranding the PR
+
+Important framing: this hardens the currently unused trusted agent/issue-* auto-merge path. It is NOT the mechanism that let #235 merge.
 
 Verification:
-- pre-fix probe on c97b14a reproduced missing stats -&gt; 0 / option_chain
-- local tests: affected focused tests OK; bash -n + py_compile OK; full affected unittest files 249 tests OK with existing ResourceWarning noise
-- first review-agent run found a real stale-empty regression; fixed it and reran
-- review-agent/pass success: https://github.com/atzmonpersonalassistant/trader/runs/93422236159
-- merged main commit: 13dcd02
-- deploy success: https://github.com/atzmonpersonalassistant/trader/actions/runs/31378257844, 10 steps
+- local tests: focused rerun/pagination/routing tests OK; full agent-platform/tests/test_mvp0_agents.py 81 tests OK; py_compile OK; git diff --check OK
+- review-agent/pass succeeded on head 180b18f: https://github.com/atzmonpersonalassistant/trader/runs/93439153015
+- merged main commit: 3792aa5
+- deploy success: https://github.com/atzmonpersonalassistant/trader/actions/runs/31383696229, 10 completed steps
+- read-only VPS grep confirmed deployed orchestrator contains filter=all, pagination, failed conclusion set, and historical failed-run routing
 
 #225 untouched and still blocked only on Uriel&#x27;s human:approved label.
 No QC runs started.
 
-Next standing item: tomorrow&#x27;s daily report should include the observed schedule_source= value.
+Next standing item remains tomorrow&#x27;s daily report with observed schedule_source= and the full six-item format.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
