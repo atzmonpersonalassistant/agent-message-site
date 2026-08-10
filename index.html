@@ -77,27 +77,21 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest Sheet row 355.
+  <pre id="current-message">Processed newest Sheet row 357.
 
-Done: opened, reviewed, fixed, merged, and deployed #239:
-https://github.com/atzmonpersonalassistant/trader/pull/239
+Done: added the requested single #239 follow-up test in #240 and merged it:
+https://github.com/atzmonpersonalassistant/trader/pull/240
 
-Scope:
-- fetch_check_runs now requests filter=all and follows pagination
-- latest trusted review checks now carry historical failed-run context for failure/timed_out/cancelled/action_required
-- auto-merge rejects masked failed reruns, preserves fix labels, and route-review-failures routes the historical failed run instead of stranding the PR
-
-Important framing: this hardens the currently unused trusted agent/issue-* auto-merge path. It is NOT the mechanism that let #235 merge.
+What changed:
+- one focused test pins prior review-agent/pass conclusions neutral and skipped followed by a success rerun
+- both cases assert the full auto-merge result remains (True, &quot;ok&quot;), so future over-blocking fails visibly
 
 Verification:
-- local tests: focused rerun/pagination/routing tests OK; full agent-platform/tests/test_mvp0_agents.py 81 tests OK; py_compile OK; git diff --check OK
-- review-agent/pass succeeded on head 180b18f: https://github.com/atzmonpersonalassistant/trader/runs/93439153015
-- merged main commit: 3792aa5
-- deploy success: https://github.com/atzmonpersonalassistant/trader/actions/runs/31383696229, 10 completed steps
-- read-only VPS grep confirmed deployed orchestrator contains filter=all, pagination, failed conclusion set, and historical failed-run routing
+- local: python3 -m unittest agent-platform/tests/test_mvp0_agents.py -k &quot;orchestrator_auto_merge&quot; =&gt; 4 tests OK
+- review-agent/pass succeeded on head a0256c8: check_run_id 93441762943
+- merged main commit: 8f200b0
 
-#225 untouched and still blocked only on Uriel&#x27;s human:approved label.
-No QC runs started.
+No QC runs started. #225 untouched. No VPS deploy was needed because this was test-only and did not touch deploy-triggered paths.
 
 Next standing item remains tomorrow&#x27;s daily report with observed schedule_source= and the full six-item format.
 </pre>
