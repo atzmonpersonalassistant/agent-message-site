@@ -77,19 +77,25 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 341. No Phase Two action taken.
+  <pre id="current-message">Processed row 342. Read today's completed 07:30Z daily artifacts only; no QC, no code, #225 untouched.
 
-What I did:
-- Treated the Phase Two design as spec only, not authorization.
-- Did not build, run QC, widen any action surface, or touch #225.
-- Confirmed current time was 2026-08-10T06:07Z, so today's 07:30Z daily had not run yet.
-- Confirmed the row 340 deploy-concurrency fix is already on trader main at da8cdae, with cancel-in-progress: false.
+Daily 2026-08-10:
+1. run_id earnings-qc-options-scan-full-20260810-073005-attempt-1; DB status completed; research_verdict NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; final/forward 0/1; failed_chunk_count 0. Started 07:30:05Z, finished 07:35:48Z.
+2. Funnel: 100 scanned -> 73 option_chain -> 26 expiry -> 26 OTM -> 9 premium -> 1 liquidity_pass. Premium culled again: 26 -> 9.
+3. Stored bottleneck: liquidity. Proportional ranking also liquidity (8/9 = 88.89%). Absolute ranking would be expiry (47 names), so today is discriminating, not vacuous.
+4. Retry state: no retry happened; daily-retry-20260810.json has attempt_count 1 only. A NO_FINISHED_DAILY_RUN marker for 2026-08-10 exists, but it was written 2026-08-09 21:00:20Z before the daily, so its presence does not prove a post-daily retry failure and absence/presence here says nothing useful about #228.
+5. Postrun did not request a bounded action. bounded_action_status.txt = NO_REQUEST; review.json says bounded_action_request NO_ACTION. #227 was therefore not exercised today.
+6. All six _symbols lists are present and len(list)==counter: scanned 100/100, option_chain 73/73, expiry 26/26, OTM 26/26, premium 9/9, liquidity 1/1. Monotonicity check passed.
 
-Status:
-- Daily report is blocked only by time; the 07:30Z run is not due yet.
-- Next bounded cycle after 07:30Z should read the completed daily artifacts and report the six requested items, including premium counter and per-stage symbol-list length checks.
+Baseline symbol lists:
+- scanned: ABM,AEO,AGX,AI,AOUT,ASAN,ASO,AVGO,AVLN,BABA,BBCP,BMRA,BRC,BRZE,CAL,CANG,CELU,CHA,CHPT,CIEN,CISS,COE,CPB,CPRT,CRDO,CRESY,CRMT,CURV,CXM,DAVA,DETX,DLTH,DLTR,DOCU,DOO,EGAN,ENLV,FLWS,FRO,GDEV,GEG,GIII,GTLB,GWRE,HPE,HTLM,HURC,IBIO,IMMP,IMPP,IOT,IRS,JILL,KT,LFVN,LND,LOT,LULU,M,MDB,MDT,MESO,MMED,NEWP,NFE,NIO,NRT,NTSK,NUTR,NX,OPTH,PANW,PATH,PD,PDEX,PHR,PICS,PL,PLCE,REA,RGS,RZLV,SAIC,SHOE,SIG,SNOW,SPWH,SWBI,TLYS,TTAN,TTC,VBNK,VFS,VIRC,WDH,WLY,WLYB,YQ,ZS,ZUMZ
+- option_chain: AEO,AI,ASO,CPB,CRDO,CXM,DLTR,GTLB,HPE,IRS,M,MDB,MDT,MMED,NIO,NTSK,PANW,RZLV,SIG,SNOW,AGX,AVGO,BRC,CHPT,CIEN,CPRT,DOCU,GWRE,IOT,LULU,NEWP,PATH,PD,PL,SAIC,TLYS,TTAN,TTC,VFS,ZS,AOUT,ASAN,BBCP,BRZE,CAL,CRESY,CURV,DAVA,DLTH,EGAN,FLWS,GIII,LFVN,NX,PHR,SWBI,VBNK,WLY,ZUMZ,ABM,BABA,CELU,DOO,FRO,IMMP,IMPP,KT,MESO,NFE,NRT,PLCE,SPWH,VIRC
+- expiry: AEO,AI,ASO,CPB,CRDO,DLTR,GTLB,HPE,M,MDB,MDT,NIO,PANW,RZLV,SIG,SNOW,AVGO,CIEN,DOCU,IOT,LULU,PATH,PL,ZS,BABA,NFE
+- OTM: AEO,AI,ASO,CPB,CRDO,DLTR,GTLB,HPE,M,MDB,MDT,NIO,PANW,RZLV,SIG,SNOW,AVGO,CIEN,DOCU,IOT,LULU,PATH,PL,ZS,BABA,NFE
+- premium: AEO,AI,CPB,M,MDT,NIO,RZLV,PATH,NFE
+- liquidity: NIO
 
-No trader edits, no VPS changes, no QC/backtests, no secrets/risk/live-trading changes.</pre>
+Note: scratchpad/check_daily.py was not present in the worker clone or on the VPS, so I performed the same structured checks against full_summary.json: length equality, funnel monotonicity, absolute ranking, and proportional ranking.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
