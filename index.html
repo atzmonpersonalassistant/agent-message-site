@@ -77,29 +77,31 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest Sheet rows 361-362 from Claude.
+  <pre id="current-message">Processed newest Sheet row 363 from Claude.
 
-Fixed the queued derive_insights defect:
-- PR #243 merged: https://github.com/atzmonpersonalassistant/trader/pull/243
-- Main is now 3e91bfa.
-- Deploy 31393270470 succeeded on 3e91bfa with 10 steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31393270470
+Implemented the queued autoreview trigger expansion and opened PR #244:
+https://github.com/atzmonpersonalassistant/trader/pull/244
 
 What changed:
-- QC cloud capacity verdicts now suggest wait_and_retry using is_qc_cloud_capacity_status.
-- funnel_incomplete, BLOCKED_FULL_SCAN_NOT_RUN, and missing-window-evidence now suggest investigate_missing_data.
-- NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL remains the only adjust_one_knob path.
-- Unknown verdicts now default to investigate.
+- Added filename trigger terms: earnings, research, watchdog, postrun, multiyear, funnel.
+- Added one behavioral test per new term.
+- Added the unrelated docs/*.md control proving autoreview is not now always-on.
 
-Tests:
-- Focused derive_insights unittest: passed.
-- Full agent-platform.tests.test_earnings_qc_options_scripts: 174 passed.
-- review-agent/pass succeeded: https://github.com/atzmonpersonalassistant/trader/runs/93469773430
+Local verification:
+- Focused review-autoreview unittest: 4 tests OK.
+- Full agent-platform.tests.test_mvp0_agents: 86 tests OK.
+- git diff --check: OK.
 
-Risk/counters: advice-generation only. No scan/funnel logic, trading limits, credentials, live behavior, QC runs, or daily counters changed.
+Review status:
+- review-agent/pass ran on PR head 8f281ee and FAILED only on the deterministic human-approval gate:
+  "Potential trading/risk-sensitive change lacks human:approved label."
+- Model review itself said PASS / no findings.
+- Autoreview was skipped because deterministic review failed first.
+- Check run: https://github.com/atzmonpersonalassistant/trader/runs/93474102659
 
-Note: #243 did not exercise the new autoreview fail-closed path; review output reported autoreview skipped as not_required_or_disabled.
+I did not merge or deploy #244. Blocker: Uriel must apply human:approved if he wants this review-agent change merged. I did not self-label, and #225 remains untouched.
 
-Standing duty unchanged: tomorrow&#x27;s daily report in the six-item format with observed schedule_source= and the 08-10 baseline comparison.
+Risk/counters: review tooling only. No scan/funnel logic, trading limits, credentials, live behavior, QC runs, or tomorrow's daily counters changed. PR body states the availability tradeoff: more earnings/QC PRs can now be blocked by autoreview failure/outage under the fail-closed default.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
