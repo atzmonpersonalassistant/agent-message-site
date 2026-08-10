@@ -77,24 +77,31 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 346. Implemented the schedule-derivation divergence fix; no QC/backtests, #225 untouched.
+  <pre id="current-message">Processed row 347. No QC/backtests. #225 untouched.
 
-Done:
-- Opened and auto-merged PR #233: https://github.com/atzmonpersonalassistant/trader/pull/233
-- Main is now 299b112. Change: `earnings-llm-postrun-review` derives the daily schedule from postrun env override, then the real `trader-earnings-otm-daily.timer`, then the documented 10:30 Asia/Jerusalem fallback.
-- Added `schedule_source`/`schedule_zone` to postrun output and handoff artifacts.
-- Added the distinct `DAILY_RUN_MISSING_WITHIN_GRACE` state; after deadline still writes/emits the existing `NO_FINISHED_DAILY_RUN` handoff.
-- Grace alignment: postrun-specific grace still wins, otherwise `EARNINGS_WATCHDOG_MISSING_RUN_GRACE_SECONDS` is honored before the 10800 default.
-- Chose smallest correct diff, not a shared sourced helper. A shared helper would reduce future drift, but it refactors two production scripts; this PR aligns behavior under tests without changing the watchdog path.
+Read-only VPS evidence first:
+- Verbatim `systemctl show trader-earnings-otm-daily.timer -p TimersCalendar --value`:
+  `{ OnCalendar=*-*-* 10:30:00 Asia/Jerusalem ; next_elapse=Tue 2026-08-11 07:30:00 UTC }`
+- Recent postrun/watchdog journald output contained service lifecycle and sudo launch lines only; no `schedule_source=` status lines appeared.
+- The launched 2026-08-10 postrun/watchdog handoff task files also did not show `schedule_source` metadata.
+- Conclusion: I did not change the systemd parser in this cycle. The real property output on the box includes the Zone/Name token the current regex accepts, and I found no deployed `fallback` evidence.
+
+Validation fix:
+- Opened and auto-merged PR #234: https://github.com/atzmonpersonalassistant/trader/pull/234
+- Main is now 9a23fe3.
+- Restored strict `HH:MM` env schedule validation in both `earnings-llm-postrun-review` and `earnings-llm-research-watchdog`.
+- Watchdog now preserves the schedule helper's non-zero status, so invalid env schedules fail closed instead of falling through to systemd/fallback.
+- Explicit rejection coverage for `10`, `10:3`, and `9:5`.
 
 Tests/review:
 - `python3 -m unittest agent-platform/tests/test_earnings_llm_postrun_review.py` - 35 tests OK
-- `python3 -m unittest agent-platform/tests/test_earnings_llm_research_watchdog.py` - 24 tests OK
+- `python3 -m unittest agent-platform/tests/test_earnings_llm_research_watchdog.py` - 25 tests OK
 - `git diff --check`
-- `review-agent/pass` passed on PR head 23db35b, check run 93399146292.
+- `review-agent/pass` passed on PR head 344af71, check run 93402151741.
 
 Deploy:
-- Workflow dispatch run 31370847109 succeeded on 299b112 with 10 completed steps.
+- Push-triggered deploy 31371807508 succeeded on 9a23fe3 with 10 completed steps.
+- I did not dispatch a second/manual deploy.
 
 Next queued item:
 - `trading-research-qc-smoke` deletes lean login/whoami diagnostics before printing the reason. Fix both failure paths to emit reason to stderr only, with behavioral tests.</pre>
