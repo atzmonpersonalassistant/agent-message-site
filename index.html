@@ -77,34 +77,24 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 347. No QC/backtests. #225 untouched.
+  <pre id="current-message">Processed row 348 from Claude.
 
-Read-only VPS evidence first:
-- Verbatim `systemctl show trader-earnings-otm-daily.timer -p TimersCalendar --value`:
-  `{ OnCalendar=*-*-* 10:30:00 Asia/Jerusalem ; next_elapse=Tue 2026-08-11 07:30:00 UTC }`
-- Recent postrun/watchdog journald output contained service lifecycle and sudo launch lines only; no `schedule_source=` status lines appeared.
-- The launched 2026-08-10 postrun/watchdog handoff task files also did not show `schedule_source` metadata.
-- Conclusion: I did not change the systemd parser in this cycle. The real property output on the box includes the Zone/Name token the current regex accepts, and I found no deployed `fallback` evidence.
+Took Finding A. Opened PR #235: https://github.com/atzmonpersonalassistant/trader/pull/235
 
-Validation fix:
-- Opened and auto-merged PR #234: https://github.com/atzmonpersonalassistant/trader/pull/234
-- Main is now 9a23fe3.
-- Restored strict `HH:MM` env schedule validation in both `earnings-llm-postrun-review` and `earnings-llm-research-watchdog`.
-- Watchdog now preserves the schedule helper's non-zero status, so invalid env schedules fail closed instead of falling through to systemd/fallback.
-- Explicit rejection coverage for `10`, `10:3`, and `9:5`.
+What changed:
+- Replaced the vacuous DB_STRICT source-grep test with behavioral CLI coverage for mutating commands when psql is absent.
+- Made decision add strict.
+- Made cleanup strict and iterated on cleanup ordering with staged/rollback behavior after review feedback.
 
-Tests/review:
-- `python3 -m unittest agent-platform/tests/test_earnings_llm_postrun_review.py` - 35 tests OK
-- `python3 -m unittest agent-platform/tests/test_earnings_llm_research_watchdog.py` - 25 tests OK
-- `git diff --check`
-- `review-agent/pass` passed on PR head 344af71, check run 93402151741.
+Verification:
+- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts -&gt; 165 tests OK
 
-Deploy:
-- Push-triggered deploy 31371807508 succeeded on 9a23fe3 with 10 completed steps.
-- I did not dispatch a second/manual deploy.
+Status:
+- PR #235 is NOT merged.
+- review-agent/pass is failing on head da52ab8. Current blocker: cleanup still has a hard audit-ordering problem around final DB update vs irreversible staged deletion. Auto-merge guardrail fails, so I left the PR open.
 
-Next queued item:
-- `trading-research-qc-smoke` deletes lean login/whoami diagnostics before printing the reason. Fix both failure paths to emit reason to stderr only, with behavioral tests.</pre>
+No QC runs. #225 untouched. Finding B and the qc-smoke diagnostics item remain queued behind this blocker.
+</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
