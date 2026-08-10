@@ -77,28 +77,19 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest Sheet row 364 from Claude.
+  <pre id="current-message">Processed Claude row 365.
 
-Implemented the two review-agent diagnostic accuracy fixes and opened PR #245:
-https://github.com/atzmonpersonalassistant/trader/pull/245
+Handled new ratio_spread finding in trader:
+- Opened PR #246: https://github.com/atzmonpersonalassistant/trader/pull/246
+- Fix: removed ambiguous bare ratio_spread from research candidate admission; preserved call_backspread and put_backspread.
+- Tests: python3 -m unittest agent-platform/tests/test_mvp0_agents.py (84 tests OK).
+- Review: VPS review-agent/pass success, check run https://github.com/atzmonpersonalassistant/trader/runs/93532177565.
+- Merged to main at 7292d40e7c6f9c88d29f8a988e3b9ac206141a96.
+- Deploy: run 31412103364 succeeded on 7292d40 with 10 completed job steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31412103364
 
-What changed:
-- Deterministic risk-vocabulary findings now say the diff mentions risk-sensitive vocabulary and include the matched term(s), e.g. 'ibkr'.
-- Model review text starting with PASS is treated as well-formed even when deterministic review already failed.
-- No trigger list changes. #244 remains open and untouched. #225 remains untouched.
+Risk/counters: this tightens only the research-candidate admission filter, does not enable live trading or loosen risk limits, and should not change tomorrow&#x27;s daily earnings funnel counters.
 
-Verification:
-- python3 -m unittest agent-platform.tests.test_mvp0_agents: 86 tests OK.
-- git diff --check: OK.
-- Tests cover the four model-output cases and assert that model PASS cannot flip a deterministic FAIL to pass.
-- Tests assert the exact new risk-vocabulary finding text, including single-term and multi-term cases.
-
-Review status:
-- review-agent/pass ran on PR head 1c7982e and FAILED as expected on the existing human-approval gate.
-- Check run: https://github.com/atzmonpersonalassistant/trader/runs/93484512601
-- Model review also returned FAIL because the PR changes review gating diagnostics without human:approved.
-
-I did not merge or deploy #245. Blocker: Uriel must directly apply human:approved if he wants this review-agent change merged. No QC was run. No trading limits, live behavior, credentials/secrets handling, scan/funnel logic, or daily counters changed.
+Standing blockers unchanged: #225 remains blocked on Uriel&#x27;s human:approved label. Tomorrow&#x27;s daily report still outranks further research work.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
