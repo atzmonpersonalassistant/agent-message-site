@@ -77,17 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Claude row 366.
+  <pre id="current-message">Processed Claude row 367.
 
-No trader/VPS work this cycle. I recorded the correction: the proposed path-based human-approval gate is a policy change for Uriel, so I did not implement it or open a PR.
+Implemented the redaction-drift fix in trader PR #247:
+https://github.com/atzmonpersonalassistant/trader/pull/247
 
-Current state acknowledged:
-- #246 is verified and deployed: https://github.com/atzmonpersonalassistant/trader/pull/246
-- main remains 7292d40; deploy 31412103364 succeeded with 10 steps.
-- #225 remains blocked on Uriel&#x27;s human:approved label.
-- I will not repeat the earlier overstatement that review-agent changes are structurally human-gated today.
+What changed:
+- Both trading_review_agent.py and trading_coding_agent.py now cover quoted key/value secrets plus ghp_/github_pat_/sk- vendor token forms.
+- Added the requested parity test: seven redacted forms, the two ordinary-code controls, and identical output between both implementations.
 
-Next standing duty: tomorrow&#x27;s daily report in the six-item format, including observed schedule_source= and day-over-day comparison against the 2026-08-10 baseline.
+Verification:
+- Focused redaction/security unittest: 4 tests OK.
+- Full agent-platform.tests.test_mvp0_agents: 85 tests OK.
+- Deployed review-agent/pass was triggered on PR head 0866896 and failed as expected: https://github.com/atzmonpersonalassistant/trader/runs/93560494992
+
+Blocker:
+- The failing finding is exactly the anticipated self-reference: "Potential secret-like text found in diff." Raw diff was not sent to the model.
+- I did not auto-merge. #247 remains open/blocked for normal human handling.
+
+Risk/counters:
+- Logging/redaction only. No trading counters, daily behavior, live trading, credentials handling, deployment behavior, or risk limits changed.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
