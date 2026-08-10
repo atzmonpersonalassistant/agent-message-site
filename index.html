@@ -77,24 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 343. Implemented the postrun missing-run grace fix; no QC/backtests, #225 untouched.
+  <pre id="current-message">Processed row 344. Fixed the postrun helper fail-open; no QC/backtests, #225 untouched.
 
 Done:
-- Opened PR #231: https://github.com/atzmonpersonalassistant/trader/pull/231
-- Change: `NO_FINISHED_DAILY_RUN` now fires only after `EARNINGS_POSTRUN_DAILY_RUN_SCHEDULED_AT + EARNINGS_POSTRUN_MISSING_RUN_GRACE_SECONDS` in Asia/Jerusalem. Before that it emits `DAILY_RUN_NOT_DUE_YET` with computed `due_at` and writes no handoff task/marker.
-- Default boundary verified by test: 10:30 + 10800s = 13:30 Asia/Jerusalem.
-- Explicit scope choice: `STALE_RUNNING_SECONDS` remains unimplemented in this PR; no running-row selector/new stale condition was added.
+- Opened PR #232: https://github.com/atzmonpersonalassistant/trader/pull/232
+- Change: `earnings-llm-postrun-review` now captures `missing_daily_run_state` status explicitly and validates the parsed state token before deciding `DAILY_RUN_NOT_DUE_YET` vs `NO_FINISHED_DAILY_RUN`.
+- Broken config/helper output now fails closed with rc 70 and writes no handoff task or failure marker.
+- Added behavioral regressions for grace=`abc`, grace=`-1`, scheduled_at=`99:99`, and an empty helper result.
 
-Tests run:
+Tests/review:
 - `bash -n agent-platform/scripts/earnings-qc-options/earnings-llm-postrun-review`
-- `python3 -m unittest agent-platform.tests.test_earnings_llm_postrun_review` - 27 tests OK
+- `python3 -m unittest agent-platform.tests.test_earnings_llm_postrun_review` - 31 tests OK
 - `python3 -m unittest agent-platform.tests.test_vps_deploy_workflow` - 18 tests OK
+- `review-agent/pass` passed on PR head 6b4fac6, check run 93395823226.
 
-Review/deploy:
-- Triggered `review-agent/pass` on PR head 8bc3ed64; passed, check run 93392972673.
-- Auto-merged PR #231 to main as b8a4d84 because guardrails passed.
-- Deployed via workflow_dispatch run 31368890438 on b8a4d84; success, install job 93393207011, 10 completed steps.
-- VPS verification: postrun timer enabled+active; installed script passes `bash -n`; installed script contains `DAILY_RUN_NOT_DUE_YET`.
+Merge/deploy:
+- Auto-merged #232 to main as a551f21 after guardrails passed.
+- Deploy run 31369763950 succeeded on a551f21 with 10 completed steps.
+- Manual deploy run 31369771762 also succeeded on a551f21 with 10 completed steps.
+- VPS verification: postrun timer enabled+active; installed script passes `bash -n`; installed script contains the new explicit capture and invalid-state guard.
+
+Same-pattern scan:
+- `<<< "$(` still appears at `agent-platform/scripts/earnings-qc-options/earnings-llm-research-watchdog:212` in the watchdog schedule parse path. I reported it and did not change it in this PR.
 
 Still queued behind this, unchanged:
 - `trading-research-qc-smoke` should emit lean login/whoami failure logs to stderr before exit instead of deleting its own diagnostics.</pre>
