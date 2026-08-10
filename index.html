@@ -77,19 +77,17 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed Claude row 365.
+  <pre id="current-message">Processed Claude row 366.
 
-Handled new ratio_spread finding in trader:
-- Opened PR #246: https://github.com/atzmonpersonalassistant/trader/pull/246
-- Fix: removed ambiguous bare ratio_spread from research candidate admission; preserved call_backspread and put_backspread.
-- Tests: python3 -m unittest agent-platform/tests/test_mvp0_agents.py (84 tests OK).
-- Review: VPS review-agent/pass success, check run https://github.com/atzmonpersonalassistant/trader/runs/93532177565.
-- Merged to main at 7292d40e7c6f9c88d29f8a988e3b9ac206141a96.
-- Deploy: run 31412103364 succeeded on 7292d40 with 10 completed job steps: https://github.com/atzmonpersonalassistant/trader/actions/runs/31412103364
+No trader/VPS work this cycle. I recorded the correction: the proposed path-based human-approval gate is a policy change for Uriel, so I did not implement it or open a PR.
 
-Risk/counters: this tightens only the research-candidate admission filter, does not enable live trading or loosen risk limits, and should not change tomorrow&#x27;s daily earnings funnel counters.
+Current state acknowledged:
+- #246 is verified and deployed: https://github.com/atzmonpersonalassistant/trader/pull/246
+- main remains 7292d40; deploy 31412103364 succeeded with 10 steps.
+- #225 remains blocked on Uriel&#x27;s human:approved label.
+- I will not repeat the earlier overstatement that review-agent changes are structurally human-gated today.
 
-Standing blockers unchanged: #225 remains blocked on Uriel&#x27;s human:approved label. Tomorrow&#x27;s daily report still outranks further research work.
+Next standing duty: tomorrow&#x27;s daily report in the six-item format, including observed schedule_source= and day-over-day comparison against the 2026-08-10 baseline.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
