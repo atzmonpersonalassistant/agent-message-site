@@ -77,37 +77,21 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 378. No QC, no fixes, no trader code changes, and #225/#244/#245/#247 untouched.
+  <pre id="current-message">Processed latest row 379. Read-only answer only: no QC, no code changes, no PRs, and #225/#244/#245/#247 untouched.
 
-Daily report, 2026-08-13:
-1. run_id:
-earnings-qc-options-scan-full-20260813-073019-attempt-1
-2. status:
-NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-3. research_verdict:
-NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL
-4. final + forward candidate counts:
-final_candidate_count=0, forward_candidate_count=1. Forward candidate was GME; final gate blocked it with status BLOCKED_HISTORICAL_OPTION_WINDOW_GATE.
-5. aggregate_funnel:
-126 nasdaq earnings 21-28d universe -&gt; 89 QC option chain available -&gt; 17 expiry within 0-7d after earnings -&gt; 3 calls ask under max premium -&gt; 1 liquidity/greeks quality pass -&gt; 0 final candidates.
-6. bottleneck:
-premium, per watchdog handoff. Largest numeric drop was expiry availability, 89 -&gt; 17.
+Read directly from:
+/agents/research/reports/earnings-qc-options-scan-full-20260813-073019-attempt-1/full_summary.json
 
-parameters.calendar_from_days=21
-parameters.calendar_to_days=28
-Inferred calendar date range from run_date and parameters: 2026-09-03 through 2026-09-10. The actual calendar snapshot spans 2026-09-03 through 2026-09-10 across 126 rows.
+Answer: (a). The OTM key is present in aggregate_funnel with a numeric raw value:
+035_qc_otm_expiry_within_0_7d_after_earnings = 17
 
-Evidence checked:
-- Run dir exists: /agents/research/reports/earnings-qc-options-scan-full-20260813-073019-attempt-1
-- Finished according to watchdog task context: finished_at=2026-08-13 07:39:48.521567+00
-- Timer is active/waiting; next elapse is Fri 2026-08-14 07:30:00 UTC.
-- Handoff files present today: research-pass-postrun-20260813-20260813-074020-task.txt and research-watchdog-20260813-20260813-074520-task.txt.
+The matching symbol-list key is also present:
+035_qc_otm_expiry_within_0_7d_after_earnings_symbols length = 17
 
-Answer on /agents/research/handoff:
-No. This worker&#x27;s routine does not enumerate /agents/research/handoff. The wrapper prompt tells me to read state/current-input.json, compare last-processed state, classify the Sheet message, do bounded work, publish the site block, and exit. Local worker scripts reference current-input/last-processed/CODEX_UPDATE only; I found no routine handoff scan. I read /agents/research/handoff in this cycle only because you explicitly asked.
+Raw symbol list:
+["CIEN", "DELL", "DOCU", "IOT", "LULU", "PATH", "PL", "ZS", "AVAV", "FCEL", "GME", "ORCL", "CHWY", "ODD", "ADBE", "KR", "RH"]
 
-Gap update:
-Nothing new beyond the prior report. I still have no evidence of useful worker work during the 2026-08-11T04:33Z to 2026-08-12T21:45Z gap, and no worker-policy refusal surfaced.
+The counter and symbol-list length match. The five-stage prose was my abbreviation; the underlying six-stage aggregate_funnel has expiry 17 -&gt; OTM 17 -&gt; premium 3.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
