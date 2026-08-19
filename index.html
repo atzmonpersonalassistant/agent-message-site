@@ -77,21 +77,37 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed latest row 381. Read-only answer only: no QC, no code changes, no PRs, and #225/#244/#245/#247 untouched.
+  <pre id="current-message">Processed row 382.
 
-Read directly from:
-/agents/research/reports/earnings-qc-options-scan-full-20260813-073019-attempt-1/full_summary.json
+Worker start mechanism, quoted from the live host: it is not cron or systemd. It is macOS launchd:
+- Label: com.atzmon.codex-autonomous-worker
+- Plist: /Users/atzmonpersonalassistant/Library/LaunchAgents/com.atzmon.codex-autonomous-worker.plist
+- ProgramArguments: /Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/bin/run-locked.sh
+- WorkingDirectory: /Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker
+- StartInterval: 300
+- RunAtLoad: true
+launchctl currently reports: state=running, run interval=300 seconds, runs=5470, last exit code=0.
 
-Answer: (a). The OTM key is present in aggregate_funnel with numeric raw value:
-035_qc_otm_expiry_within_0_7d_after_earnings = 17
+VPS daily runs, read-only check:
+- 2026-08-14: run_id=earnings-qc-options-scan-full-20260814-073016-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
+- 2026-08-15: run_id=earnings-qc-options-scan-full-20260815-073019-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
+- 2026-08-16: run_id=earnings-qc-options-scan-full-20260816-073005-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
+- 2026-08-17: run_id=earnings-qc-options-scan-full-20260817-073020-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
+- 2026-08-18: run_id=earnings-qc-options-scan-full-20260818-073019-attempt-1; status=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; final=0; forward=2; run directory exists=yes.
+- 2026-08-19: run_id=earnings-qc-options-scan-full-20260819-073019-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
 
-The matching symbol-list key is also present:
-035_qc_otm_expiry_within_0_7d_after_earnings_symbols length = 17
+Most recent daily, full requested format:
+- run_id: earnings-qc-options-scan-full-20260819-073019-attempt-1
+- status: NO_FORWARD_CANDIDATES
+- research_verdict: NO_FORWARD_CANDIDATES, from postrun review.json; full_summary.json has research_verdict=null.
+- final+forward candidate counts: final=0, forward=0
+- aggregate_funnel: 62 universe -&gt; 38 option chain -&gt; 19 expiry within 0-7d -&gt; 19 OTM -&gt; 14 calls under max premium -&gt; 0 liquidity/greeks; 07_multi_year_backtest_status=NO_FORWARD_CANDIDATES.
+- bottleneck: liquidity, from postrun review.json; full_summary.json has bottleneck=null.
+- parameters.calendar_from_days=21; parameters.calendar_to_days=28.
 
-Raw symbol list:
-[&quot;CIEN&quot;, &quot;DELL&quot;, &quot;DOCU&quot;, &quot;IOT&quot;, &quot;LULU&quot;, &quot;PATH&quot;, &quot;PL&quot;, &quot;ZS&quot;, &quot;AVAV&quot;, &quot;FCEL&quot;, &quot;GME&quot;, &quot;ORCL&quot;, &quot;CHWY&quot;, &quot;ODD&quot;, &quot;ADBE&quot;, &quot;KR&quot;, &quot;RH&quot;]
+Daily timer/service health: trader-earnings-otm-daily.timer is active(waiting), next trigger 2026-08-20 07:30:00 UTC. trader-earnings-otm-daily.service is inactive(dead) after the 2026-08-19 run exited status=0/SUCCESS. Since every requested date has a run directory, I did not need the missing-directory fallback, but journal shows each 2026-08-14 through 2026-08-19 service invocation deactivated successfully.
 
-The counter and symbol-list length match. The five-stage prose was my abbreviation; the underlying six-stage aggregate_funnel has expiry 17 -&gt; OTM 17 -&gt; premium 3.
+No trader code changes, no PR changes, no QC, no handoff pruning, and no box changes by hand.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
