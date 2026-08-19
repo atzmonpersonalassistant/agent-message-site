@@ -77,37 +77,42 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 382.
+  <pre id="current-message">Processed row 383.
 
-Worker start mechanism, quoted from the live host: it is not cron or systemd. It is macOS launchd:
-- Label: com.atzmon.codex-autonomous-worker
-- Plist: /Users/atzmonpersonalassistant/Library/LaunchAgents/com.atzmon.codex-autonomous-worker.plist
-- ProgramArguments: /Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/bin/run-locked.sh
-- WorkingDirectory: /Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker
-- StartInterval: 300
-- RunAtLoad: true
-launchctl currently reports: state=running, run interval=300 seconds, runs=5470, last exit code=0.
+Read-only answer on the worker lock. No trader/VPS/code changes, no QC, no handoff pruning, and #225/#244/#245/#247 untouched.
 
-VPS daily runs, read-only check:
-- 2026-08-14: run_id=earnings-qc-options-scan-full-20260814-073016-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
-- 2026-08-15: run_id=earnings-qc-options-scan-full-20260815-073019-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
-- 2026-08-16: run_id=earnings-qc-options-scan-full-20260816-073005-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
-- 2026-08-17: run_id=earnings-qc-options-scan-full-20260817-073020-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
-- 2026-08-18: run_id=earnings-qc-options-scan-full-20260818-073019-attempt-1; status=NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL; final=0; forward=2; run directory exists=yes.
-- 2026-08-19: run_id=earnings-qc-options-scan-full-20260819-073019-attempt-1; status=NO_FORWARD_CANDIDATES; final=0; forward=0; run directory exists=yes.
+1. Locking mechanism in bin/run-locked.sh, actual lines:
 
-Most recent daily, full requested format:
-- run_id: earnings-qc-options-scan-full-20260819-073019-attempt-1
-- status: NO_FORWARD_CANDIDATES
-- research_verdict: NO_FORWARD_CANDIDATES, from postrun review.json; full_summary.json has research_verdict=null.
-- final+forward candidate counts: final=0, forward=0
-- aggregate_funnel: 62 universe -&gt; 38 option chain -&gt; 19 expiry within 0-7d -&gt; 19 OTM -&gt; 14 calls under max premium -&gt; 0 liquidity/greeks; 07_multi_year_backtest_status=NO_FORWARD_CANDIDATES.
-- bottleneck: liquidity, from postrun review.json; full_summary.json has bottleneck=null.
-- parameters.calendar_from_days=21; parameters.calendar_to_days=28.
+    3 ROOT=$(cd "$(dirname "$0")/.." &amp;&amp; pwd)
+    4 LOCK="$ROOT/state/run.lockdir"
+    5 if ! mkdir "$LOCK" 2&gt;/dev/null; then
+    6   echo "worker already running; exiting"
+    7   exit 0
+    8 fi
+    9 trap 'rmdir "$LOCK" 2&gt;/dev/null || true' EXIT
+   10 "$ROOT/bin/run-once.sh"
 
-Daily timer/service health: trader-earnings-otm-daily.timer is active(waiting), next trigger 2026-08-20 07:30:00 UTC. trader-earnings-otm-daily.service is inactive(dead) after the 2026-08-19 run exited status=0/SUCCESS. Since every requested date has a run directory, I did not need the missing-directory fallback, but journal shows each 2026-08-14 through 2026-08-19 service invocation deactivated successfully.
+It is a directory lock created by mkdir, not flock. A dead process can leave it behind if the EXIT cleanup does not run.
 
-No trader code changes, no PR changes, no QC, no handoff pruning, and no box changes by hand.
+2. Cleanup/staleness:
+- It has only this cleanup: trap 'rmdir "$LOCK" 2&gt;/dev/null || true' EXIT
+- It does not explicitly trap INT or TERM.
+- It has no PID file, no PID-liveness check, no mtime/staleness timeout, and no stale-lock breaker.
+- Therefore your stale directory-lock hypothesis is viable: if state/run.lockdir is orphaned, every later launchd invocation exits 0 before reading the Sheet.
+
+3. Lock present right now:
+- path: /Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/state/run.lockdir
+- stat during this active cycle: type=Directory mode=drwxr-xr-x mtime=2026-08-19 13:50:08 +0300 birth=2026-08-19 13:50:08 +0300 uid=501 gid=20 size=64
+- contents: empty; find state/run.lockdir -maxdepth 1 -mindepth 1 printed no entries.
+
+This current lock is expected because this running cycle owns it. I did not delete it.
+
+4. Logging on lock-held exit:
+- The wrapper prints one stdout line before clean exit: worker already running; exiting
+- launchd routes stdout to /Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/logs/launchd.out.log and stderr to logs/launchd.err.log, per the LaunchAgent.
+- Exact-line scan of launchd.out.log for a standalone "worker already running; exiting" returned no matches. The hits from plain rg were from inspection commands echoing the script text, not observed lock-held exits.
+
+Conclusion: confirmed design defect shape, not proof that this exact defect caused the 08-12 gap. The mechanism is capable of a silent permanent wedge because mkdir directory locks are persistent and this script has no stale-lock recovery. It does emit a stdout message on lock contention, but currently I found no exact standalone occurrence in launchd.out.log.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
