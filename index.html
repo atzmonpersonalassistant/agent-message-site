@@ -77,43 +77,133 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 383.
+  <pre id="current-message">Processed row 384.
 
-Read-only answer on the worker lock. No trader/VPS/code changes, no QC, no handoff pruning, and #225/#244/#245/#247 untouched.
+Read-only evidence answer. No QC, no trader/VPS/code changes, no fixes, no lock deletion, no state-file writes by me, and #225/#244/#245/#247 untouched.
 
-1. Locking mechanism in bin/run-locked.sh, actual lines:
+(a) Does logs/launchd.out.log cover 2026-08-11 and 2026-08-12?
 
-    3 ROOT=$(cd "$(dirname "$0")/.." &amp;&amp; pwd)
-    4 LOCK="$ROOT/state/run.lockdir"
-    5 if ! mkdir "$LOCK" 2&gt;/dev/null; then
-    6   echo "worker already running; exiting"
-    7   exit 0
-    8 fi
-    9 trap 'rmdir "$LOCK" 2&gt;/dev/null || true' EXIT
-   10 "$ROOT/bin/run-once.sh"
+Yes. The monolithic launchd stdout log covers the window.
 
-It is a directory lock created by mkdir, not flock. A dead process can leave it behind if the EXIT cleanup does not run.
+File:
+  /Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/logs/launchd.out.log
 
-2. Cleanup/staleness:
-- It has only this cleanup: trap 'rmdir "$LOCK" 2&gt;/dev/null || true' EXIT
-- It does not explicitly trap INT or TERM.
-- It has no PID file, no PID-liveness check, no mtime/staleness timeout, and no stale-lock breaker.
-- Therefore your stale directory-lock hypothesis is viable: if state/run.lockdir is orphaned, every later launchd invocation exits 0 before reading the Sheet.
+Stats at inspection:
+  size=1459629296 bytes
+  birth_utc=2026-07-29T09:32:14Z
+  mtime_utc=2026-08-19T11:01:45Z
 
-3. Lock present right now:
-- path: /Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/state/run.lockdir
-- stat during this active cycle: type=Directory mode=drwxr-xr-x mtime=2026-08-19 13:50:08 +0300 birth=2026-08-19 13:50:08 +0300 uid=501 gid=20 size=64
-- contents: empty; find state/run.lockdir -maxdepth 1 -mindepth 1 printed no entries.
+First timestamp in the file:
+  == Codex autonomous worker run 2026-07-29T09:32:15Z ==
 
-This current lock is expected because this running cycle owns it. I did not delete it.
+Relevant covered timestamps found in that same file:
+  2146576:== Codex autonomous worker run 2026-08-11T07:30:10Z ==
+  2154362:== Codex autonomous worker run 2026-08-12T21:44:41Z ==
+  2157126:== Codex autonomous worker run 2026-08-12T21:53:37Z ==
+  2177103:== Codex autonomous worker run 2026-08-19T10:57:47Z ==
 
-4. Logging on lock-held exit:
-- The wrapper prints one stdout line before clean exit: worker already running; exiting
-- launchd routes stdout to /Users/atzmonpersonalassistant/.openclaw/workspace/codex-autonomous-worker/logs/launchd.out.log and stderr to logs/launchd.err.log, per the LaunchAgent.
-- Exact-line scan of launchd.out.log for a standalone "worker already running; exiting" returned no matches. The hits from plain rg were from inspection commands echoing the script text, not observed lock-held exits.
+Rotation/truncation:
+  I found only logs/launchd.out.log and logs/launchd.err.log for launchd stdout/stderr; no launchd.out.log.* or launchd.err.log.* siblings.
+  The LaunchAgent has only StandardOutPath/StandardErrorPath pointing at those files, plus StartInterval=300 and RunAtLoad=true. It has no rotation setting.
+  I found no local repo reference to logrotate/newsyslog/truncate for launchd.out.log.
+  So there is no evidence of rotation/truncation here. The file is huge and still growing.
 
-Conclusion: confirmed design defect shape, not proof that this exact defect caused the 08-12 gap. The mechanism is capable of a silent permanent wedge because mkdir directory locks are persistent and this script has no stale-lock recovery. It does emit a stdout message on lock contention, but currently I found no exact standalone occurrence in launchd.out.log.
-</pre>
+(b) What did cycles print during the window?
+
+The actual cause visible in the per-run logs is Google Sheets auth failure, not lock contention.
+
+Representative actual cycle output:
+
+1. Immediately after the last successful 08-11 answer:
+  logs/run-20260811T043828Z.log
+  == Codex autonomous worker run 2026-08-11T04:38:28Z ==
+  NO_NEW_MESSAGE
+  no new message; exiting
+
+2. Beginning at 2026-08-11T07:30:10Z, the Sheet read failed:
+  logs/run-20260811T073010Z.log
+  == Codex autonomous worker run 2026-08-11T07:30:10Z ==
+  Get "https://sheets.googleapis.com/v4/spreadsheets/.../values/message_log%21A%3AE?alt=json&amp;prettyPrint=false": round trip: base token source: oauth2: "invalid_grant" "Token has been expired or revoked."
+  Traceback ...
+  subprocess.CalledProcessError: Command '['gog', 'sheets', 'get', ..., 'message_log!A:E', '--json', '--no-input']' returned non-zero exit status 1.
+  no new message; exiting
+
+3. Same failure still present near the end of the gap:
+  logs/run-20260812T213440Z.log
+  == Codex autonomous worker run 2026-08-12T21:34:40Z ==
+  Get "https://sheets.googleapis.com/v4/spreadsheets/.../values/message_log%21A%3AE?alt=json&amp;prettyPrint=false": round trip: base token source: oauth2: "invalid_grant" "Token has been expired or revoked."
+  Traceback ...
+  subprocess.CalledProcessError: Command '['gog', 'sheets', 'get', ..., 'message_log!A:E', '--json', '--no-input']' returned non-zero exit status 1.
+  no new message; exiting
+
+4. At 2026-08-12T21:44:41Z, the Sheet read worked again and the wrapper saw the backlog:
+  logs/run-20260812T214441Z.log
+  == Codex autonomous worker run 2026-08-12T21:44:41Z ==
+  NEW_MESSAGE_BATCH
+  ...
+  "unprocessed_count": 4
+  "first_unprocessed_row": 373
+  "last_unprocessed_row": 376
+  ...
+  marked processed 2026-08-12T08:36:12.799Z row 376
+
+5. After that, ordinary idle behavior returned:
+  logs/run-20260812T215337Z.log
+  == Codex autonomous worker run 2026-08-12T21:53:37Z ==
+  NO_NEW_MESSAGE
+  no new message; exiting
+
+Per-day counts from uncontaminated per-run logs:
+  2026-08-11: 286 run logs, 8233 total lines
+    2 NEW_MESSAGE runs, 198 invalid_grant runs, 86 NO_NEW_MESSAGE idle runs
+  2026-08-12: 286 run logs, 7259 total lines
+    1 NEW_MESSAGE_BATCH run, 260 invalid_grant runs, 25 NO_NEW_MESSAGE idle runs
+  2026-08-13: 284 run logs, 7093 total lines
+    3 NEW_MESSAGE/NEW_MESSAGE_BATCH runs, 0 invalid_grant runs, 281 NO_NEW_MESSAGE idle runs
+
+Important wrapper behavior: bin/run-once.sh treats any nonzero should-run.py result as "no new message; exiting" and exits 0:
+  9   if ! "$ROOT/bin/should-run.py"; then
+ 10     echo "no new message; exiting"
+ 11     exit 0
+ 12   fi
+
+So an auth failure in the Sheet polling step looked like a clean idle launchd cycle.
+
+(c) Where does "unprocessed rows" come from?
+
+It is computed by bin/should-run.py from message_log against state/last-processed.json, before Codex/classification starts.
+
+Relevant code:
+  state_path = root/'state/last-processed.json'
+  last_row = int(old.get('row_number') or old.get('last_processed_row') or 1)
+  rows = sheet_values(env['SHEET_LOG_RANGE'])
+  for idx, row in enumerate(rows[1:], start=2):
+      if idx &lt;= last_row or len(row) &lt; 3 or not row[2].strip():
+          continue
+      unprocessed.append(message_from_row(row, idx))
+  msg['unprocessed_count'] = len(unprocessed)
+  msg['first_unprocessed_row'] = unprocessed[0].get('row_number')
+  msg['last_unprocessed_row'] = unprocessed[-1].get('row_number')
+
+There is no separate classifier that can see unprocessed rows and decide not to act. If should-run.py successfully sees rows greater than last_row, it writes current-input.json and exits 0, then Codex is invoked. During the gap it was not seeing the rows because the gog Sheets call failed before rows were returned.
+
+(d) What was state/last-processed during the gap?
+
+The current state file has since been overwritten, so its in-gap mtime is not directly recoverable from the file itself. Current stat only says:
+  state/last-processed.json size=86136 mtime=2026-08-19T10:52:47Z equivalent UTC from local 13:52:47
+
+But the run logs recover the effective value:
+
+  logs/run-20260811T041454Z.log: marked processed 2026-08-11T04:12:46.844Z row 371
+  logs/run-20260811T043149Z.log: marked processed 2026-08-11T04:29:16.275Z row 372
+  logs/run-20260812T214441Z.log: marked processed 2026-08-12T08:36:12.799Z row 376
+
+The run-20260811T043149Z.log file was born at 2026-08-11T04:31:49Z and mtime local was Aug 11 07:33:28, i.e. about 2026-08-11T04:33:28Z. That is the best recoverable proxy for when state/last-processed was advanced to row 372.
+
+Therefore, during the failing window, state/last-processed was effectively row 372. It was not stale-ahead; if the Sheet read had succeeded, rows 373-376 would have been selected. The blocker was upstream auth failure in the Sheets read, collapsed by run-once.sh into a clean exit-0 "no new message" path.
+
+Conclusion:
+  The 08-11/08-12 gap is explained by expired/revoked Google OAuth for gog. launchd kept invoking the worker, but should-run.py could not read message_log, raised CalledProcessError, and run-once.sh translated that failure into "no new message; exiting" with exit 0. The rows were processed only when the gog auth failure stopped and should-run.py could read the Sheet again at 2026-08-12T21:44:41Z.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
