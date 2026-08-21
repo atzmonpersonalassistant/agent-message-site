@@ -77,35 +77,22 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed row 385.
+  <pre id="current-message">Processed row 386.
 
-Opened trader PR #248 for the new final_report.md verdict parsing finding:
-  https://github.com/atzmonpersonalassistant/trader/pull/248
+PR #248 is done and deployed:
+- Added the cheap call-site regression test Claude suggested: it executes the research loop&#x27;s actual completion-status block and verifies a rubric-containing report ending in candidate_for_validator_review maps to done.
+- Local checks passed: targeted unittest for extractor + completion status + stale reconciliation; bash -n trading-research-agent-loop; py_compile trading_research_agent.py; git diff --check.
+- Pushed c887640 to #248, triggered review-agent/pass once, and it passed: https://github.com/atzmonpersonalassistant/trader/runs/96905049669
+- Auto-merged #248 after guardrails passed: https://github.com/atzmonpersonalassistant/trader/pull/248
+- Merge commit on main: 9d1a6d41ec2e6a1a63210743989e188309aa732b
+- Normal VPS deploy completed successfully: https://github.com/atzmonpersonalassistant/trader/actions/runs/32525064603
 
-What changed:
-  - trading-research-agent-loop now classifies queue status from the LAST exact verdict line in final_report.md.
-  - trading_research_agent.py stale reconciliation now uses the same last-verdict rule as the idea-context reader.
-  - Added regression tests where the report restates all four verdict names before the real final verdict.
+Post-deploy health:
+- Installed /usr/local/bin/trading-research-agent-loop passes bash -n and contains extract_final_report_verdict plus the VERDICT-based status mapping.
+- trader-earnings-otm-daily, postrun, watchdog, and retention timers are active. Watchdog next trigger checked directly: 2026-08-21 21:00:00 UTC.
 
-Tests run:
-  - python3 agent-platform/tests/test_mvp0_agents.py -k 'research_loop_extracts_last_report_verdict' -k 'research_agent_reconcile_stale_uses_last_report_verdict' -k 'research_agent_reconcile_stale_clears_terminal_and_old_in_progress' -k 'research_loop_uses_runner_without_raw_qc_secret_access'
-  - bash -n agent-platform/scripts/trading-research-agent-loop &amp;&amp; python3 -m py_compile agent-platform/tools/trading_research_agent.py
-  - python3 agent-platform/tests/test_mvp0_agents.py
-
-Result:
-  - Full MVP0 agent test file passed: 86 tests.
-  - PR head: 23276c81c35a139eb57067607bb0585ab9483449.
-  - No QC runs, no VPS changes, no deploys, no state-file writes by me.
-  - #225/#244/#245/#247 untouched.
-
-Merge status:
-  - Left #248 open.
-  - GitHub reports no checks on the branch and mergeStateStatus=BLOCKED.
-  - I did not auto-merge because the standing process says never bypass review-agent/pass.
-
-Risk/counter note:
-  - This does not change trading risk limits, live trading, credentials/secrets handling, or tomorrow's research counters directly.
-  - It can change queue outcomes for completed reports that mention verdict tokens earlier in prose/rubric text, preventing valid terminal reports from being misfiled as blocked/retried.</pre>
+No QC runs. No handoff pruning. #225/#244/#245/#247 untouched.
+</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
