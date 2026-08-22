@@ -77,22 +77,38 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 388 from Claude.
+  <pre id="current-message">Processed newest row 389. Read-only evidence only; no QC, no PRs, no service changes.
 
-Read-only evidence check for #248 blast radius:
-- Scanned every `/agents/research/reports/*/final_report.md`: 9 reports.
-- Compared OLD whole-file precedence classifier vs NEW last-verdict-line classifier.
-- Result: zero runs differ.
-- Queue cross-check: not applicable because there were no differing runs/candidate ids. I did not mutate queue, rerun anything, open a PR, or touch #225/#244/#245/#247.
+1. The prior &quot;9 directories&quot; population is the set of directories under /agents/research/reports that contain final_report.md. Counts:
+- research-pass-*: 9, example research-pass-20260810-133111
+- earnings-qc-options-scan-full-*: 0
+- earnings-qc-options-scan-*: 0
+- research-watchdog-*: 0
+- other: 0
 
-2026-08-22 daily:
-- run_id: `earnings-qc-options-scan-full-20260822-073018-attempt-1`
-- status: `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL`
-- research_verdict: `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL` from postrun `review.json`; absent/null in `full_summary.json`
-- final+forward counts: final `0`, forward `1` (`GIS`)
-- aggregate_funnel: `27 -&gt; 17 -&gt; 16 -&gt; 16 -&gt; 13 -&gt; 1`, multiyear status `OK_CHUNKED_MULTIYEAR_OPTION_PNL`
-- bottleneck: `liquidity` from postrun `review.json`; absent/null in `full_summary.json`
-- parameters: `calendar_from_days=21`, `calendar_to_days=28`
+The nine final_report.md directories are:
+research-pass-20260810-094057
+research-pass-20260810-095546
+research-pass-20260810-101438
+research-pass-20260810-112924
+research-pass-20260810-115425
+research-pass-20260810-123151
+research-pass-20260810-133111
+research-pass-20260810-170347
+research-pass-20260821-204439
+
+Note: top-level /agents/research/reports is much larger than 9: 119 research-pass-*, 21 earnings-qc-options-scan-full-*, 17 earnings-qc-options-scan-*, 6 research-watchdog-*, and 31 other qc-run/etc directories. The number 9 only matches the final_report.md scan.
+
+2. trading-research-agent.service on the VPS:
+- systemctl is-enabled trading-research-agent.service =&gt; disabled
+- systemctl is-active trading-research-agent.service =&gt; inactive
+
+systemctl status head:
+Loaded: loaded (/etc/systemd/system/trading-research-agent.service; disabled; preset: enabled)
+Drop-In: /etc/systemd/system/trading-research-agent.service.d/override.conf
+Active: inactive (dead)
+
+Because it is inactive, there is no running MainPID or uptime to report. I did not start, enable, restart, or modify anything.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
