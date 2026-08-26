@@ -77,33 +77,30 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 392. Read-only only: no QC, no PR, no VPS changes, #225/#244/#245/#247 untouched.
+  <pre id="current-message">Processed newest row 393. Started only Item 1; did not start the QC sweep.
 
-Direct answer: I do not think any further cut of the existing artifacts can support a conclusion stronger than the one already on the table.
+Opened PR #249: https://github.com/atzmonpersonalassistant/trader/pull/249
+Commit: 08719177c23ecffa322a8a5a0b4bf16fdef892e2
 
-What the 66-trade file supports:
-- Negative conclusion: no required_move band is profitable at the median.
-- Defensive exclusion: &gt;35% required_move is 37/66 trades, clears 0/37, median -88.9%. A ceiling would remove a large category that has never worked in this sample.
+Implemented:
+- 35.0% max_required_move_pct ceiling in stage-2 selection.
+- Above-ceiling contracts cannot become liquidity-pass or forward candidates.
+- Explicit null required_move_pct fails closed as required_move_missing.
+- New 045_qc_required_move_under_ceiling funnel counter, including full-scan aggregation/reporting.
+- PR is framed as loss avoidance only, not a profit claim, and states forward candidates may fall to zero.
 
-What it does NOT support:
-- A winning-region claim.
-- A two-way selector from required_move x iv_excess/liquidity. Four required-move bands x three secondary bands gives roughly 12 cells over 66 trades, median cell size about 5 or 6 before missing values. The artifact has 54 non-null exit iv_excess values, so that cut gets thinner. Any green-looking cell would be hypothesis generation, not a production rule.
+Local checks passed:
+- py_compile for scanner + research scripts.
+- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts: 175 tests OK.
+- python3 -m unittest discover -s agent-platform/tests: 340 tests OK.
 
-So I agree with your sample-limit objection. The next decision is Uriel's: either accept a conservative required_move ceiling as a loss-avoidance/risk-reduction change, explicitly NOT a profit claim, or authorize a wider historical sweep to answer whether a winning selectable region exists.
+review-agent/pass was triggered once and FAILED. I am not rerunning it.
+Check: https://github.com/atzmonpersonalassistant/trader/runs/98329164766
 
-QC cost estimate in practical terms:
-- Dollar cost: not a blocker under the standing QC subscription authorization.
-- Node cost: one Lean cloud backtest occupies one QC node; experiments must be serialized and kept clear of the 06:00 Asia/Jerusalem daily run window.
-- Existing 7-symbol, nominal 10-year artifact produced 66 completed trades from 145 historical events and stored 2,431,635 option snapshots. The runner timeout default is 1,800s, so planning should assume up to ~30 minutes of node occupancy per batch unless measured otherwise.
-- Evidence target: for a 12-cell two-way cut, I would want at least ~20 trades in candidate cells and preferably 240-360 total completed trades before trusting the shape. At the observed yield of ~9.4 completed trades per symbol in this sweep, that implies roughly 25-40 comparable symbols, more if dropout is worse.
-- Operational estimate: 25-40 symbols means about 4-6 serialized batches if we keep batches around the current 7-symbol size, roughly 2-3 hours of QC node reservation at the timeout ceiling. A broader 75-100 symbol sweep is 11-15 batches, so more like 6-8 hours and should be scheduled away from the daily run.
+Blocking finding:
+- earnings-qc-research mixed old/new chunk aggregation can make 045 count and symbols inconsistent. Example from review: old chunk AAA backfills count from premium, new chunk CCC has real 045 symbols; count becomes 2 but symbols can be only ["CCC"]. That breaks the counter/symbol invariant and needs a fix/test before merge.
 
-My recommendation to relay to Uriel:
-1. Existing data is enough to say the current instrument has no demonstrated selectable winning region.
-2. Existing data is enough to consider a required_move ceiling as a way to stop buying contracts whose required move has never been cleared here.
-3. Existing data is not enough to prove a profitable selector. That requires a wider symbol sweep, not more slicing of the same 66 trades.
-
-No implementation started because you explicitly said no PR and because this is now an authorization/decision point.
+#225/#244/#245/#247 untouched. No QC runs, no sweep, no merge.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
