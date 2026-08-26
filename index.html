@@ -77,26 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 390. Did ranked items A/B as read-only measurements from committed artifacts; no QC, no PR, no VPS changes.
+  <pre id="current-message">Processed newest row 391. Read-only only: no QC, no PR, no VPS changes, #225/#244/#245/#247 untouched.
 
-A. Bucketed 38 trades from agent-platform/docs/research/20260805-corrected-iv-richness-measurement.json by entry_delta:
-- &lt;0.05: n=24, win=20.8%, median return=-87.5%, median iv_excess_pct=21.06%, median entry_iv_excess=-44.14%, delta range 0.0040-0.0407
-- 0.05-0.15: n=7, win=28.6%, median return=-50.0%, median iv_excess_pct=169.235%, median entry_iv_excess=21.9%, delta range 0.0526-0.1274
-- &gt;0.15: n=7, win=28.6%, median return=-80.0%, median iv_excess_pct=53.71%, median entry_iv_excess=-14.56%, delta range 0.1514-0.2901
+Discrepancy resolved:
+- 20260805-corrected-iv-richness-measurement.json: 38 trades, symbols BULL/IREN/NIO/NVDA/TIGR, median entry_delta=0.0212. It came from the actual daily scan run earnings-qc-options-scan-full-20260805-060002 with candidate_count=5.
+- 20260805-delta-variant-comparison.json baseline: 66 trades, symbols BULL/JOBY/KSS/NIO/NVDA/OPEN/SPCE, median entry_delta=0.12455. It came from the later delta-targeted-seven experiment with candidate_count=7 in the multiyear backtest.
+- The common 30 trades have identical entry_delta values in both files; common median is 0.01805 in both. So this is not a different delta metric.
+- Population explains the aggregate shift. Only in corrected: IREN 5, TIGR 3. Only in delta-variant baseline: OPEN 12, KSS 11, SPCE 10, JOBY 3. Those added/replaced symbols are much closer to the money: KSS median 0.1305, OPEN 0.21595, SPCE 0.19065, JOBY 0.2309.
 
-Interpretation: returns improve when moving out of the &lt;0.05 bucket, but not monotonically from 0.05-0.15 to &gt;0.15. Overpricing also does not cleanly fall as delta rises in this 38-trade slice: exit iv_excess spikes in the middle bucket, and entry_iv_excess is cheapest in &lt;0.05, richest in 0.05-0.15, then lower but still above &lt;0.05 in &gt;0.15. So A supports &quot;ultra-low delta is bad&quot;, not yet &quot;higher delta is always better&quot;.
+Which better represents daily currently buys:
+- For the exact 2026-08-05 daily scan, the 38-trade corrected-IV artifact is the closer representation because it is tied to that actual daily candidate set.
+- For the later seven-symbol experiment, the 66-trade baseline is also using the shipping baseline selector, but on an expanded/different candidate population. It is representative of the selector's behavior on that experiment, not proof that daily always buys 12-delta options.
+- The defensible headline is therefore: current cheapest-contract selection can buy extremely low delta on NVDA-heavy populations, but its aggregate median delta depends heavily on the candidate symbols passing into the historical backtest.
 
-B. In agent-platform/docs/research/20260805-delta-variant-comparison.json I found 66 baseline and 66 delta_targeted trade objects. delta_targeted used delta_target=0.25 and selected:
-- min entry_delta=0.0040
-- median entry_delta=0.17685
-- max entry_delta=0.4735
-- win=18.2%, median return=-85.525%, median iv_excess_pct=14.785%
+Required_move_pct buckets on the 66 baseline trades:
+- &lt;10%: n=2, win rate 0.0%, median return -71.895%, clear share 0.0% (0/2)
+- 10-20%: n=9, win rate 22.2%, median return -76.0%, clear share 22.2% (2/9)
+- 20-35%: n=18, win rate 16.7%, median return -52.22%, clear share 5.6% (1/18)
+- &gt;35%: n=37, win rate 13.5%, median return -88.89%, clear share 0.0% (0/37)
 
-Baseline in the same artifact: median entry_delta=0.12455, range 0.0040-0.4735, win=15.2%, median return=-87.5%, median iv_excess_pct=19.795%.
+Interpretation:
+- No bucket is profitable at the median.
+- The only materially higher clear-rate bucket is 10-20%, but n=9 and median return is still -76.0%; that is not enough to defend a production rule.
+- 20-35% has the least-bad median return, but only 1/18 cleared the bar.
+- &gt;35% is the largest bucket and never cleared the required move. That strongly supports avoiding high-required-move contracts, but not by itself a winning selector.
 
-Correction: delta_targeted did not stay in the 2-delta region overall. It materially moved closer to the money, but still missed the 0.25 target on many events because eligible chains were constrained. The moneyness question was tested partially, not cleanly.
-
-Next bounded step I will take on the next cycle: inspect the selection implementation and propose a behaviour-tested rule that avoids cheapest-contract selection, likely by combining a minimum/target delta with a required-move ceiling, and state whether it changes tomorrow's counters before opening any PR.
+I agree with holding the selection-rule PR. The next defensible read-only step is to search for a selectable region using required_move_pct crossed with another observable, not delta alone: e.g. required_move_pct band x entry_iv_excess/iv_excess_pct/liquidity, with minimum n shown for every cell.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
