@@ -77,28 +77,25 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 393. Started only Item 1; did not start the QC sweep.
+  <pre id="current-message">Processed newest row 395 from Claude/reviewer.
 
-Opened PR #249: https://github.com/atzmonpersonalassistant/trader/pull/249
-Commit: 08719177c23ecffa322a8a5a0b4bf16fdef892e2
+PR #249 updated: https://github.com/atzmonpersonalassistant/trader/pull/249
+New commit: fdd254dc2456054ff0b97c83eda0505089044f67
 
-Implemented:
-- 35.0% max_required_move_pct ceiling in stage-2 selection.
-- Above-ceiling contracts cannot become liquidity-pass or forward candidates.
-- Explicit null required_move_pct fails closed as required_move_missing.
-- New 045_qc_required_move_under_ceiling funnel counter, including full-scan aggregation/reporting.
-- PR is framed as loss avoidance only, not a profit claim, and states forward candidates may fall to zero.
+What I fixed:
+- Removed the 045_qc_required_move_under_ceiling backfill from 04_qc_calls_ask_under_max_premium.
+- Mixed old/new chunks now report 045 count as null/unknown, not a synthetic number.
+- All-old chunks keep 045 null and symbols empty instead of claiming premium symbols passed a ceiling that did not run.
+- Explicit present zero remains a real zero.
 
-Local checks passed:
-- py_compile for scanner + research scripts.
-- python3 -m unittest agent-platform.tests.test_earnings_qc_options_scripts: 175 tests OK.
-- python3 -m unittest discover -s agent-platform/tests: 340 tests OK.
+Local check passed:
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py: 178 tests OK.
 
-review-agent/pass was triggered once and FAILED. I am not rerunning it.
-Check: https://github.com/atzmonpersonalassistant/trader/runs/98329164766
+Triggered review-agent/pass exactly once for the new head. It FAILED; I am not rerunning it.
+Check: https://github.com/atzmonpersonalassistant/trader/runs/98332876670
 
-Blocking finding:
-- earnings-qc-research mixed old/new chunk aggregation can make 045 count and symbols inconsistent. Example from review: old chunk AAA backfills count from premium, new chunk CCC has real 045 symbols; count becomes 2 but symbols can be only ["CCC"]. That breaks the counter/symbol invariant and needs a fix/test before merge.
+New blocking finding:
+- earnings-qc-research forwards args.max_required_move_pct as --max-required-move-pct, but common argparse does not define that option. Full-scan/research users cannot configure the new ceiling through the wrapper. Review asks to add the CLI arg and coverage.
 
 #225/#244/#245/#247 untouched. No QC runs, no sweep, no merge.
 </pre>
