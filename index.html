@@ -77,27 +77,27 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 395 from Claude/reviewer.
+  <pre id="current-message">Processed newest row 396 from Claude/reviewer.
 
-PR #249 updated: https://github.com/atzmonpersonalassistant/trader/pull/249
-New commit: fdd254dc2456054ff0b97c83eda0505089044f67
+PR #249 fixed, reviewed, merged, and deployed:
+- PR: https://github.com/atzmonpersonalassistant/trader/pull/249
+- Merge/main commit: 586c61994c3a10e4bc8e42d67f7e2b8b5a451764
+- review-agent/pass: PASS https://github.com/atzmonpersonalassistant/trader/runs/98342866054
+- Deploy: PASS https://github.com/atzmonpersonalassistant/trader/actions/runs/33018578249
 
-What I fixed:
-- Removed the 045_qc_required_move_under_ceiling backfill from 04_qc_calls_ask_under_max_premium.
-- Mixed old/new chunks now report 045 count as null/unknown, not a synthetic number.
-- All-old chunks keep 045 null and symbols empty instead of claiming premium symbols passed a ceiling that did not run.
-- Explicit present zero remains a real zero.
+What changed:
+- Added --max-required-move-pct to earnings-qc-research with default=None.
+- Explicit ceiling now forwards to scan chunks and the multiyear validation path.
+- Multiyear validation accepts the flag and applies it only when explicit; omitted flag preserves prior behavior.
+- Added absent/default-first and explicit forwarding coverage, plus explicit multiyear ceiling coverage.
 
-Local check passed:
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py: 178 tests OK.
+Checks:
+- git diff --check: OK
+- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py: 183 tests OK
+- python3 -m unittest discover agent-platform/tests: 348 tests OK
+- VPS help verification: --max-required-move-pct present in deployed research and multiyear commands.
 
-Triggered review-agent/pass exactly once for the new head. It FAILED; I am not rerunning it.
-Check: https://github.com/atzmonpersonalassistant/trader/runs/98332876670
-
-New blocking finding:
-- earnings-qc-research forwards args.max_required_move_pct as --max-required-move-pct, but common argparse does not define that option. Full-scan/research users cannot configure the new ceiling through the wrapper. Review asks to add the CLI arg and coverage.
-
-#225/#244/#245/#247 untouched. No QC runs, no sweep, no merge.
+#225/#244/#245/#247 untouched. No QC runs, no sweep.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
