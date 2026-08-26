@@ -77,32 +77,33 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 391. Read-only only: no QC, no PR, no VPS changes, #225/#244/#245/#247 untouched.
+  <pre id="current-message">Processed newest row 392. Read-only only: no QC, no PR, no VPS changes, #225/#244/#245/#247 untouched.
 
-Discrepancy resolved:
-- 20260805-corrected-iv-richness-measurement.json: 38 trades, symbols BULL/IREN/NIO/NVDA/TIGR, median entry_delta=0.0212. It came from the actual daily scan run earnings-qc-options-scan-full-20260805-060002 with candidate_count=5.
-- 20260805-delta-variant-comparison.json baseline: 66 trades, symbols BULL/JOBY/KSS/NIO/NVDA/OPEN/SPCE, median entry_delta=0.12455. It came from the later delta-targeted-seven experiment with candidate_count=7 in the multiyear backtest.
-- The common 30 trades have identical entry_delta values in both files; common median is 0.01805 in both. So this is not a different delta metric.
-- Population explains the aggregate shift. Only in corrected: IREN 5, TIGR 3. Only in delta-variant baseline: OPEN 12, KSS 11, SPCE 10, JOBY 3. Those added/replaced symbols are much closer to the money: KSS median 0.1305, OPEN 0.21595, SPCE 0.19065, JOBY 0.2309.
+Direct answer: I do not think any further cut of the existing artifacts can support a conclusion stronger than the one already on the table.
 
-Which better represents daily currently buys:
-- For the exact 2026-08-05 daily scan, the 38-trade corrected-IV artifact is the closer representation because it is tied to that actual daily candidate set.
-- For the later seven-symbol experiment, the 66-trade baseline is also using the shipping baseline selector, but on an expanded/different candidate population. It is representative of the selector's behavior on that experiment, not proof that daily always buys 12-delta options.
-- The defensible headline is therefore: current cheapest-contract selection can buy extremely low delta on NVDA-heavy populations, but its aggregate median delta depends heavily on the candidate symbols passing into the historical backtest.
+What the 66-trade file supports:
+- Negative conclusion: no required_move band is profitable at the median.
+- Defensive exclusion: &gt;35% required_move is 37/66 trades, clears 0/37, median -88.9%. A ceiling would remove a large category that has never worked in this sample.
 
-Required_move_pct buckets on the 66 baseline trades:
-- &lt;10%: n=2, win rate 0.0%, median return -71.895%, clear share 0.0% (0/2)
-- 10-20%: n=9, win rate 22.2%, median return -76.0%, clear share 22.2% (2/9)
-- 20-35%: n=18, win rate 16.7%, median return -52.22%, clear share 5.6% (1/18)
-- &gt;35%: n=37, win rate 13.5%, median return -88.89%, clear share 0.0% (0/37)
+What it does NOT support:
+- A winning-region claim.
+- A two-way selector from required_move x iv_excess/liquidity. Four required-move bands x three secondary bands gives roughly 12 cells over 66 trades, median cell size about 5 or 6 before missing values. The artifact has 54 non-null exit iv_excess values, so that cut gets thinner. Any green-looking cell would be hypothesis generation, not a production rule.
 
-Interpretation:
-- No bucket is profitable at the median.
-- The only materially higher clear-rate bucket is 10-20%, but n=9 and median return is still -76.0%; that is not enough to defend a production rule.
-- 20-35% has the least-bad median return, but only 1/18 cleared the bar.
-- &gt;35% is the largest bucket and never cleared the required move. That strongly supports avoiding high-required-move contracts, but not by itself a winning selector.
+So I agree with your sample-limit objection. The next decision is Uriel's: either accept a conservative required_move ceiling as a loss-avoidance/risk-reduction change, explicitly NOT a profit claim, or authorize a wider historical sweep to answer whether a winning selectable region exists.
 
-I agree with holding the selection-rule PR. The next defensible read-only step is to search for a selectable region using required_move_pct crossed with another observable, not delta alone: e.g. required_move_pct band x entry_iv_excess/iv_excess_pct/liquidity, with minimum n shown for every cell.
+QC cost estimate in practical terms:
+- Dollar cost: not a blocker under the standing QC subscription authorization.
+- Node cost: one Lean cloud backtest occupies one QC node; experiments must be serialized and kept clear of the 06:00 Asia/Jerusalem daily run window.
+- Existing 7-symbol, nominal 10-year artifact produced 66 completed trades from 145 historical events and stored 2,431,635 option snapshots. The runner timeout default is 1,800s, so planning should assume up to ~30 minutes of node occupancy per batch unless measured otherwise.
+- Evidence target: for a 12-cell two-way cut, I would want at least ~20 trades in candidate cells and preferably 240-360 total completed trades before trusting the shape. At the observed yield of ~9.4 completed trades per symbol in this sweep, that implies roughly 25-40 comparable symbols, more if dropout is worse.
+- Operational estimate: 25-40 symbols means about 4-6 serialized batches if we keep batches around the current 7-symbol size, roughly 2-3 hours of QC node reservation at the timeout ceiling. A broader 75-100 symbol sweep is 11-15 batches, so more like 6-8 hours and should be scheduled away from the daily run.
+
+My recommendation to relay to Uriel:
+1. Existing data is enough to say the current instrument has no demonstrated selectable winning region.
+2. Existing data is enough to consider a required_move ceiling as a way to stop buying contracts whose required move has never been cleared here.
+3. Existing data is not enough to prove a profitable selector. That requires a wider symbol sweep, not more slicing of the same 66 trades.
+
+No implementation started because you explicitly said no PR and because this is now an authorization/decision point.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
