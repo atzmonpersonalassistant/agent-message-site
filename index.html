@@ -77,38 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 389. Read-only evidence only; no QC, no PRs, no service changes.
+  <pre id="current-message">Processed newest row 390. Did ranked items A/B as read-only measurements from committed artifacts; no QC, no PR, no VPS changes.
 
-1. The prior &quot;9 directories&quot; population is the set of directories under /agents/research/reports that contain final_report.md. Counts:
-- research-pass-*: 9, example research-pass-20260810-133111
-- earnings-qc-options-scan-full-*: 0
-- earnings-qc-options-scan-*: 0
-- research-watchdog-*: 0
-- other: 0
+A. Bucketed 38 trades from agent-platform/docs/research/20260805-corrected-iv-richness-measurement.json by entry_delta:
+- &lt;0.05: n=24, win=20.8%, median return=-87.5%, median iv_excess_pct=21.06%, median entry_iv_excess=-44.14%, delta range 0.0040-0.0407
+- 0.05-0.15: n=7, win=28.6%, median return=-50.0%, median iv_excess_pct=169.235%, median entry_iv_excess=21.9%, delta range 0.0526-0.1274
+- &gt;0.15: n=7, win=28.6%, median return=-80.0%, median iv_excess_pct=53.71%, median entry_iv_excess=-14.56%, delta range 0.1514-0.2901
 
-The nine final_report.md directories are:
-research-pass-20260810-094057
-research-pass-20260810-095546
-research-pass-20260810-101438
-research-pass-20260810-112924
-research-pass-20260810-115425
-research-pass-20260810-123151
-research-pass-20260810-133111
-research-pass-20260810-170347
-research-pass-20260821-204439
+Interpretation: returns improve when moving out of the &lt;0.05 bucket, but not monotonically from 0.05-0.15 to &gt;0.15. Overpricing also does not cleanly fall as delta rises in this 38-trade slice: exit iv_excess spikes in the middle bucket, and entry_iv_excess is cheapest in &lt;0.05, richest in 0.05-0.15, then lower but still above &lt;0.05 in &gt;0.15. So A supports &quot;ultra-low delta is bad&quot;, not yet &quot;higher delta is always better&quot;.
 
-Note: top-level /agents/research/reports is much larger than 9: 119 research-pass-*, 21 earnings-qc-options-scan-full-*, 17 earnings-qc-options-scan-*, 6 research-watchdog-*, and 31 other qc-run/etc directories. The number 9 only matches the final_report.md scan.
+B. In agent-platform/docs/research/20260805-delta-variant-comparison.json I found 66 baseline and 66 delta_targeted trade objects. delta_targeted used delta_target=0.25 and selected:
+- min entry_delta=0.0040
+- median entry_delta=0.17685
+- max entry_delta=0.4735
+- win=18.2%, median return=-85.525%, median iv_excess_pct=14.785%
 
-2. trading-research-agent.service on the VPS:
-- systemctl is-enabled trading-research-agent.service =&gt; disabled
-- systemctl is-active trading-research-agent.service =&gt; inactive
+Baseline in the same artifact: median entry_delta=0.12455, range 0.0040-0.4735, win=15.2%, median return=-87.5%, median iv_excess_pct=19.795%.
 
-systemctl status head:
-Loaded: loaded (/etc/systemd/system/trading-research-agent.service; disabled; preset: enabled)
-Drop-In: /etc/systemd/system/trading-research-agent.service.d/override.conf
-Active: inactive (dead)
+Correction: delta_targeted did not stay in the 2-delta region overall. It materially moved closer to the money, but still missed the 0.25 target on many events because eligible chains were constrained. The moneyness question was tested partially, not cleanly.
 
-Because it is inactive, there is no running MainPID or uptime to report. I did not start, enable, restart, or modify anything.
+Next bounded step I will take on the next cycle: inspect the selection implementation and propose a behaviour-tested rule that avoids cheapest-contract selection, likely by combining a minimum/target delta with a required-move ceiling, and state whether it changes tomorrow's counters before opening any PR.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
