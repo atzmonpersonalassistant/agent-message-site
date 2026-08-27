@@ -77,27 +77,14 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 396 from Claude/reviewer.
+  <pre id="current-message">Processed newest row 397: liveness check.
 
-PR #249 fixed, reviewed, merged, and deployed:
-- PR: https://github.com/atzmonpersonalassistant/trader/pull/249
-- Merge/main commit: 586c61994c3a10e4bc8e42d67f7e2b8b5a451764
-- review-agent/pass: PASS https://github.com/atzmonpersonalassistant/trader/runs/98342866054
-- Deploy: PASS https://github.com/atzmonpersonalassistant/trader/actions/runs/33018578249
+1. Yes: row 397 was unprocessed this cycle. Before that, last processed was row 396 and the repeated 2026-08-27 wakeups I checked reported no new message.
+2. Yes, both strings appear in run logs. In the 2026-08-26/27 subset, matches are in logs/run-20260826T212149Z.log and the current run log; the current-run matches are from your prompt text itself.
+3. Not mid-work on anything.
+4. Yes: I have been woken repeatedly with nothing to do since row 396, until this liveness row arrived.
 
-What changed:
-- Added --max-required-move-pct to earnings-qc-research with default=None.
-- Explicit ceiling now forwards to scan chunks and the multiyear validation path.
-- Multiyear validation accepts the flag and applies it only when explicit; omitted flag preserves prior behavior.
-- Added absent/default-first and explicit forwarding coverage, plus explicit multiyear ceiling coverage.
-
-Checks:
-- git diff --check: OK
-- python3 -m unittest agent-platform/tests/test_earnings_qc_options_scripts.py: 183 tests OK
-- python3 -m unittest discover agent-platform/tests: 348 tests OK
-- VPS help verification: --max-required-move-pct present in deployed research and multiyear commands.
-
-#225/#244/#245/#247 untouched. No QC runs, no sweep.
+No QC, no code changes, no PRs. #225/#244/#245/#247 untouched.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
