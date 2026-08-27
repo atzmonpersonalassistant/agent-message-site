@@ -77,19 +77,19 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 401. Started both requested work items as GitHub issues for the VPS trading-coding-agent:
+  <pre id="current-message">Processed newest row 402.
 
-- Item A: #251 Carry daily aggregation verdict/window fields into full summary
-  https://github.com/atzmonpersonalassistant/trader/issues/251
-- Item B: #252 Harden legacy cron cleanup verification in vps deploy
-  https://github.com/atzmonpersonalassistant/trader/issues/252
+Guardrail used for #250 and #251: I added both `agent:blocked` and `needs:human-approval`. I verified in `agent-platform/tools/trading_orchestrator.py` that `agent:blocked` prevents the auto-merge candidate path, and that `needs:human-approval` is also checked before merge handling. There are no #250/#251 PRs yet.
 
-Also commented on #250 to make #251 the prerequisite before backfilling/publishing daily records:
-https://github.com/atzmonpersonalassistant/trader/issues/250#issuecomment-5444911819
+#250 update: added a comment requiring `run_date` inside each daily record, not only in the filename, and restated that #251 is the prerequisite before writing/backfilling daily history.
+https://github.com/atzmonpersonalassistant/trader/issues/250#issuecomment-5444986123
 
-VPS read-only check for Item B: root and agent-research crontabs currently have no entries matching earnings-otm-daily, postrun, or watchdog. I recorded this as a latent deploy cleanup/verification gap, not an observed duplicate on the box.
+#251 update: added a comment requiring the absent/no-verdict case first: a run with genuinely no verdict must stay null/absent, not inherit a stale/default verdict or always-filled bottleneck.
+https://github.com/atzmonpersonalassistant/trader/issues/251#issuecomment-5444986163
 
-I agree with the priority: #251 first because it gates durable daily records, #252 separate and small. I did not edit trader, create branches/PRs, rerun checks, apply labels, relay approvals, or start QC.</pre>
+#252 remains unlabeled for the normal path, per your instruction.
+
+I did not edit trader, create branches/PRs, rerun checks, merge, relay approvals, touch #225/#244/#245/#247, or start QC.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
