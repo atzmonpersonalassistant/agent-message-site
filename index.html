@@ -77,19 +77,26 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 402.
+  <pre id="current-message">Processed newest row 403.
 
-Guardrail used for #250 and #251: I added both `agent:blocked` and `needs:human-approval`. I verified in `agent-platform/tools/trading_orchestrator.py` that `agent:blocked` prevents the auto-merge candidate path, and that `needs:human-approval` is also checked before merge handling. There are no #250/#251 PRs yet.
+Plain answer: yes, the VPS is invoking the orchestrator. Mechanism:
+- `/etc/systemd/system/trading-orchestrator.timer`: `OnBootSec=2min`, `OnUnitActiveSec=10min`, enabled/active.
+- It triggers `/etc/systemd/system/trading-orchestrator.service`.
+- Service runs as `agent-orchestrator` with `ExecStart=/usr/local/bin/trading-orchestrator-tick`.
+- Tick script calls: `trading-orchestrator dispatch coding --timeout-seconds 900`.
+- Dispatcher path exists: `/usr/local/sbin/trading-dispatch-coding-agent` -> `sudo -n -u agent-coding /usr/local/bin/trading-coding-agent run --issue &lt;n&gt;`.
 
-#250 update: added a comment requiring `run_date` inside each daily record, not only in the filename, and restated that #251 is the prerequisite before writing/backfilling daily history.
-https://github.com/atzmonpersonalassistant/trader/issues/250#issuecomment-5444986123
+Why #250/#251/#252 produced no PRs: the orchestrator is alive, but its scan reports `ready_label: "agent:ready"`, `found: 0`, then `reason: "no_ready_issue"` and dispatch reports `reason: "no_claimed_issue"`. So an unlabeled issue is not normal-path eligible here. #250/#251 are intentionally blocked by labels. #252 is unlabeled, but the installed orchestrator does not pick up unlabeled issues; it looks for `agent:ready`.
 
-#251 update: added a comment requiring the absent/no-verdict case first: a run with genuinely no verdict must stay null/absent, not inherit a stale/default verdict or always-filled bottleneck.
-https://github.com/atzmonpersonalassistant/trader/issues/251#issuecomment-5444986163
+Mac side checked too: the matching launchd job is only `com.atzmon.codex-autonomous-worker`, `StartInterval=300`, running this bridge worker's `bin/run-locked.sh`. I found no local launchd job invoking `trading-coding-agent` or `trading-orchestrator-tick`.
 
-#252 remains unlabeled for the normal path, per your instruction.
+Dailies:
+- 2026-08-28: run_id `earnings-qc-options-scan-full-20260828-073019-attempt-1`; status `PARTIAL_FULL_QC_SCAN`; final 0, forward 0; run dir exists; parameters.calendar_from_days 21, calendar_to_days 28 from daily stdout; `invalid_grant` count 0.
+- 2026-08-29: run_id `earnings-qc-options-scan-full-20260829-073000-attempt-1`; status `PARTIAL_FULL_QC_SCAN`; research_verdict `PARTIAL_FULL_QC_SCAN` from postrun review; final 0, forward 0; run dir exists; aggregate_funnel 44 -> 33 -> 6 -> 6 -> 2 -> 2 -> 1; bottleneck `PARTIAL_FULL_QC_SCAN` from postrun review; parameters.calendar_from_days 21, calendar_to_days 28 from daily stdout; `invalid_grant` count 0.
 
-I did not edit trader, create branches/PRs, rerun checks, merge, relay approvals, touch #225/#244/#245/#247, or start QC.</pre>
+Important artifact caveat: `full_summary.json` for both 08-28 and 08-29 still has `run_id`, `research_verdict`, `bottleneck`, and `parameters` as null/missing in the aggregate object; the non-null verdict/bottleneck came from postrun `review.json`, and parameters came from daily stdout.
+
+No trader files edited, no branches/PRs/check reruns/merges, no labels changed, no issues updated, #225/#244/#245/#247 untouched, no QC started.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
