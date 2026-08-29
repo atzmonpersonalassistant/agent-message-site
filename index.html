@@ -77,26 +77,31 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 403.
+  <pre id="current-message">Processed newest row 404.
 
-Plain answer: yes, the VPS is invoking the orchestrator. Mechanism:
-- `/etc/systemd/system/trading-orchestrator.timer`: `OnBootSec=2min`, `OnUnitActiveSec=10min`, enabled/active.
-- It triggers `/etc/systemd/system/trading-orchestrator.service`.
-- Service runs as `agent-orchestrator` with `ExecStart=/usr/local/bin/trading-orchestrator-tick`.
-- Tick script calls: `trading-orchestrator dispatch coding --timeout-seconds 900`.
-- Dispatcher path exists: `/usr/local/sbin/trading-dispatch-coding-agent` -> `sudo -n -u agent-coding /usr/local/bin/trading-coding-agent run --issue &lt;n&gt;`.
+Item 1, read-only partial diagnosis:
+- 2026-08-27 was clean, not partial: run_id `earnings-qc-options-scan-full-20260827-073019-attempt-1`, status `NO_FORWARD_CANDIDATES`, failed_chunk_count 0, final 0, forward 0, run dir exists, funnel 51 to 37 to 11 to 11 to 5 to 5 to 0, bottleneck `liquidity` from postrun review, parameters 21 to 28, invalid_grant count 0.
+- That refutes the "all dailies since #249 are partial" hypothesis. I do not have evidence that #249 broke the daily path.
+- 2026-08-28 was partial: run_id `earnings-qc-options-scan-full-20260828-073019-attempt-1`, status `PARTIAL_FULL_QC_SCAN`, failed_chunk_count 2, final 0, forward 0, run dir exists, funnel 47 to 35 to 6 to 6 to 2 to 2 to 1, bottleneck/verdict `PARTIAL_FULL_QC_SCAN`, parameters 21 to 28, invalid_grant count 0.
+- 2026-08-29 was partial: run_id `earnings-qc-options-scan-full-20260829-073000-attempt-1`, status `PARTIAL_FULL_QC_SCAN`, failed_chunk_count 2, final 0, forward 0, run dir exists, funnel 44 to 33 to 6 to 6 to 2 to 2 to 1, bottleneck/verdict `PARTIAL_FULL_QC_SCAN`, parameters 21 to 28, invalid_grant count 0.
 
-Why #250/#251/#252 produced no PRs: the orchestrator is alive, but its scan reports `ready_label: "agent:ready"`, `found: 0`, then `reason: "no_ready_issue"` and dispatch reports `reason: "no_claimed_issue"`. So an unlabeled issue is not normal-path eligible here. #250/#251 are intentionally blocked by labels. #252 is unlabeled, but the installed orchestrator does not pick up unlabeled issues; it looks for `agent:ready`.
+What `PARTIAL` means here:
+- 2026-08-28 failed chunk offset 0: `BLOCKED_QC_NO_OPTION_CHAIN_ROWS_ON_VALUATION_DATE`, blocked_reason `QC produced zero option-chain rows on valuation date`.
+- 2026-08-28 failed chunk offset 25: `BLOCKED_QC_CANDIDATE_DETAILS_MISSING_OR_TRUNCATED`, blocked_reason `QC candidate details JSON missing/truncated/unparseable`.
+- 2026-08-29 failed chunk offset 0: same `BLOCKED_QC_NO_OPTION_CHAIN_ROWS_ON_VALUATION_DATE`.
+- 2026-08-29 failed chunk offset 25: same `BLOCKED_QC_CANDIDATE_DETAILS_MISSING_OR_TRUNCATED`.
+- A third observed chunk dir at offset 650 for both dates has `BLOCKED_QC_BATCH_FAILED` / `QC/LEAN batch option-chain diagnostic failed; see qc_stage2_* artifacts`, but it is not included in `failed_chunks`; stdout reports chunk_count 2 and failed_chunk_count 2.
 
-Mac side checked too: the matching launchd job is only `com.atzmon.codex-autonomous-worker`, `StartInterval=300`, running this bridge worker's `bin/run-locked.sh`. I found no local launchd job invoking `trading-coding-agent` or `trading-orchestrator-tick`.
+Item 2:
+- Added `agent:ready` to #252: https://github.com/atzmonpersonalassistant/trader/issues/252
+- Did not add `agent:ready` to #250 or #251.
 
-Dailies:
-- 2026-08-28: run_id `earnings-qc-options-scan-full-20260828-073019-attempt-1`; status `PARTIAL_FULL_QC_SCAN`; final 0, forward 0; run dir exists; parameters.calendar_from_days 21, calendar_to_days 28 from daily stdout; `invalid_grant` count 0.
-- 2026-08-29: run_id `earnings-qc-options-scan-full-20260829-073000-attempt-1`; status `PARTIAL_FULL_QC_SCAN`; research_verdict `PARTIAL_FULL_QC_SCAN` from postrun review; final 0, forward 0; run dir exists; aggregate_funnel 44 -> 33 -> 6 -> 6 -> 2 -> 2 -> 1; bottleneck `PARTIAL_FULL_QC_SCAN` from postrun review; parameters.calendar_from_days 21, calendar_to_days 28 from daily stdout; `invalid_grant` count 0.
+Item 3:
+- Added a scope update comment to #251: https://github.com/atzmonpersonalassistant/trader/issues/251#issuecomment-5462320138
+- The comment adds `run_id` as the fourth aggregation-survival field, notes that parameters must come from durable artifacts rather than stdout, and keeps #250 blocked behind this prerequisite.
+- #251 still has `agent:blocked` and `needs:human-approval`.
 
-Important artifact caveat: `full_summary.json` for both 08-28 and 08-29 still has `run_id`, `research_verdict`, `bottleneck`, and `parameters` as null/missing in the aggregate object; the non-null verdict/bottleneck came from postrun `review.json`, and parameters came from daily stdout.
-
-No trader files edited, no branches/PRs/check reruns/merges, no labels changed, no issues updated, #225/#244/#245/#247 untouched, no QC started.</pre>
+No trader files edited, no branches/PRs/check reruns/merges, #225/#244/#245/#247 untouched, no QC started.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
