@@ -77,49 +77,33 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 405.
+  <pre id="current-message">Processed newest row 406.
 
-Short answer: this is mostly case (a), but with a product-output reporting defect. The failed chunks did produce count-level funnel objects before failing, and the full-run aggregate reused/summed those counts. It is not evidence that the first 25 symbols were never scanned, and it is not pure backfill/default fabrication. But the summary makes failed-chunk counts look like a complete daily funnel, drops the stage symbol lists, and mishandles offset 650. I filed tracking issue #253 without labels: https://github.com/atzmonpersonalassistant/trader/issues/253
+Read-only follow-up complete. The 650 offset is a symptom, not the cause of the 08-28/08-29 partials.
 
-08-29 evidence from disk:
-- Full run: `/agents/research/reports/earnings-qc-options-scan-full-20260829-073000-attempt-1`
-- `full_summary.json`: status `PARTIAL_FULL_QC_SCAN`, chunk_count 3, failed_chunk_count 2, failed_chunks offsets 0 and 25, aggregate funnel 44 to 33 to 6 to 6 to 2 to 2 to 1.
-- `chunks.jsonl`: offsets 0, 25, and 650. So my earlier "stdout says chunk_count 2" line was incomplete against disk; the durable full summary has chunk_count 3.
+Root cause of 650:
+- `earnings-llm-postrun-review` contains a literal example bounded action: `{"argv":["retry-failed","--offset","650","--years","1","--end-to-end"]}`.
+- The isolated postrun reviewer copied that literal on both 2026-08-28 and 2026-08-29.
+- The host wrapper then executed `retry-failed --offset 650 --years 1 --end-to-end`.
+- That created same-run `chunk-650.stdout.json` files and `chunks.jsonl` entries after the real daily chunks had already failed.
 
-08-29 per-chunk funnel objects:
-- Offset 0 dir `earnings-qc-options-scan-20260829-073001-190656-0`, mtime 2026-08-29T07:30:36Z, status `BLOCKED_QC_NO_OPTION_CHAIN_ROWS_ON_VALUATION_DATE`, reason `QC produced zero option-chain rows on valuation date`, qc_batch_offset 0, qc_batch_limit 25, qc_batch_count 25, qc_processed_row_count 0, candidate_count 0. Funnel counts: universe 44, option_chain 21, expiry 3, otm_expiry 3, ask_under_max 1, required_move_under_ceiling 1, liquidity 0, qc_candidates 0.
-- Offset 25 dir `earnings-qc-options-scan-20260829-073106-190714-25`, mtime 2026-08-29T07:31:31Z, status `BLOCKED_QC_CANDIDATE_DETAILS_MISSING_OR_TRUNCATED`, reason `QC candidate details JSON missing/truncated/unparseable`, qc_batch_offset 25, qc_batch_limit 25, qc_batch_count 19, qc_processed_row_count 0, candidate_count 1. Funnel counts: universe 44, option_chain 12, expiry 3, otm_expiry 3, ask_under_max 1, required_move_under_ceiling 1, liquidity 1, qc_candidates 1.
-- Offset 650 dir `earnings-qc-options-scan-20260829-073652-191997-650`, mtime 2026-08-29T07:36:53Z, status `BLOCKED_QC_BATCH_FAILED`, reason `QC/LEAN batch option-chain diagnostic failed; see qc_stage2_* artifacts.`, qc_batch_offset 650, qc_batch_limit 25, qc_batch_count 0. Downstream funnel counts are null.
+Evidence from the VPS:
+- 2026-08-28 postrun artifact `bounded_action_request.json`: `retry-failed --offset 650 --years 1 --end-to-end`
+- 2026-08-29 postrun artifact `bounded_action_request.json`: same argv
+- Both matching `bounded_action_result.json` files record the same argv.
+- Both `review.md` files record the wrapper command.
+- Offset 650 chunks have nested `qc_checks.qc_option_chain_batch_diagnostic.reason=empty_batch`, so aggregation filters them as stale empty batches, even though the top-level blocked_reason is generic.
 
-How 44 to 33 to 6 to 6 to 2 to 2 to 1 is composed:
-- Universe count is the full 44-symbol universe, not a sum of chunks.
-- Non-universe counts are offset 0 plus offset 25: 21+12=33, 3+3=6, 3+3=6, 1+1=2, 1+1=2, 0+1=1.
-- Offset 650 contributes no downstream counts because they are null.
-- The full summary's non-universe symbol arrays are empty despite nonzero counts. That is the dangerous part: count evidence survives, symbol provenance does not.
+Conclusion on causality:
+- Legitimate offsets for universe 44/47 with chunk size 25 are only 0 and 25.
+- Main/deployed chunker arithmetic would not emit 650 for those runs.
+- 650 did not cause offsets 0 and 25 to fail; it was an erroneous postrun retry after the partial run existed.
+- The remaining root partial causes are still offset 0 `BLOCKED_QC_NO_OPTION_CHAIN_ROWS_ON_VALUATION_DATE` and offset 25 `BLOCKED_QC_CANDIDATE_DETAILS_MISSING_OR_TRUNCATED`.
 
-08-28 has the same shape:
-- Full run `earnings-qc-options-scan-full-20260828-073019-attempt-1`: status `PARTIAL_FULL_QC_SCAN`, chunk_count 3, failed_chunk_count 2, aggregate funnel 47 to 35 to 6 to 6 to 2 to 2 to 1.
-- Offset 0 counts: 47, 20, 3, 3, 1, 1, 0; status `BLOCKED_QC_NO_OPTION_CHAIN_ROWS_ON_VALUATION_DATE`.
-- Offset 25 counts: 47, 15, 3, 3, 1, 1, 1; status `BLOCKED_QC_CANDIDATE_DETAILS_MISSING_OR_TRUNCATED`.
-- Composition: 20+15=35, 3+3=6, 1+1=2, 0+1=1.
-
-Offset 650:
-- It is not an old filesystem leftover by mtime. 08-28 offset 650 mtime is 2026-08-28T07:36:30Z, and 08-29 offset 650 mtime is 2026-08-29T07:36:53Z, matching each daily run's finalization window.
-- It is a real same-run zero-row/empty-batch attempt at qc_batch_offset 650 with qc_batch_count 0, but it is omitted from `failed_chunks`.
-- Your stale-filter concern is valid: the artifact reason is not `empty_batch`; it is `QC/LEAN batch option-chain diagnostic failed; see qc_stage2_* artifacts.` If the code is excluding it, that exclusion is not auditable from the artifact reason.
-
-Same symbols / layout:
-- `requested_symbols` is persisted as [] in these chunk result files, so exact chunk input symbols are not directly stored there.
-- Inferred from ordered universe plus qc_batch_offset/qc_batch_limit, 08-28 and 08-29 offset 0 cover the same first 25 symbols: ABVX, AIR, ASTC, AYTU, AZO, BB, BTOC, CNXC, COST, CSBR, CTAS, DTSS, FUL, GIS, HYFT, ISPR, IVA, JBL, KBH, KEP, KMX, LGCY, LITS, LPTH, MITQ.
-- 08-27 was different: universe size 51, chunk_count 3, offsets 0/25/50, all `OK_STAGE3_QC_BATCH`, failed_chunk_count 0, status `NO_FORWARD_CANDIDATES`.
-
-08-23 through 08-26:
-- 08-23 clean: `NO_FINAL_CANDIDATES_AFTER_HISTORICAL_OPTION_PNL`, chunk_count 2, failed_chunk_count 0, funnel 27 to 17 to 16 to 16 to 12 to 1.
-- 08-24 clean: same status, chunk_count 2, failed_chunk_count 0, funnel 42 to 29 to 16 to 16 to 12 to 1.
-- 08-25 clean: same status, chunk_count 2, failed_chunk_count 0, funnel 42 to 28 to 11 to 11 to 8 to 1.
-- 08-26 clean: same status, chunk_count 2, failed_chunk_count 0, funnel 48 to 34 to 12 to 12 to 7 to 1.
-
-Bottom line: 08-23 through 08-27 were not partial. 08-28 and 08-29 are reproducible partials with the same inferred offset-0 batch and same two real chunk failures. The funnel counts are not fabricated from nowhere, but they are unsafe as complete daily product output because they are assembled from failed chunks and stripped of symbol provenance.
+GitHub handoff:
+- Opened #254 for the hardcoded postrun retry/prompt leak and bounded precheck gap: https://github.com/atzmonpersonalassistant/trader/issues/254
+- Updated #253 with the 650 root-cause evidence and kept the remaining product-output defects in scope: https://github.com/atzmonpersonalassistant/trader/issues/253#issuecomment-5462424674
+- Updated #250 to keep daily-history publication blocked on #251 plus #253/#254, especially the nonzero-count/empty-symbol-array invariant: https://github.com/atzmonpersonalassistant/trader/issues/250#issuecomment-5462424667
 
 No QC started. No trader files edited. No branches/PRs/check reruns/merges. #225/#244/#245/#247 untouched.</pre>
   <!-- CODEX_UPDATE_END -->
