@@ -77,35 +77,42 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 406.
+  <pre id="current-message">Processed newest row 407.
 
-Read-only follow-up complete. The 650 offset is a symptom, not the cause of the 08-28/08-29 partials.
+Read-only diagnostic complete. I updated #253 with the evidence:
+https://github.com/atzmonpersonalassistant/trader/issues/253#issuecomment-5463369037
 
-Root cause of 650:
-- `earnings-llm-postrun-review` contains a literal example bounded action: `{"argv":["retry-failed","--offset","650","--years","1","--end-to-end"]}`.
-- The isolated postrun reviewer copied that literal on both 2026-08-28 and 2026-08-29.
-- The host wrapper then executed `retry-failed --offset 650 --years 1 --end-to-end`.
-- That created same-run `chunk-650.stdout.json` files and `chunks.jsonl` entries after the real daily chunks had already failed.
+Answer in your requested order:
 
-Evidence from the VPS:
-- 2026-08-28 postrun artifact `bounded_action_request.json`: `retry-failed --offset 650 --years 1 --end-to-end`
-- 2026-08-29 postrun artifact `bounded_action_request.json`: same argv
-- Both matching `bounded_action_result.json` files record the same argv.
-- Both `review.md` files record the wrapper command.
-- Offset 650 chunks have nested `qc_checks.qc_option_chain_batch_diagnostic.reason=empty_batch`, so aggregation filters them as stale empty batches, even though the top-level blocked_reason is generic.
+1. What changed on the box on 08-28?
+- I found no VPS-side deploy/config/package/reboot/disk-pressure event on 2026-08-28.
+- GitHub deploy history: #249 deployed 2026-08-26T22:10Z; no trader deploy on 08-28.
+- `/usr/local/sbin/trading-research-bounded-earnings-qc` mtime: 2026-08-26 22:10:57Z.
+- apt history: no 08-27/08-28 package changes found; last package change before the boundary was OpenSSL on 08-26.
+- VPS uptime: 51 days at inspection, so no boundary reboot.
+- Disk/memory: `/` 16% used, ~6.7 GiB memory available.
+- Lean currently reports `lean 1.0.225`; I found no local evidence of a Lean binary update on 08-28.
 
-Conclusion on causality:
-- Legitimate offsets for universe 44/47 with chunk size 25 are only 0 and 25.
-- Main/deployed chunker arithmetic would not emit 650 for those runs.
-- 650 did not cause offsets 0 and 25 to fail; it was an erroneous postrun retry after the partial run existed.
-- The remaining root partial causes are still offset 0 `BLOCKED_QC_NO_OPTION_CHAIN_ROWS_ON_VALUATION_DATE` and offset 25 `BLOCKED_QC_CANDIDATE_DETAILS_MISSING_OR_TRUNCATED`.
+The actual observed boundary change is not a box change I can prove. It is QC runtime-stat behavior: on 08-27, `trader.stage2_json_*` values came back as full 3500-byte chunks; on 08-28/08-29 the same values came back exactly 200 bytes each.
 
-GitHub handoff:
-- Opened #254 for the hardcoded postrun retry/prompt leak and bounded precheck gap: https://github.com/atzmonpersonalassistant/trader/issues/254
-- Updated #253 with the 650 root-cause evidence and kept the remaining product-output defects in scope: https://github.com/atzmonpersonalassistant/trader/issues/253#issuecomment-5462424674
-- Updated #250 to keep daily-history publication blocked on #251 plus #253/#254, especially the nonzero-count/empty-symbol-array invariant: https://github.com/atzmonpersonalassistant/trader/issues/250#issuecomment-5462424667
+2. Valuation dates and weekend hypothesis:
+- 2026-08-22 run: valuation date 2026-08-21, clean.
+- 2026-08-23 run: valuation date 2026-08-21, clean.
+- 2026-08-27 run: valuation date 2026-08-26, clean.
+- 2026-08-28 run: valuation date 2026-08-27, partial.
+- 2026-08-29 run: valuation date 2026-08-28, partial.
 
-No QC started. No trader files edited. No branches/PRs/check reruns/merges. #225/#244/#245/#247 untouched.</pre>
+So the non-trading/weekend valuation-date hypothesis is dead. The prior weekend was clean, and the two failing valuation dates were Thursday and Friday.
+
+3. Offset-0 contradiction:
+- The funnel count is scalar runtime-stat evidence. Example 2026-08-29 offset 0: `trader.option_chain_available=21`, `trader.option_chain_slice_count=147`, `trader.valuation_option_chain_slice_count=147`.
+- The blocking status comes from host-side parsing of structured `parsed_result.rows` reconstructed from `trader.stage2_json_*`.
+- On 08-27 offset 0, those structured chunks were lengths `3500,3500,3500,3500,3500,3500,2414`; reconstructed JSON length 23414, parsed OK, rows=25.
+- On 08-28/08-29 offsets 0 and 25, the structured chunks were five values of exactly 200 bytes each; reconstructed length 1000, JSONDecodeError, rows=0.
+
+Conclusion: the status text is misleading here. This is not true zero option-chain data on the valuation date. QC observed option-chain slices, but the structured row/candidate payload was truncated before the runner could parse it. That is the root partial cause for offsets 0 and 25.
+
+#254 remains the hardcoded offset-650 prompt/precheck issue. No QC started. No trader files edited. No branches/PRs/check reruns/merges. #225/#244/#245/#247 untouched.</pre>
   <!-- CODEX_UPDATE_END -->
   </section>
 
