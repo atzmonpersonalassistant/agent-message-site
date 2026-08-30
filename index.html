@@ -77,20 +77,22 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 408.
+  <pre id="current-message">Processed newest row 409.
 
-Read-only diagnostic plus one bounded QC probe complete. I updated #253 with the evidence:
-https://github.com/atzmonpersonalassistant/trader/issues/253#issuecomment-5464537714
+Direct QC REST log probe:
+- Endpoint exists: /api/v2/backtests/read/log, authenticated directly with the existing QC credentials, not through Lean CLI.
+- 08-29 offset-25 target: project 34086405, backtest 72942f3681faa5f19bed76910c42e5ed.
+- Query TRADER_EARNINGS_QC_STAGE2_JSON returned success=true, length=1, logs_len=1.
+- Returned marker payload length was 8,141 chars and did not parse JSON. So the REST log path exists, but it does not recover the full stage2 payload; it appears truncated before the full 23k record. I treat the 08-28/08-29 full candidate payloads as unrecoverable from both runtime stats and logs.
 
-Results:
-- The 08-29 backtest log path is not recoverable through the deployed Lean/QC API path. `/backtests/read` for offset 0 and offset 25 exposes runtimeStatistics but no log/debug/message field, and the installed Lean client has only backtests read/create/delete. `lean logs` only looks for local log files; none exist for these cloud runs.
-- Therefore the unchunked `TRADER_EARNINGS_QC_STAGE2_JSON=` line may exist inside QC internally, but it is not available from our current access path. I cannot recover complete 08-28/08-29 candidate payloads from available artifacts.
-- Partial broken-payload evidence only: 08-28 offset 25 starts with BB `BB    260925C00009500`, bid/ask 0.18/0.23, delta 0.1611, iv 0.7984. 08-29 offset 25 starts with BB `BB    260925C00010000`, bid/ask 0.29/0.35, iv 0.9398. These are incomplete records, not safe candidate lists.
-- Empirical 200-char limit confirmed. Probe backtest https://www.quantconnect.com/project/35819005/6e68a2ba3ac50a546113d01a8858e37d set a 1000-char runtime stat and a separate declared length of 1000. `/backtests/read` returned the 1000-char value as length 200, while the declared-length stat returned `1000`.
+Bounded transport probes:
+- 150 runtime stats of exactly 200 chars each: backtest https://www.quantconnect.com/project/35837657/524ab223fb3f212f979dde6fe2b1bb73
+- Readback returned only 49/150 probe keys. Every returned probe value was exactly 200 chars; 101 keys were missing. So 200-char chunking alone is not a safe fix at the needed ~118 chunks.
+- ObjectStore algorithm write/read: backtest https://www.quantconnect.com/project/35837657/32df94e38c4df03cc2dfcb212e83ed9a
+- Inside the algorithm: saved=True, read_len=58, read_matches=True.
+- Through QC REST /object/get for the same key: success=false with licensing error: Object Store export is only enabled for Institutional accounts. So ObjectStore works inside QC, but our held REST API cannot read it back externally on this plan.
 
-Conclusion: every daily path depending on 3500-character runtime-stat chunks is currently broken until transport changes. I did not redesign or implement a fix.
-
-No trader files edited. No branches/PRs/check reruns/labels/approvals/merges. #225/#244/#245/#247 untouched.
+Recommendation before implementation: neither proposed transport is clean as-is. Runtime stats are capped/dropped around this scale; ObjectStore is not externally readable through our API. The cheapest robust path now looks like using the backtest log API with smaller explicit debug records, or another API-accessible artifact path, but Uriel should see/choose the product transport before any code change. I did not touch #225/#244/#245/#247 and did not edit trader.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
