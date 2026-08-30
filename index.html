@@ -77,31 +77,33 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 410.
+  <pre id="current-message">Processed newest row 411.
 
-08-27 payload sizing, source:
-/agents/research/reports/earnings-qc-options-scan-full-20260827-073019-attempt-1/chunk-0.stdout.json
-field qc_checks.qc_option_chain_batch_diagnostic.parsed_result
-backtest 41941ce42843f8951f09a37216185137, rows=25.
+I checked the requested 08-28/08-29 offset-25 chunks:
+- /agents/research/reports/earnings-qc-options-scan-full-20260828-073019-attempt-1/chunk-25.stdout.json
+- /agents/research/reports/earnings-qc-options-scan-full-20260829-073000-attempt-1/chunk-25.stdout.json
 
-Lengths using the writer's default json.dumps(..., sort_keys=True) format:
-- original parsed payload: 23,414 chars
-- rows retained, every cheap_contract_diagnostics_sample removed: 12,329 chars
-- minimal product record containing type/time/valuation_date + funnel counts + full funnel_symbols + candidate_details: 1,078 chars
-- candidate_details alone: 2 chars, because this chunk had []
+Both had candidate_count=1, but the actual candidate_details were not recoverable from the saved artifacts:
+- 08-28: candidate_details_parse_failed=True, JSONDecodeError at char 204
+- 08-29: candidate_details_parse_failed=True, JSONDecodeError at char 402
+- both saved only five trader.stage2_json_* keys, each exactly 200 chars
+- the top-level candidate_details that survived is []
 
-The full funnel symbol lists were present on the clean 08-27 chunk and matched the counts: 25 input, 19 option-chain, 6 expiry, 6 OTM expiry, 3 cheap, 3 required-move, 0 liquidity/candidates.
+Fallback measurement from surviving artifacts:
+- largest actual non-empty candidate_details block found: 1,507 chars, source 2026-08-11 chunk-0, one NIO candidate with two contracts
+- clean 08-27 minimal envelope with that real candidate block: 2,583 chars = 13 chunks at 200 chars
+- plausible repeated stress sizes, including two metadata stats:
+  - 2 candidate blocks: 4,090 chars, 23 total keys
+  - 3 candidate blocks: 5,597 chars, 30 total keys
+  - 5 candidate blocks: 8,611 chars, 46 total keys
+  - 10 candidate blocks: 16,146 chars, 83 total keys
 
-60x100 runtime-stat probe:
-- project/backtest: https://www.quantconnect.com/project/35838574/514856b31d3ad39b3bec49dea5fc02b0
-- emitted 60 payload keys of exactly 100 chars plus two small declared metadata stats
-- /api/v2/backtests/read returned 48/60 payload keys, both metadata keys, and every returned payload value was exactly 100 chars
-- missing indexes: 8, 10, 12, 15, 16, 24, 30, 36, 39, 43, 44, 59
+Conclusion: one to three real candidates fit comfortably under the observed ~50-key cap; five is close but still under if only two metadata stats are added; ten would exceed it and must fail loudly. I also noted the separate #253 aggregation finding: chunk-level provenance exists, while saved/summary funnels keep counts but lose non-universe symbol arrays.
 
-Conclusion: this is behaving like a roughly 50-custom-runtime-stat key cap, not a pure byte cap. Smaller chunks alone do not solve the daily transport if they require more than about 50 keys. Shrinking the product payload is still the right direction, but deleting only per-contract diagnostics while keeping all rows is not enough; the measured rows-retained trim is still >12 KB. A structurally minimal daily product payload with funnel counts, full funnel symbol lists, and candidate_details fits easily on this clean chunk.
+Issue update: https://github.com/atzmonpersonalassistant/trader/issues/253#issuecomment-5466881887
 
-I added the evidence to #253: https://github.com/atzmonpersonalassistant/trader/issues/253#issuecomment-5466850443
 No implementation, no trader edits, no PR/check/label/approval/merge actions. #225/#244/#245/#247 untouched.
+Waiting on Uriel's decision before any transport implementation is dispatched.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
