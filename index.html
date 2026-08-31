@@ -77,33 +77,25 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 411.
+  <pre id="current-message">Processed newest row 412.
 
-I checked the requested 08-28/08-29 offset-25 chunks:
-- /agents/research/reports/earnings-qc-options-scan-full-20260828-073019-attempt-1/chunk-25.stdout.json
-- /agents/research/reports/earnings-qc-options-scan-full-20260829-073000-attempt-1/chunk-25.stdout.json
+Answers on #252, read-only:
 
-Both had candidate_count=1, but the actual candidate_details were not recoverable from the saved artifacts:
-- 08-28: candidate_details_parse_failed=True, JSONDecodeError at char 204
-- 08-29: candidate_details_parse_failed=True, JSONDecodeError at char 402
-- both saved only five trader.stage2_json_* keys, each exactly 200 chars
-- the top-level candidate_details that survived is []
+1. Claim record on the box exists:
+issue row: {"external_id":"5271897741","number":252,"state":"open","labels":"[\"agent:claimed\"]","created_at":"2026-08-29T12:08:01Z","updated_at":"2026-08-29T12:08:03Z","last_seen_at":"2026-08-29T12:08:03Z","retry_count":0}
+lock row: {"external_id":"issue-252","state":"held","owner":"agent-orchestrator","labels":"[\"agent:claimed\"]","created_at":"2026-08-29T12:08:03Z","updated_at":"2026-08-29T12:08:03Z","last_seen_at":"2026-08-29T12:08:03Z","retry_count":0,"expires_at":null}
 
-Fallback measurement from surviving artifacts:
-- largest actual non-empty candidate_details block found: 1,507 chars, source 2026-08-11 chunk-0, one NIO candidate with two contracts
-- clean 08-27 minimal envelope with that real candidate block: 2,583 chars = 13 chunks at 200 chars
-- plausible repeated stress sizes, including two metadata stats:
-  - 2 candidate blocks: 4,090 chars, 23 total keys
-  - 3 candidate blocks: 5,597 chars, 30 total keys
-  - 5 candidate blocks: 8,611 chars, 46 total keys
-  - 10 candidate blocks: 16,146 chars, 83 total keys
+2. trading-coding-agent did run. There are 333 failed attempts for #252 from 2026-08-29T12:08:04Z through 2026-08-31T20:41:48Z. Latest attempt:
+issue-252-coding-attempt-2026-08-31T20:41:48Z, state=failed, returncode=1.
+Failure quote: "Failed to refresh token=&lt;redacted&gt; Unauthorized ... \"Invalid refresh token\" ... \"access token could not be refreshed. Please log out and sign in again.\" The invoked command was the real coding path: sudo -n /usr/local/sbin/trading-dispatch-coding-agent run --issue 252.
 
-Conclusion: one to three real candidates fit comfortably under the observed ~50-key cap; five is close but still under if only two metadata stats are added; ten would exceed it and must fail loudly. I also noted the separate #253 aggregation finding: chunk-level provenance exists, while saved/summary funnels keep counts but lose non-universe symbol arrays.
+3. I do not find stale-claim recovery for issue claims. In the deployed/source orchestrator path, claim writes locks.expires_at as NULL, dispatch selects the oldest open issue with agent:claimed, records attempts, and leaves the claim/lock in place after failure. There is no lease timeout, startup sweep, reconciler, or failed-attempt terminal transition that releases agent:claimed for #252.
 
-Issue update: https://github.com/atzmonpersonalassistant/trader/issues/253#issuecomment-5466881887
+Interpretation: this is not silent "claimed and never ran"; it is a persistent coding-agent auth failure plus no claim-release/terminal-block path. Because dispatch keeps selecting the oldest claimed issue, #252 can keep consuming the coding dispatch slot every tick until the Codex login is repaired or the claim is manually/automatically cleared.
 
-No implementation, no trader edits, no PR/check/label/approval/merge actions. #225/#244/#245/#247 untouched.
-Waiting on Uriel's decision before any transport implementation is dispatched.
+Daily status: 2026-08-31 run earnings-qc-options-scan-full-20260831-073019-attempt-1 also returned PARTIAL_FULL_QC_SCAN with final_count=0; candidate delivery has remained broken since 2026-08-28.
+
+No implementation, no trader edits, no GitHub issue/comment/label/PR/check/approval/merge actions. #225/#244/#245/#247 untouched.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
