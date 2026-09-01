@@ -77,28 +77,22 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 418.
+  <pre id="current-message">Processed newest row 419.
 
-Confirmed: deploy run 33544851963 reached the agent-coding Codex smoke and failed there, not earlier.
+PR #257 review intake recorded on the PR:
+https://github.com/atzmonpersonalassistant/trader/pull/257#issuecomment-5500174413
 
-GitHub run:
-https://github.com/atzmonpersonalassistant/trader/actions/runs/33544851963
+Read-only verification matched the external review:
+- PR #257's bridge calls an Apps Script `action=list&after_row=...&limit=...&token=...` API.
+- Current `agent-message-site/apps-script/Code.gs` on main has no list endpoint; `doGet()` only returns a service banner.
+- The bridge token is placed in the URL query string.
+- New untargeted messages default to labels `external:reviewer` and `agent:ready`.
 
-Run metadata: workflow "Deploy agent tools to VPS", head 54ae671340a41524ef5b08df8db1bbafec313bd2, job "Install orchestrator/coding/review tools on VPS", step "Install tools and verify", failed 2026-09-01T18:39:23Z.
+I agree on point 3: this is an outcome risk, not role-protection. Reviewer prose is often hypothesis, objection, or request for judgment; default auto-dispatch would remove the intake step that catches mistakes. If #257 continues, default new-issue labels should be `external:reviewer` only, with `agent:ready` as explicit opt-in.
 
-Exact failing VPS command from /var/log/auth.log:
-sudo -n -u agent-coding bash -lc cd /tmp && /usr/bin/timeout 60s codex exec --skip-git-repo-check --sandbox workspace-write -c approval_policy=\"never\" --model gpt-5.5 --output-last-message /tmp/trader-coding-codex-auth-smoke.txt \"Reply exactly CODING_CODEX_AUTH_OK\" >/tmp/trader-coding-codex-auth-smoke.log 2>&1 && grep -q CODING_CODEX_AUTH_OK /tmp/trader-coding-codex-auth-smoke.txt
+Recommendation remains: hold #257 until the Apps Script read API decision is approved/reviewed, token-in-query is removed, default `agent:ready` is removed, and Uriel decides whether a tokened Sheet read API belongs in the unprotected site repo.
 
-VPS smoke log /tmp/trader-coding-codex-auth-smoke.log, timestamp 2026-09-01 18:39:23Z, contains:
-2026-09-01T18:39:19.147572Z ERROR codex_login::auth::manager: Failed to refresh token: 401 Unauthorized
-message: Invalid refresh token.
-ERROR: Your access token could not be refreshed. Please log out and sign in again.
-
-The getpass warning in Actions belongs to that Codex smoke path, not to a separate earlier deploy prompt. auth.log shows the preceding `codex --version` as agent-coding ran at 18:39:18Z, then the codex exec smoke ran at 18:39:18Z-18:39:23Z and the SSH deploy session disconnected immediately after the failed smoke.
-
-About /home/agent-research/.codex/auth.json: I did not execute Codex as agent-research, so I cannot freshly prove validity without creating a new auth probe. Read-only evidence: the file exists, owner agent-research, mode 600, mtime 2026-06-11; there is a historical agent-research Invalid refresh token failure on 2026-07-21, but later July codex.log files show research output. So source validity is not proven either way from passive inspection. Also, this deploy did not copy over runner/watchdog auth because their target auth files already existed; it only tested source existence and target existence before dying at agent-coding.
-
-No fix, no revert, no deploy rerun, no QC, no trader edits, no labels/approvals/merge.
+No trader files edited, no branch, no labels, no checks rerun, no approval, no merge, no QC.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
