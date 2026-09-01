@@ -77,25 +77,32 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 412.
+  <pre id="current-message">Processed newest row 413.
 
-Answers on #252, read-only:
+Read-only answers on #252:
 
-1. Claim record on the box exists:
-issue row: {"external_id":"5271897741","number":252,"state":"open","labels":"[\"agent:claimed\"]","created_at":"2026-08-29T12:08:01Z","updated_at":"2026-08-29T12:08:03Z","last_seen_at":"2026-08-29T12:08:03Z","retry_count":0}
-lock row: {"external_id":"issue-252","state":"held","owner":"agent-orchestrator","labels":"[\"agent:claimed\"]","created_at":"2026-08-29T12:08:03Z","updated_at":"2026-08-29T12:08:03Z","last_seen_at":"2026-08-29T12:08:03Z","retry_count":0,"expires_at":null}
+1. Same identity as Sheets/gog? Operationally separate credentials.
+The failing coding credential is the VPS Codex CLI login for Unix user agent-coding:
+/home/agent-coding/.codex/auth.json, owned by agent-coding, last modified 2026-06-08T20:56Z.
+The Sheet/gog path is the local Google Workspace OAuth store; I found the local gog credentials path at:
+/Users/atzmonpersonalassistant/Library/Application Support/gogcli/credentials.json.
+I did not read token contents. A human may use the same email for both products, but mechanically one stored token does not update the other. Unless Uriel reauthenticates both CLIs/surfaces, assume two login repairs.
 
-2. trading-coding-agent did run. There are 333 failed attempts for #252 from 2026-08-29T12:08:04Z through 2026-08-31T20:41:48Z. Latest attempt:
-issue-252-coding-attempt-2026-08-31T20:41:48Z, state=failed, returncode=1.
-Failure quote: "Failed to refresh token=&lt;redacted&gt; Unauthorized ... \"Invalid refresh token\" ... \"access token could not be refreshed. Please log out and sign in again.\" The invoked command was the real coding path: sudo -n /usr/local/sbin/trading-dispatch-coding-agent run --issue 252.
+2. Any error other than refresh-token/auth?
+In the orchestrator DB, #252 is GitHub external_id 5271897741. Attempts now total 374, all failed, from 2026-08-29T12:08:04Z through 2026-09-01T03:42:40Z.
+All 374 attempt result_json rows contain "Invalid refresh token"; zero #252 attempts lack that string.
+The latest attempt, issue-252-coding-attempt-2026-09-01T03:42:35Z, ran for about 5 seconds and failed with returncode 1. Same failure family: invalid_refresh_token, access token could not be refreshed, 401 unauthorized on Codex models/responses websocket. I found no separate downstream implementation/test failure in the recorded attempts.
 
-3. I do not find stale-claim recovery for issue claims. In the deployed/source orchestrator path, claim writes locks.expires_at as NULL, dispatch selects the oldest open issue with agent:claimed, records attempts, and leaves the claim/lock in place after failure. There is no lease timeout, startup sweep, reconciler, or failed-attempt terminal transition that releases agent:claimed for #252.
+3. What does each retry cost?
+Each observed retry is short, roughly 5-6 seconds. It invokes the real path:
+sudo -n /usr/local/sbin/trading-dispatch-coding-agent run --issue 252
+then sudo -n -u agent-coding /usr/local/bin/trading-coding-agent run --issue 252
+then codex exec in /agents/coding/workspaces/issue-252.
+It refreshes/fetches the workspace and starts Codex, but dies before useful model work or repo edits. At the latest snapshot, git status in issue-252 was clean and only .git metadata had fresh timestamps. No PR/check/QC work was created by these failures.
 
-Interpretation: this is not silent "claimed and never ran"; it is a persistent coding-agent auth failure plus no claim-release/terminal-block path. Because dispatch keeps selecting the oldest claimed issue, #252 can keep consuming the coding dispatch slot every tick until the Codex login is repaired or the claim is manually/automatically cleared.
+So the cost is small per tick in CPU/network/auth calls, but not zero; it also continuously consumes the coding dispatch slot. The real damage remains head-of-line blocking: #252 stays agent:claimed, lock expires_at is still NULL, and no later issue can be worked by the coding dispatch queue while this claim remains selected.
 
-Daily status: 2026-08-31 run earnings-qc-options-scan-full-20260831-073019-attempt-1 also returned PARTIAL_FULL_QC_SCAN with final_count=0; candidate delivery has remained broken since 2026-08-28.
-
-No implementation, no trader edits, no GitHub issue/comment/label/PR/check/approval/merge actions. #225/#244/#245/#247 untouched.
+No implementation, no trader edits, no GitHub issue/comment/label/PR/check/approval/merge actions. #225/#244/#245/#247 untouched. I did not clear #252.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
