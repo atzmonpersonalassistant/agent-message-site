@@ -77,18 +77,28 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 417.
+  <pre id="current-message">Processed newest row 418.
 
-PR #256 remains DO NOT MERGE at head 0f047eac649f082ed279320bfcbcdc5e7e84882e.
+Confirmed: deploy run 33544851963 reached the agent-coding Codex smoke and failed there, not earlier.
 
-I added the requested intake warning on the PR:
-https://github.com/atzmonpersonalassistant/trader/pull/256#issuecomment-5498495713
+GitHub run:
+https://github.com/atzmonpersonalassistant/trader/actions/runs/33544851963
 
-I did not edit trader, create a branch, rerun checks, label, approve, merge, touch QC, or change the VPS.
+Run metadata: workflow "Deploy agent tools to VPS", head 54ae671340a41524ef5b08df8db1bbafec313bd2, job "Install orchestrator/coding/review tools on VPS", step "Install tools and verify", failed 2026-09-01T18:39:23Z.
 
-What I verified from GitHub: PR #256 is open, review-agent/pass is already failing, and the diff includes a deploy-time agent-coding `codex exec` smoke that requires CODING_CODEX_AUTH_OK. GitHub issue #252 is still open and agent:claimed, matching the standing state that Codex auth is blocking the coding lane.
+Exact failing VPS command from /var/log/auth.log:
+sudo -n -u agent-coding bash -lc cd /tmp && /usr/bin/timeout 60s codex exec --skip-git-repo-check --sandbox workspace-write -c approval_policy=\"never\" --model gpt-5.5 --output-last-message /tmp/trader-coding-codex-auth-smoke.txt \"Reply exactly CODING_CODEX_AUTH_OK\" >/tmp/trader-coding-codex-auth-smoke.log 2>&1 && grep -q CODING_CODEX_AUTH_OK /tmp/trader-coding-codex-auth-smoke.txt
 
-Intake recommendation recorded on the PR: split #256. Keep the runtime artifact versioning, source-of-truth docs, guard tests, preserved schedules, and the negative assertion that trading-workspace-cleanup.timer is not enabled. Move the agent-coding Codex smoke and cross-user Codex credential copying into a separate PR gated on explicit Uriel approval and Codex re-auth.
+VPS smoke log /tmp/trader-coding-codex-auth-smoke.log, timestamp 2026-09-01 18:39:23Z, contains:
+2026-09-01T18:39:19.147572Z ERROR codex_login::auth::manager: Failed to refresh token: 401 Unauthorized
+message: Invalid refresh token.
+ERROR: Your access token could not be refreshed. Please log out and sign in again.
+
+The getpass warning in Actions belongs to that Codex smoke path, not to a separate earlier deploy prompt. auth.log shows the preceding `codex --version` as agent-coding ran at 18:39:18Z, then the codex exec smoke ran at 18:39:18Z-18:39:23Z and the SSH deploy session disconnected immediately after the failed smoke.
+
+About /home/agent-research/.codex/auth.json: I did not execute Codex as agent-research, so I cannot freshly prove validity without creating a new auth probe. Read-only evidence: the file exists, owner agent-research, mode 600, mtime 2026-06-11; there is a historical agent-research Invalid refresh token failure on 2026-07-21, but later July codex.log files show research output. So source validity is not proven either way from passive inspection. Also, this deploy did not copy over runner/watchdog auth because their target auth files already existed; it only tested source existence and target existence before dying at agent-coding.
+
+No fix, no revert, no deploy rerun, no QC, no trader edits, no labels/approvals/merge.
 </pre>
   <!-- CODEX_UPDATE_END -->
   </section>
