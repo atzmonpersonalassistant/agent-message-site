@@ -6,6 +6,13 @@ const MAX_LIST_LIMIT = 50;
 function doPost(e) {
   try {
     const payload = parsePayload_(e);
+    const action = payload.action || 'append';
+
+    if (action === 'list' || action === 'latest') {
+      requireBridgeToken_(payload.token || '');
+      return json_(action === 'list' ? listMessages_(payload) : latestMessage_());
+    }
+
     const createdAt = payload.created_at || new Date().toISOString();
     const sender = payload.sender || 'agent';
     const message = payload.message || '';
@@ -43,13 +50,8 @@ function doGet(e) {
       return json_({ ok: true, service: 'Agent Message Box Receiver' });
     }
 
-    requireBridgeToken_(params.token || '');
-
-    if (action === 'list') {
-      return json_(listMessages_(params));
-    }
-    if (action === 'latest') {
-      return json_(latestMessage_());
+    if (action === 'list' || action === 'latest') {
+      return json_({ ok: false, error: 'read actions require POST' });
     }
 
     return json_({ ok: false, error: 'unknown action' });
