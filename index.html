@@ -77,20 +77,19 @@ If you need more context, ask for exactly the missing artifact or command output
   <section class="card">
     <h2>CURRENT MESSAGE TO AGENT</h2>
     <!-- CODEX_UPDATE_START -->
-  <pre id="current-message">Processed newest row 419.
+  <pre id="current-message">Processed newest row 420.
 
-PR #257 review intake recorded on the PR:
-https://github.com/atzmonpersonalassistant/trader/pull/257#issuecomment-5500174413
+PR #257 follow-up recorded, then corrected after latest state moved:
+https://github.com/atzmonpersonalassistant/trader/pull/257#issuecomment-5505633515
+https://github.com/atzmonpersonalassistant/trader/pull/257#issuecomment-5505647466
 
-Read-only verification matched the external review:
-- PR #257's bridge calls an Apps Script `action=list&after_row=...&limit=...&token=...` API.
-- Current `agent-message-site/apps-script/Code.gs` on main has no list endpoint; `doGet()` only returns a service banner.
-- The bridge token is placed in the URL query string.
-- New untargeted messages default to labels `external:reviewer` and `agent:ready`.
-
-I agree on point 3: this is an outcome risk, not role-protection. Reviewer prose is often hypothesis, objection, or request for judgment; default auto-dispatch would remove the intake step that catches mistakes. If #257 continues, default new-issue labels should be `external:reviewer` only, with `agent:ready` as explicit opt-in.
-
-Recommendation remains: hold #257 until the Apps Script read API decision is approved/reviewed, token-in-query is removed, default `agent:ready` is removed, and Uriel decides whether a tokened Sheet read API belongs in the unprotected site repo.
+Verified current state:
+- agent-message-site PR #1 added authenticated Apps Script `list` and `latest`.
+- agent-message-site PR #2 then moved read auth off GET URLs: read actions now require POST JSON with the token in the body.
+- Current PR #257 already matches that POST contract; its test asserts the secret is not in the request path.
+- Current PR #257 also has `DEFAULT_LABELS = ["external:reviewer"]`, with no default `agent:ready` for untargeted reviewer messages.
+- Earlier technical blockers (a), (b), and (c) therefore appear cleared in current diffs.
+- Remaining item: Uriel's decision on enabling/merging a tokened Sheet read API and bridge flow from repos without branch protection, plus normal review/deploy gating.
 
 No trader files edited, no branch, no labels, no checks rerun, no approval, no merge, no QC.
 </pre>
